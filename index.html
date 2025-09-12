@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Daily Earning</title>
 
   <!-- External Scripts -->
@@ -11,50 +11,24 @@
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
   <style>
-    :root {
-      --bg-color: #121212; --card-color: #1e1e1e; --text-color: #ffffff;
-      --secondary-text-color: #b0b0b0; --primary-color: #007bff; --secondary-color: #28a745;
-      --border-color: #333;
-    }
     body {
-      font-family: 'Roboto', 'Noto Sans Bengali', sans-serif;
-      background-color: var(--bg-color); color: var(--text-color);
-      margin: 0; padding: 15px; padding-bottom: 90px;
-      opacity: 0; transition: opacity 0.5s;
+      background: #121212;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
-    .container { max-width: 600px; margin: 0 auto; display: none; }
-    .page-content { display: none; }
-    .page-content.active { display: block; }
-    .profile-section { display: flex; align-items: center; margin-bottom: 25px; }
-    .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary-color); margin-right: 15px; object-fit: cover; background-color: #333; }
-    .profile-info h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
-    .verified-tick { color: var(--primary-color); font-size: 1rem; }
-    .profile-info p { margin: 5px 0 0; color: var(--secondary-text-color); font-size: 0.9rem; }
-    h2 { font-size: 1.5rem; margin-bottom: 15px; font-weight: 700; }
-    .card { background-color: var(--card-color); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; }
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .card p { margin: 0; color: var(--secondary-text-color); font-size: 0.9rem; }
-    .card h3 { margin: 8px 0 0; font-size: 1.8rem; color: var(--primary-color); }
-    .referral-section { background-color: var(--card-color); padding: 20px; border-radius: 12px; margin-top: 25px; text-align: center; }
-    .referral-link-box { margin: 20px 0; }
-    #referral-link { width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px dashed var(--primary-color); color: var(--text-color); border-radius: 8px; text-align: center; box-sizing: border-box; font-size: 0.9rem; }
-    .support-card, .task-card { background-color: var(--card-color); border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px; }
-    .task-card { display: flex; flex-direction: column; align-items: center; }
-    .task-icon { width: 60px; height: 60px; margin-bottom: 15px; }
-    .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; transition: background-color 0.2s; }
-    .btn-primary { background-color: var(--primary-color); color: white; }
-    .btn-secondary { background-color: var(--secondary-color); color: white; }
-    .btn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; }
-    .nav-item.active { color: var(--primary-color); }
-    .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor; }
-    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
-    .popup-overlay.show { opacity: 1; visibility: visible; }
-    .popup-content { background: var(--card-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; transform: scale(0.9); transition: transform 0.3s ease; }
-    .popup-overlay.show .popup-content { transform: scale(1); }
-    .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; }
-    .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; justify-content: center; align-items: center; color: white; z-index: 2000; }
+    .loading-screen {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #121212;
+      color: #fff;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9999;
+    }
+    .container { display: none; }
   </style>
 </head>
 <body>
@@ -62,248 +36,94 @@
     <p>Loading...</p>
   </div>
 
-  <div class="popup-overlay" id="welcome-popup">
-    <div class="popup-content">
-      <button class="popup-close-btn" id="popup-close">&times;</button>
-      <h2>স্বাগতম! 🔥</h2>
-      <p>আসসালামু আলাইকুম, সততার সাথে পেমেন্ট করছি। নিয়ম মেনে কাজ করলে ১০০% পেমেন্ট পাবেন ইনশাআল্লাহ 🔥</p>
-      <p>💸 প্রতি রেফারে: ২৫ টাকা<br>💰 প্রতি বিজ্ঞাপনে: ১ টাকা</p>
-      <button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button>
-    </div>
-  </div>
-
   <div class="container" id="app-container">
-    <header class="profile-section">
-      <img src="https://i.ibb.co/tZ0d4B4/profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="user-photo">
-      <div class="profile-info">
-        <h1 id="user-name">User Name <span class="verified-tick">✔</span></h1>
-        <p>ব্যালেন্স: <span id="user-balance">0</span> টাকা 💰</p>
-      </div>
-    </header>
-    <div id="page-wrapper">
-      <!-- Dynamic pages -->
-    </div>
+    <h1 id="user-name">...</h1>
+    <p>Balance: <span id="user-balance">0</span> টাকা</p>
+    <button id="copy-btn">Copy Referral Link</button>
+    <input type="text" id="referral-link" readonly />
   </div>
-
-  <nav class="bottom-nav" id="bottom-nav"></nav>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // --- Firebase Config ---
-      const firebaseConfig = {
-        apiKey: "AIzaSyAEJRfxHkMF7YEuTl7oB7ZSDiQDxuK0-u0",
-        authDomain: "daily-earne-2f8d2.firebaseapp.com",
-        projectId: "daily-earne-2f8d2",
-        storageBucket: "daily-earne-2f8d2.appspot.com",
-        messagingSenderId: "138048965028",
-        appId: "1:138048965028:web:a9ad47644cf425fe925931"
-      };
+    const tg = window.Telegram.WebApp;
 
-      // --- Global Variables ---
-      let currentUser, userData, userRef;
+    // ✅ Global error catcher
+    window.addEventListener("error", function (e) {
+      tg.showAlert("JS Error: " + e.message);
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      tg.showAlert("Promise Error: " + e.reason);
+    });
 
-      // --- Initialize App ---
-      const tg = window.Telegram.WebApp;
-      tg.ready(() => {
-        initializeApp().catch(handleFatalError);
+    // ✅ Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAEJRfxHkMF7YEuTl7oB7ZSDiQDxuK0-u0",
+      authDomain: "daily-earne-2f8d2.firebaseapp.com",
+      projectId: "daily-earne-2f8d2",
+      storageBucket: "daily-earne-2f8d2.appspot.com",
+      messagingSenderId: "138048965028",
+      appId: "1:138048965028:web:a9ad47644cf425fe925931",
+    };
+
+    let currentUser, userRef, userData, db;
+
+    tg.ready(() => {
+      initializeApp().catch(handleFatalError);
+    });
+
+    async function initializeApp() {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      tg.expand();
+
+      if (!tg.initDataUnsafe?.user) {
+        throw new Error("Telegram user data পাওয়া যায়নি! Bot থেকে App ওপেন করুন।");
+      }
+
+      currentUser = tg.initDataUnsafe.user;
+      userRef = db.collection("users").doc(currentUser.id.toString());
+
+      const docSnap = await userRef.get();
+      if (docSnap.exists()) {
+        userData = docSnap.data();
+      } else {
+        const newUser = {
+          userId: currentUser.id.toString(),
+          firstName: currentUser.first_name || "",
+          balance: 0,
+          referrals: 0,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        };
+        await userRef.set(newUser);
+        userData = newUser;
+      }
+
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById("user-name").textContent =
+        currentUser.first_name + " " + (currentUser.last_name || "");
+      document.getElementById("user-balance").textContent = userData.balance;
+      document.getElementById("referral-link").value =
+        `https://t.me/Earning_Live_Bot?start=${userData.userId}`;
+
+      document.getElementById("loading-screen").style.display = "none";
+      document.getElementById("app-container").style.display = "block";
+      document.body.style.opacity = "1";
+    }
+
+    function handleFatalError(error) {
+      tg.showAlert("Fatal Error: " + error.message);
+      document.getElementById("loading-screen").innerHTML =
+        "<p style='color:red;'>Error: " + error.message + "</p>";
+    }
+
+    // Copy Referral Link
+    document.getElementById("copy-btn").addEventListener("click", () => {
+      const link = document.getElementById("referral-link").value;
+      navigator.clipboard.writeText(link).then(() => {
+        tg.showAlert("Referral link copied!");
       });
-
-      async function initializeApp() {
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        tg.expand();
-
-        if (!tg.initDataUnsafe?.user) {
-          return handleFatalError(new Error("User data not found. Please access via Telegram."));
-        }
-
-        currentUser = tg.initDataUnsafe.user;
-        userRef = db.collection("users").doc(currentUser.id.toString());
-
-        const docSnap = await userRef.get();
-        if (docSnap.exists()) {
-          userData = docSnap.data();
-        } else {
-          const newUser = {
-            userId: currentUser.id.toString(),
-            firstName: currentUser.first_name || '',
-            balance: 0, referrals: 0,
-            tasksCompleted: { telegramJoin: false, youtubeSubscribe: false },
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-          const startParam = tg.initDataUnsafe.start_param;
-          if (startParam) newUser.referredBy = startParam;
-          await userRef.set(newUser);
-          userData = newUser;
-          document.getElementById('welcome-popup').classList.add('show');
-        }
-
-        renderApp();
-        setupEventListeners();
-        updateAllUI();
-
-        // Show the app
-        document.getElementById('loading-screen').style.display = 'none';
-        document.getElementById('app-container').style.display = 'block';
-        document.body.style.opacity = '1';
-      }
-
-      function renderApp() {
-        document.getElementById('page-wrapper').innerHTML = `
-          <div id="page-home" class="page-content active"></div>
-          <div id="page-support" class="page-content"></div>
-          <div id="page-tasks" class="page-content"></div>
-          <div id="page-withdraw" class="page-content"></div>`;
-
-        document.getElementById('bottom-nav').innerHTML = `
-          <a href="#" class="nav-item active" data-page="home">🏠<span>Home</span></a>
-          <a href="#" class="nav-item" data-page="support">💬<span>Support</span></a>
-          <a href="#" class="nav-item" data-page="tasks">📋<span>Tasks</span></a>
-          <a href="#" class="nav-item" data-page="withdraw">💰<span>Withdraw</span></a>`;
-
-        document.getElementById('page-home').innerHTML = `
-          <main>
-            <h2>Dashboard</h2>
-            <div class="dashboard-grid">
-              <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
-              <div class="card"><p>Total Earning</p><h3 id="total-earning">0</h3></div>
-              <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
-              <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
-            </div>
-            <div class="referral-section">
-              <h3>Refer & Earn More!</h3>
-              <p>রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ২৫ টাকা।</p>
-              <div class="referral-link-box">
-                <input type="text" id="referral-link" readonly>
-              </div>
-              <button class="btn btn-primary" id="copy-btn">Copy Referral Link</button>
-              <button class="btn btn-secondary" id="share-btn">🔗 Share Now</button>
-            </div>
-          </main>`;
-
-        document.getElementById('page-support').innerHTML = `
-          <h2>Support</h2>
-          <div class="support-card">
-            <h3>Tutorial Video</h3>
-            <p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p>
-            <button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button>
-          </div>
-          <h2>ADMIN</h2>
-          <div class="support-card">
-            <button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button>
-          </div>`;
-
-        document.getElementById('page-tasks').innerHTML = `
-          <div class="task-card">
-            <p>প্রতিটি বিজ্ঞাপনের জন্য ১ টাকা করে ইনকাম করুন।</p>
-            <button class="btn btn-primary" id="watch-ads-btn">Watch Ads</button>
-          </div>
-          <div class="task-card">
-            <p>টেলিগ্রাম চ্যানেলে জয়েন করুন এবং ১ টাকা করে ইনকাম করুন।</p>
-            <button class="btn btn-primary" id="join-telegram-btn">Join Channel</button>
-          </div>
-          <div class="task-card">
-            <p>YouTube চ্যানেলে subscribe করুন এবং ১ টাকা করে ইনকাম করুন।</p>
-            <button class="btn btn-primary" id="subscribe-youtube-btn">YouTube Channel</button>
-          </div>`;
-
-        document.getElementById('page-withdraw').innerHTML = `
-          <h2>Withdraw</h2>
-          <div class="card">
-            <form id="withdraw-form">
-              <p>Withdrawal form goes here.</p>
-              <button type="submit" class="btn btn-primary" id="withdraw-submit-btn">Request Withdraw</button>
-            </form>
-          </div>`;
-      }
-
-      function updateAllUI() {
-        if (!userData) return;
-        let displayName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
-        document.getElementById('user-name').innerHTML = `${displayName} <span class="verified-tick">✔</span>`;
-        if (currentUser.photo_url) document.getElementById('user-photo').src = currentUser.photo_url;
-        document.getElementById('user-balance').textContent = userData.balance.toFixed(2);
-        document.getElementById('total-earning').textContent = userData.balance.toFixed(2);
-        document.getElementById('total-referrals').textContent = userData.referrals || 0;
-        document.getElementById('referral-link').value = `https://t.me/Earning_Live_Bot?start=${userData.userId}`;
-        document.getElementById('join-telegram-btn').disabled = userData.tasksCompleted?.telegramJoin;
-        document.getElementById('subscribe-youtube-btn').disabled = userData.tasksCompleted?.youtubeSubscribe;
-      }
-
-      async function handleTaskClaim(taskId, reward) {
-        const updates = { balance: firebase.firestore.FieldValue.increment(reward) };
-        if (taskId === 'telegramJoin') updates['tasksCompleted.telegramJoin'] = true;
-        if (taskId === 'youtubeSubscribe') updates['tasksCompleted.youtubeSubscribe'] = true;
-        try {
-          await userRef.update(updates);
-          userData.balance += reward;
-          if (taskId === 'telegramJoin') userData.tasksCompleted.telegramJoin = true;
-          if (taskId === 'youtubeSubscribe') userData.tasksCompleted.youtubeSubscribe = true;
-          updateAllUI();
-          tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${reward} টাকা যোগ হয়েছে।` });
-        } catch (error) {
-          tg.showAlert("পুরস্কার যোগ করতে সমস্যা হয়েছে।");
-        }
-      }
-
-      function setupEventListeners() {
-        // Popup
-        const popup = document.getElementById('welcome-popup');
-        const closePopup = () => popup.classList.remove('show');
-        document.getElementById('popup-close').addEventListener('click', closePopup);
-        document.getElementById('popup-understand-btn').addEventListener('click', closePopup);
-
-        // Navigation
-        document.querySelectorAll('.nav-item').forEach(link => {
-          link.addEventListener('click', e => {
-            e.preventDefault();
-            const pageId = link.dataset.page;
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            link.classList.add('active');
-            document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-          });
-        });
-
-        // Home Page
-        const copyBtn = document.getElementById('copy-btn');
-        copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => {
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => { copyBtn.textContent = 'Copy Referral Link'; }, 2000);
-          }).catch(() => tg.showAlert('Failed to copy.'));
-        });
-        document.getElementById('share-btn').addEventListener('click', () =>
-          tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}`)
-        );
-
-        // Support Page
-        document.getElementById('open-tutorial-btn').addEventListener('click', () =>
-          tg.openLink('https://daily-earne.vercel.app/')
-        );
-        document.getElementById('admin-chat-btn').addEventListener('click', () =>
-          tg.openTelegramLink('https://t.me/Earning_Live_Bot')
-        );
-
-        // Tasks Page
-        document.getElementById('join-telegram-btn').addEventListener('click', () =>
-          tg.openTelegramLink('https://t.me/Earning_Live_Bot')
-        );
-        document.getElementById('subscribe-youtube-btn').addEventListener('click', () =>
-          tg.openLink('https://www.youtube.com/')
-        );
-
-        // Withdraw Page
-        document.getElementById('withdraw-form').addEventListener('submit', e => {
-          e.preventDefault();
-          tg.showPopup({ title: 'Withdraw Request', message: 'Your withdraw request has been submitted.' });
-        });
-      }
-
-      function handleFatalError(error) {
-        document.getElementById('loading-screen').style.display = 'none';
-        tg.showAlert(`Error: ${error.message}`);
-      }
     });
   </script>
 </body>
