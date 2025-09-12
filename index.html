@@ -11,12 +11,7 @@
 
     <!-- Firebase Configuration and Initialization -->
     <script type="module">
-      // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-
-      // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyAEJRfxHkMF7YEuTl7oB7ZSDiQDxuK0-u0",
         authDomain: "daily-earne-2f8d2.firebaseapp.com",
@@ -26,221 +21,91 @@
         messagingSenderId: "138048965028",
         appId: "1:138048965028:web:a9ad47644cf425fe925931"
       };
-
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
     </script>
 
     <style>
-        /* Google Fonts Import */
+        /* Previous CSS styles remain the same */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&display=swap');
-
-        /* CSS Variables for easy theming */
-        :root {
-            --bg-color: #121212;
-            --card-color: #1e1e1e;
-            --text-color: #ffffff;
-            --secondary-text-color: #b0b0b0;
-            --primary-color: #007bff;
-            --secondary-color: #28a745;
-            --border-color: #333;
-            --error-color: #dc3545;
-            --success-color: #28a745;
-        }
-
-        body {
-            font-family: 'Roboto', 'Noto Sans Bengali', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 15px;
-            padding-bottom: 90px; /* Space for bottom nav */
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        /* Page content will be hidden by default with JS */
-        .page-content {
-            display: none;
-        }
-        .page-content.active {
-            display: block;
-        }
-
-        /* Profile Section */
-        .profile-section {
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .profile-pic {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid var(--primary-color);
-            margin-right: 15px;
-            object-fit: cover;
-            background-color: #333; /* Placeholder color */
-        }
-
-        .profile-info h1 {
-            font-size: 1.2rem;
-            margin: 0;
-            font-weight: 700;
-        }
-
-        .verified-tick {
-            color: var(--primary-color);
-            font-size: 1rem;
-        }
-
-        .profile-info p {
-            margin: 5px 0 0;
-            color: var(--secondary-text-color);
-            font-size: 0.9rem;
-        }
-
-        /* Common Styles */
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-        .card {
-            background-color: var(--card-color);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .card p {
-            margin: 0;
-            color: var(--secondary-text-color);
-            font-size: 0.9rem;
-        }
-        .card h3 {
-            margin: 8px 0 0;
-            font-size: 1.8rem;
-            color: var(--primary-color);
-        }
-
-        /* Referral Section */
-        .referral-section {
-            background-color: var(--card-color);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 25px;
-            text-align: center;
-        }
+        :root { --bg-color: #121212; --card-color: #1e1e1e; --text-color: #ffffff; --secondary-text-color: #b0b0b0; --primary-color: #007bff; --secondary-color: #28a745; --border-color: #333; --error-color: #dc3545; --success-color: #28a745; }
+        body { font-family: 'Roboto', 'Noto Sans Bengali', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; padding-bottom: 90px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        .profile-section { display: flex; align-items: center; margin-bottom: 25px; }
+        .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary-color); margin-right: 15px; object-fit: cover; background-color: #333; }
+        .profile-info h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
+        .verified-tick { color: var(--primary-color); font-size: 1rem; }
+        .profile-info p { margin: 5px 0 0; color: var(--secondary-text-color); font-size: 0.9rem; }
+        h2 { font-size: 1.5rem; margin-bottom: 15px; font-weight: 700; }
+        .card { background-color: var(--card-color); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card p { margin: 0; color: var(--secondary-text-color); font-size: 0.9rem; }
+        .card h3 { margin: 8px 0 0; font-size: 1.8rem; color: var(--primary-color); }
+        .referral-section { background-color: var(--card-color); padding: 20px; border-radius: 12px; margin-top: 25px; text-align: center; }
         .referral-section h3 { margin-top: 0; font-size: 1.3rem; }
         .referral-text { color: var(--secondary-text-color); font-size: 0.9rem; line-height: 1.5; }
         .referral-link-box { margin: 20px 0; }
         #referral-link { width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px dashed var(--primary-color); color: var(--text-color); border-radius: 8px; text-align: center; box-sizing: border-box; font-size: 0.9rem; }
-
-        /* Other styles are unchanged... */
-        .support-card, .task-card, .withdraw-notice, .form-group, .btn, .bottom-nav, .popup-overlay {
-            /* Styles remain the same as before */
-        }
         .support-card { background-color: var(--card-color); border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px; } .support-card .icon { margin-bottom: 15px; } .support-card .icon svg { width: 48px; height: 48px; fill: var(--primary-color); } .support-card h3 { font-size: 1.3rem; margin: 0 0 10px; } .support-card p { color: var(--secondary-text-color); font-size: 0.9rem; line-height: 1.6; margin: 0 0 20px; } .support-card .emoji-icons { font-size: 2.5rem; margin-bottom: 15px; }
-        .task-card { background-color: #2a2a2a; border-radius: 16px; padding: 25px 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; } .task-icon { width: 60px; height: 60px; margin-bottom: 15px; } .task-description { font-size: 1.1rem; color: var(--text-color); line-height: 1.6; margin: 0 0 20px 0; font-weight: 500; } .task-btn { width: 80%; max-width: 300px; } .task-btn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
+        .task-card { background-color: #2a2a2a; border-radius: 16px; padding: 25px 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 230px; justify-content: center; }
+        .task-icon { width: 60px; height: 60px; margin-bottom: 15px; }
+        .task-description { font-size: 1.1rem; color: var(--text-color); line-height: 1.6; margin: 0 0 20px 0; font-weight: 500; }
+        .task-btn { width: 80%; max-width: 300px; } .task-btn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
         .withdraw-notice { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); padding: 15px; border-radius: 12px; margin-bottom: 25px; } .withdraw-notice p { margin: 0; font-size: 0.95rem; line-height: 1.6; } .requirements li { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1rem; } .requirements span.status { font-weight: bold; } .requirements span.success { color: var(--success-color); } .requirements span.error { color: var(--error-color); }
         .form-group { margin-bottom: 20px; } .form-group label { display: block; margin-bottom: 8px; color: var(--secondary-text-color); font-weight: 500; } .form-control { width: 100%; padding: 12px 15px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1rem; box-sizing: border-box; } .form-control:focus { border-color: var(--primary-color); outline: none; }
         .payment-method-selector { display: flex; gap: 10px; } .payment-method-selector input[type="radio"] { display: none; } .payment-method-selector label { flex-grow: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; } .payment-method-selector input[type="radio"]:checked + label { border-color: var(--primary-color); background-color: rgba(0, 123, 255, 0.1); font-weight: bold; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; transition: background-color 0.2s, transform 0.1s; } .btn:active { transform: scale(0.98); opacity: 0.9; } .btn-primary { background-color: var(--primary-color); color: white; } .btn-secondary { background-color: var(--secondary-color); color: white; } .btn:disabled { background-color: #555; color: #aaa; cursor: not-allowed; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; } .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; transition: filter 0.2s; fill: currentColor;}
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; } .popup-overlay.show { opacity: 1; visibility: visible; } .popup-content { background: linear-gradient(145deg, #2a2a2a, #1a1a1a); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); transform: scale(0.9); transition: transform 0.3s ease; } .popup-overlay.show .popup-content { transform: scale(1); } .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; } .popup-header h2 { text-align: center; font-size: 1.6rem; margin: 0 0 15px 0; color: #fff; } .popup-body { color: #e0e0e0; font-size: 1rem; line-height: 1.7; } .popup-body p { margin: 15px 0; }
+        
+        /* --- NEW CSS FOR UNLOCK BUTTON --- */
+        .btn-unlock {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6); /* Blue to purple gradient */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* Space between icon and text */
+            font-size: 1.1rem;
+            width: 90%;
+            max-width: 350px;
+            padding: 14px;
+            border-radius: 50px; /* Fully rounded */
+        }
+        .btn-unlock .icon {
+            font-size: 1.4rem; /* Make emoji bigger */
+        }
     </style>
 </head>
 <body>
-    <div class="popup-overlay" id="welcome-popup">
-        <!-- Popup content remains same -->
-        <div class="popup-content">
-            <button class="popup-close-btn" id="popup-close">&times;</button>
-            <div class="popup-header"><h2>স্বাগতম! 🔥</h2></div>
-            <div class="popup-body">
-                <p>আসসালামু আলাইকুম, সততার সাথে পেমেন্ট করছি। নিয়ম মেনে কাজ করলে ১০০% পেমেন্ট পাবেন ইনশাআল্লাহ 🔥</p>
-                <p>💸 প্রতি রেফারে: ২৫ টাকা<br>💰 প্রতি বিজ্ঞাপনে: ১ টাকা<br>💖 প্রতিদিন ১৫ টা করে বিজ্ঞাপন দেখার সুযোগ 🔥<br>এই সাইটে কোন ইনভেস্ট করতে হবে না সম্পূর্ণ ফ্রিতে ইনকাম করতে পারবেন ধন্যবাদ।</p>
-                <p>📌 ১০০% পেমেন্ট গ্যারান্টি 😊 বিকাশ, নগদ</p>
-                <p>~ কাজ করার ক্ষেত্রে কোনো ধরনের VPN ব্যবহার করবেন না। নিয়ম মেনে কাজ করুন এবং আমাদের টেলিগ্রাম চ্যানেলে যুক্ত থাকুন</p>
-            </div>
-            <button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button>
+    <!-- Popup, Header, Home, Support, Withdraw pages remain unchanged -->
+    <div class="popup-overlay" id="welcome-popup"><div class="popup-content"><button class="popup-close-btn" id="popup-close">&times;</button><div class="popup-header"><h2>স্বাগতম! 🔥</h2></div><div class="popup-body"><p>আসসালামু আলাইকুম, সততার সাথে পেমেন্ট করছি। নিয়ম মেনে কাজ করলে ১০০% পেমেন্ট পাবেন ইনশাআল্লাহ 🔥</p><p>💸 প্রতি রেফারে: ২৫ টাকা<br>💰 প্রতি বিজ্ঞাপনে: ১ টাকা<br>💖 প্রতিদিন ১৫ টা করে বিজ্ঞাপন দেখার সুযোগ 🔥<br>এই সাইটে কোন ইনভেস্ট করতে হবে না সম্পূর্ণ ফ্রিতে ইনকাম করতে পারবেন ধন্যবাদ।</p><p>📌 ১০০% পেমেন্ট গ্যারান্টি 😊 বিকাশ, নগদ</p><p>~ কাজ করার ক্ষেত্রে কোনো ধরনের VPN ব্যবহার করবেন না। নিয়ম মেনে কাজ করুন এবং আমাদের টেলিগ্রাম চ্যানেলে যুক্ত থাকুন</p></div><button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button></div></div>
+    <div class="container"><header class="profile-section"><img src="https://i.ibb.co/tZ0d4B4/profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="user-photo"><div class="profile-info"><h1 id="user-name">User Name <span class="verified-tick">✔</span></h1><p>ব্যালেন্স: <span id="user-balance">0</span> টাকা 💰</p></div></header><div id="page-wrapper"><div id="page-home" class="page-content active"><main><h2>Daily Earning</h2><div class="dashboard-grid"><div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div><div class="card"><p>Total Earning</p><h3 id="total-earning">0</h3></div><div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div><div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div></div><div class="referral-section"><h3>Refer & Earn More!</h3><p class="referral-text">রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ২৫ টাকা।</p><div class="referral-link-box"><input type="text" id="referral-link" value="https://t.me/YourBot/app?start=..." readonly></div><button class="btn btn-primary" id="copy-btn">Copy Referral Link</button><button class="btn btn-secondary" id="share-btn">🔗 Share Now</button></div></main></div><div id="page-support" class="page-content"><h2>Support</h2><div class="support-card"><div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div><h3>Tutorial Video</h3><p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p><button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button></div><h2>ADMIN</h2><div class="support-card"><p class="emoji-icons">👨‍💼 💬</p><button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button></div><div class="support-card"><p class="emoji-icons">👨‍💼 ☎️</p><button class="btn btn-primary" id="admin-call-btn">Admin Call</button></div></div>
+    
+    <!-- ========= TASKS PAGE START (UPDATED HTML) ========= -->
+    <div id="page-tasks" class="page-content">
+        <div class="task-card" id="task-card-ads">
+            <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+            <p class="task-description">প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ১৫ টাকা ইনকাম করুন।</p>
+            <button class="btn btn-primary task-btn" id="watch-ads-btn">Watch Ads</button>
+        </div>
+        <div class="task-card" id="task-card-telegram">
+            <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.9,2.1A1.1,1.1,0,0,0,20.5.4l-18,6.9A1,1,0,0,0,2,8.5,1,1,0,0,0,2.6,9.4l5.4,2.5,2.5,5.4a1,1,0,0,0,.9.6h0a1,1,0,0,0,.9-.7l6.9-18A1.1,1.1,0,0,0,21.9,2.1ZM5.5,10.6,18,5.1,9.4,18.6,7.6,14l-4-1.9Z"></path></svg>
+            <p class="task-description">টেলিগ্রাম চ্যানেলে জয়েন করে আনলিমিটেড ইনকাম করুন।</p>
+            <button class="btn btn-primary task-btn" id="join-telegram-btn">Join Channel</button>
+        </div>
+        <div class="task-card" id="task-card-youtube">
+            <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.58 7.19c-.23-.86-.9-1.52-1.76-1.75C18.25 5 12 5 12 5s-6.25 0-7.82.44c-.86-.23-1.52.89-1.76 1.75C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.9 1.52 1.76 1.75C5.75 19 12 19 12 19s6.25 0 7.82-.44c.86-.23 1.52-.89 1.76-1.75C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.5 15.5V8.5l6 3.5-6 3.5z"></path></svg>
+            <p class="task-description">ইউটিউব চ্যানেল সাবস্ক্রাইব করে আনলিমিটেড ইনকাম করুন।</p>
+            <button class="btn btn-primary task-btn" id="subscribe-youtube-btn">YouTube Channel</button>
         </div>
     </div>
+    <!-- ========= TASKS PAGE END ========= -->
 
-    <div class="container">
-        <!-- Profile Section -->
-        <header class="profile-section">
-            <img src="https://i.ibb.co/tZ0d4B4/profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="user-photo">
-            <div class="profile-info">
-                <h1 id="user-name">User Name <span class="verified-tick">✔</span></h1>
-                <p>ব্যালেন্স: <span id="user-balance">0</span> টাকা 💰</p>
-            </div>
-        </header>
-
-        <!-- ========= PAGE WRAPPER START ========= -->
-        <div id="page-wrapper">
-
-            <!-- ========= HOME PAGE START ========= -->
-            <div id="page-home" class="page-content active">
-                <main>
-                    <h2>Daily Earning</h2>
-                    <div class="dashboard-grid">
-                        <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
-                        <div class="card"><p>Total Earning</p><h3 id="total-earning">0</h3></div>
-                        <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
-                        <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
-                    </div>
-                    <div class="referral-section">
-                        <h3>Refer & Earn More!</h3>
-                        <p class="referral-text">রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ২৫ টাকা।</p>
-                        <div class="referral-link-box">
-                            <input type="text" id="referral-link" value="https://t.me/YourBot/app?start=..." readonly>
-                        </div>
-                        <button class="btn btn-primary" id="copy-btn">Copy Referral Link</button>
-                        <button class="btn btn-secondary" id="share-btn">🔗 Share Now</button>
-                    </div>
-                </main>
-            </div>
-            <!-- ========= HOME PAGE END ========= -->
-
-            <!-- Other pages (Support, Tasks, Withdraw) remain the same -->
-            <!-- ========= SUPPORT PAGE START ========= -->
-            <div id="page-support" class="page-content"><h2>Support</h2><div class="support-card"><div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></div><h3>Tutorial Video</h3><p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p><button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button></div><h2>ADMIN</h2><div class="support-card"><p class="emoji-icons">👨‍💼 💬</p><button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button></div><div class="support-card"><p class="emoji-icons">👨‍💼 ☎️</p><button class="btn btn-primary" id="admin-call-btn">Admin Call</button></div></div>
-            <!-- ========= SUPPORT PAGE END ========= -->
-            <!-- ========= TASKS PAGE START ========= -->
-            <div id="page-tasks" class="page-content"><div class="task-card"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg><p class="task-description">প্রতিটি বিজ্ঞাপনের জন্য ১ টাকা করে ইনকাম করুন।</p><button class="btn btn-primary task-btn" id="watch-ads-btn">Watch Ads</button></div><div class="task-card"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.9,2.1A1.1,1.1,0,0,0,20.5.4l-18,6.9A1,1,0,0,0,2,8.5,1,1,0,0,0,2.6,9.4l5.4,2.5,2.5,5.4a1,1,0,0,0,.9.6h0a1,1,0,0,0,.9-.7l6.9-18A1.1,1.1,0,0,0,21.9,2.1ZM5.5,10.6,18,5.1,9.4,18.6,7.6,14l-4-1.9Z"></path></svg><p class="task-description">টেলিগ্রাম চ্যানেলে জয়েন করুন এবং ১ টাকা করে ইনকাম করুন।</p><button class="btn btn-primary task-btn" id="join-telegram-btn">Joine Channel</button></div><div class="task-card"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.58 7.19c-.23-.86-.9-1.52-1.76-1.75C18.25 5 12 5 12 5s-6.25 0-7.82.44c-.86.23-1.52.89-1.76 1.75C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.9 1.52 1.76 1.75C5.75 19 12 19 12 19s6.25 0 7.82-.44c.86-.23 1.52-.89 1.76-1.75C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.5 15.5V8.5l6 3.5-6 3.5z"></path></svg><p class="task-description">YouTube চ্যানেলে subscribe করুন এবং ১ টাকা করে ইনকাম করুন।</p><button class="btn btn-primary task-btn" id="subscribe-youtube-btn">YouTube Channel</button></div></div>
-            <!-- ========= TASKS PAGE END ========= -->
-            <!-- ========= WITHDRAW PAGE START ========= -->
-            <div id="page-withdraw" class="page-content"><h2>Withdraw</h2><div class="withdraw-notice"><p>উইথড্র করার জন্য নিচের শর্তগুলো পূরণ করতে হবে:</p><ul class="requirements"><li><span>ন্যূনতম ব্যালেন্স ৫০০ টাকা</span><span id="balance-status" class="status"></span></li><li><span>ন্যূনতম রেফারেল ২০টি</span><span id="referral-status" class="status"></span></li></ul></div><div class="card" id="withdraw-form-card"><form id="withdraw-form"><div class="form-group"><label for="withdraw-amount">টাকার পরিমাণ</label><input type="number" id="withdraw-amount" class="form-control" placeholder="e.g., 500"></div><div class="form-group"><label>পেমেন্ট পদ্ধতি</label><div class="payment-method-selector"><input type="radio" id="bkash" name="payment_method" value="Bkash" checked=""><label for="bkash">বিকাশ</label><input type="radio" id="nogod" name="payment_method" value="Nogod"><label for="nogod">নগদ</label></div></div><div class="form-group"><label for="account-number">অ্যাকাউন্ট নম্বর</label><input type="tel" id="account-number" class="form-control" placeholder="আপনার ১১ ডিজিটের নম্বর দিন"></div><button type="submit" class="btn btn-primary" id="withdraw-submit-btn">Request Withdraw</button></form></div></div>
-            <!-- ========= WITHDRAW PAGE END ========= -->
-            
-        </div>
-        <!-- ========= PAGE WRAPPER END ========= -->
-
-    </div>
-
-    <!-- Navigation Bar -->
-    <nav class="bottom-nav">
-        <!-- Nav items remain the same -->
-        <a href="#" class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></a>
-        <a href="#" class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></a>
-        <a href="#" class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></a>
-        <a href="#" class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></a>
-    </nav>
+    <div id="page-withdraw" class="page-content"><h2>Withdraw</h2><div class="withdraw-notice"><p>উইথড্র করার জন্য নিচের শর্তগুলো পূরণ করতে হবে:</p><ul class="requirements"><li><span>ন্যূনতম ব্যালেন্স ৫০০ টাকা</span><span id="balance-status" class="status"></span></li><li><span>ন্যূনতম রেফারেল ২০টি</span><span id="referral-status" class="status"></span></li></ul></div><div class="card" id="withdraw-form-card"><form id="withdraw-form"><div class="form-group"><label for="withdraw-amount">টাকার পরিমাণ</label><input type="number" id="withdraw-amount" class="form-control" placeholder="e.g., 500"></div><div class="form-group"><label>পেমেন্ট পদ্ধতি</label><div class="payment-method-selector"><input type="radio" id="bkash" name="payment_method" value="Bkash" checked=""><label for="bkash">বিকাশ</label><input type="radio" id="nogod" name="payment_method" value="Nogod"><label for="nogod">নগদ</label></div></div><div class="form-group"><label for="account-number">অ্যাকাউন্ট নম্বর</label><input type="tel" id="account-number" class="form-control" placeholder="আপনার ১১ ডিজিটের নম্বর দিন"></div><button type="submit" class="btn btn-primary" id="withdraw-submit-btn">Request Withdraw</button></form></div></div></div></div>
+    <nav class="bottom-nav"><a href="#" class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></a><a href="#" class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></a><a href="#" class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></a><a href="#" class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></a></nav>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -248,52 +113,44 @@
             tg.ready();
             tg.expand();
 
-            // --- User Data (For Demonstration) ---
             let userData = {
-                balance: 550,
-                referrals: 25,
-                totalClicks: 120,
-                adsWatched: 10,
-                userId: (tg.initDataUnsafe?.user?.id) || '12345' // Get real user ID or fallback
+                balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0,
+                userId: (tg.initDataUnsafe?.user?.id) || '12345'
             };
 
-            // --- Constants for Withdraw Rules ---
             const MIN_WITHDRAW_AMOUNT = 500;
             const MIN_REFERRALS = 20;
 
-            // --- Element Selectors ---
             const balanceEl = document.getElementById('user-balance');
             const totalEarningEl = document.getElementById('total-earning');
             const totalReferralsEl = document.getElementById('total-referrals');
             const referralLinkInput = document.getElementById('referral-link');
+            const totalClicksEl = document.getElementById('total-clicks');
+            const adsWatchedEl = document.getElementById('ads-watched');
 
-            // --- Update UI with Initial Data ---
             function updateAllUI() {
                 balanceEl.textContent = userData.balance;
                 totalEarningEl.textContent = userData.balance;
                 totalReferralsEl.textContent = userData.referrals;
-                // --- এখানে আপনার দেওয়া বটের ইউজারনেমটি (@Daily_Earne_Bot) ব্যবহার করা হয়েছে ---
+                totalClicksEl.textContent = userData.totalClicks;
+                adsWatchedEl.textContent = `${userData.adsWatched} / 15`;
                 referralLinkInput.value = `https://t.me/Daily_Earne_Bot?start=${userData.userId}`;
             }
-            updateAllUI(); // Initial display
+            updateAllUI();
 
-            // --- User Info from Telegram ---
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            if (tg.initDataUnsafe?.user) {
                 const user = tg.initDataUnsafe.user;
-                let userName = user.first_name || '';
-                if (user.last_name) { userName += " " + user.last_name; }
+                let userName = (user.first_name || '') + (user.last_name ? ' ' + user.last_name : '');
                 document.getElementById('user-name').innerHTML = `${userName.trim()} <span class="verified-tick">✔</span>`;
-                if (user.photo_url) { document.getElementById('user-photo').src = user.photo_url; }
+                if (user.photo_url) document.getElementById('user-photo').src = user.photo_url;
             }
             
-            // --- Popup Logic ---
             const popup = document.getElementById('welcome-popup');
             const closePopup = () => popup.classList.remove('show');
             document.getElementById('popup-close').addEventListener('click', closePopup);
             document.getElementById('popup-understand-btn').addEventListener('click', closePopup);
             setTimeout(() => popup.classList.add('show'), 500);
 
-            // ========= PAGE NAVIGATION LOGIC =========
             const navLinks = document.querySelectorAll('.nav-item');
             const pageContents = document.querySelectorAll('.page-content');
             navLinks.forEach(link => {
@@ -304,46 +161,134 @@
                     this.classList.add('active');
                     pageContents.forEach(page => page.classList.remove('active'));
                     document.getElementById(`page-${pageId}`).classList.add('active');
-                    if (pageId === 'withdraw') {
-                        checkWithdrawEligibility();
-                    }
+                    if (pageId === 'withdraw') checkWithdrawEligibility();
                 });
             });
 
-            // ========= HOME PAGE LOGIC (COPY & SHARE) =========
-            const copyBtn = document.getElementById('copy-btn');
-            const shareBtn = document.getElementById('share-btn');
-
-            copyBtn.addEventListener('click', () => {
-                const linkToCopy = referralLinkInput.value;
-                navigator.clipboard.writeText(linkToCopy).then(() => {
-                    copyBtn.textContent = 'Copied!';
+            document.getElementById('copy-btn').addEventListener('click', () => {
+                navigator.clipboard.writeText(referralLinkInput.value).then(() => {
+                    document.getElementById('copy-btn').textContent = 'Copied!';
                     tg.HapticFeedback.notificationOccurred('success');
-                    setTimeout(() => {
-                        copyBtn.textContent = 'Copy Referral Link';
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Failed to copy: ', err);
-                    tg.showAlert('লিঙ্কটি কপি করা যায় নি।');
+                    setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000);
                 });
             });
 
-            shareBtn.addEventListener('click', () => {
-                const referralLink = referralLinkInput.value;
+            document.getElementById('share-btn').addEventListener('click', () => {
                 const shareText = `🔥 এই অ্যাপ থেকে সহজেই আয় করুন! 🔥\n\nআমার রেফারেল লিঙ্ক ব্যবহার করে যোগ দিন এবং প্রতি রেফারে ২৫ টাকা বোনাস পান। এখনি শুরু করুন!`;
-                const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`;
-                tg.openTelegramLink(telegramShareUrl);
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralLinkInput.value)}&text=${encodeURIComponent(shareText)}`);
             });
-
-            // ========= OTHER PAGE LOGIC (WITHDRAW, SUPPORT, TASKS) REMAINS THE SAME =========
-            // Logic for Withdraw, Support, and Tasks is unchanged and correct.
+            
+            // --- Support & Withdraw logic remains the same ---
             const balanceStatusEl = document.getElementById('balance-status'); const referralStatusEl = document.getElementById('referral-status'); const withdrawSubmitBtn = document.getElementById('withdraw-submit-btn'); const withdrawForm = document.getElementById('withdraw-form'); function checkWithdrawEligibility() { const hasEnoughBalance = userData.balance >= MIN_WITHDRAW_AMOUNT; const hasEnoughReferrals = userData.referrals >= MIN_REFERRALS; balanceStatusEl.textContent = `${userData.balance} / ${MIN_WITHDRAW_AMOUNT}`; balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`; referralStatusEl.textContent = `${userData.referrals} / ${MIN_REFERRALS}`; referralStatusEl.className = `status ${hasEnoughReferrals ? 'success' : 'error'}`; withdrawSubmitBtn.disabled = !(hasEnoughBalance && hasEnoughReferrals); }
             withdrawForm.addEventListener('submit', function(e) { e.preventDefault(); tg.HapticFeedback.impactOccurred('light'); const amount = parseInt(document.getElementById('withdraw-amount').value, 10); const method = document.querySelector('input[name="payment_method"]:checked').value; const number = document.getElementById('account-number').value.trim(); if (!amount || amount < MIN_WITHDRAW_AMOUNT) { tg.showAlert(`দুঃখিত, সর্বনিম্ন ${MIN_WITHDRAW_AMOUNT} টাকা উইথড্র করতে পারবেন।`); return; } if (amount > userData.balance) { tg.showAlert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।'); return; } if (number.length !== 11 || !/^\d+$/.test(number)) { tg.showAlert('দয়া করে একটি সঠিক ১১ ডিজিটের অ্যাকাউন্ট নম্বর দিন।'); return; } const confirmationMessage = `আপনি কি নিশ্চিত যে আপনি ${amount} টাকা আপনার ${method} নম্বর ${number}-এ পাঠাতে চান?`; tg.showConfirm(confirmationMessage, (ok) => { if (ok) { console.log('Withdrawal confirmed:', { amount, method, number }); tg.showPopup({ title: 'সফল হয়েছে', message: 'আপনার উইথড্র অনুরোধ সফলভাবে পাঠানো হয়েছে। ২৪ ঘন্টার মধ্যে পেমেন্ট পেয়ে যাবেন।', buttons: [{ type: 'ok' }] }); userData.balance -= amount; updateAllUI(); withdrawForm.reset(); checkWithdrawEligibility(); } }); });
             document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink('https://youtu.be/y-P25uG-i9w?si=Cj-2Gf8w8iN9z9jR')); document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink('https://t.me/LearnerAlom')); document.getElementById('admin-call-btn').addEventListener('click', () => window.location.href = 'tel:+8801749666991');
-            const watchAdsBtn = document.getElementById('watch-ads-btn'); const joinTelegramBtn = document.getElementById('join-telegram-btn'); const subscribeYoutubeBtn = document.getElementById('subscribe-youtube-btn'); function handleTaskClaim(amount, successMessage) { userData.balance += amount; updateAllUI(); tg.HapticFeedback.notificationOccurred('success'); tg.showPopup({ title: 'সফল!', message: successMessage, buttons: [{ type: 'ok' }] }); }
-            watchAdsBtn.addEventListener('click', function() { if (typeof show_8954258 === 'function') { show_8954258(); } else { console.error('Monetag SDK function not found.'); tg.showAlert('Ad could not be loaded.'); } watchAdsBtn.textContent = 'Claim Now'; watchAdsBtn.onclick = () => { handleTaskClaim(1, 'বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ১ টাকা যোগ হয়েছে।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.onclick = null; }; }, { once: true });
-            joinTelegramBtn.addEventListener('click', function() { tg.openTelegramLink("https://t.me/LearnerAlom"); joinTelegramBtn.textContent = 'Claim Now'; joinTelegramBtn.onclick = () => { handleTaskClaim(1, 'চ্যানেলে জয়েন করার জন্য আপনার ব্যালেন্সে ১ টাকা যোগ হয়েছে।'); joinTelegramBtn.textContent = 'Joined'; joinTelegramBtn.disabled = true; }; }, { once: true });
-            subscribeYoutubeBtn.addEventListener('click', function() { tg.openLink("https://youtube.com/@leaneralom?si=YjI8nSOaj1h2Nxjt"); subscribeYoutubeBtn.textContent = 'Claim Now'; subscribeYoutubeBtn.onclick = () => { handleTaskClaim(1, 'চ্যানেল সাবস্ক্রাইব করার জন্য আপনার ব্যালেন্সে ১ টাকা যোগ হয়েছে।'); subscribeYoutubeBtn.textContent = 'Subscribed'; subscribeYoutubeBtn.disabled = true; }; }, { once: true });
+            
+            // ========= NEW TASKS LOGIC =========
+
+            // --- 1. Watch Ads Task (Daily Limit) ---
+            const watchAdsBtn = document.getElementById('watch-ads-btn');
+            watchAdsBtn.addEventListener('click', function() {
+                if (userData.adsWatched >= 15) {
+                    tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।');
+                    return;
+                }
+                
+                if (typeof show_8954258 === 'function') {
+                    show_8954258();
+                } else {
+                    console.error('Monetag SDK function not found.');
+                    tg.showAlert('Ad could not be loaded.');
+                    return; // Don't proceed if ad fails
+                }
+                
+                // Give reward after showing the ad
+                userData.balance += 1;
+                userData.adsWatched += 1;
+                userData.totalClicks += 1;
+                updateAllUI();
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showPopup({ title: 'সফল!', message: 'বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ১ টাকা যোগ হয়েছে।', buttons: [{ type: 'ok' }]});
+            });
+
+            // --- 2. Unlimited Unlock Tasks ---
+            const joinTelegramBtn = document.getElementById('join-telegram-btn');
+            const subscribeYoutubeBtn = document.getElementById('subscribe-youtube-btn');
+
+            /**
+             * This function transforms a task card into an "Unlock" task.
+             * @param {HTMLElement} taskCardElement - The .task-card element to transform.
+             * @param {string} url - The URL to open (Telegram or YouTube).
+             * @param {boolean} isTelegramLink - True if it's a tg:// link.
+             */
+            function activateUnlockTask(taskCardElement, url, isTelegramLink) {
+                // Step 1: Open the link
+                if (isTelegramLink) {
+                    tg.openTelegramLink(url);
+                } else {
+                    tg.openLink(url);
+                }
+
+                let unlockCounter = 0;
+                const requiredClicks = 10;
+                const rewardAmount = 10;
+
+                // Step 2: Replace card content with the Unlock button
+                taskCardElement.innerHTML = ''; // Clear previous content
+                
+                const unlockBtn = document.createElement('button');
+                unlockBtn.className = 'btn btn-unlock task-btn';
+                unlockBtn.innerHTML = `<span class="icon">🔒</span> Unlock ( ${unlockCounter}/${requiredClicks} )`;
+                
+                taskCardElement.appendChild(unlockBtn);
+
+                // Step 3: Add click logic to the new button
+                unlockBtn.addEventListener('click', () => {
+                    tg.HapticFeedback.impactOccurred('light');
+                    unlockCounter++;
+                    
+                    // Show ad on clicks 1 to 9
+                    if (unlockCounter < requiredClicks) {
+                        if (typeof show_8954258 === 'function') {
+                            show_8954258();
+                        } else {
+                            console.error('Monetag SDK function not found.');
+                        }
+                    }
+                    
+                    // Update button text after every click
+                    unlockBtn.innerHTML = `<span class="icon">🔒</span> Unlock ( ${unlockCounter}/${requiredClicks} )`;
+
+                    // Check if task is complete
+                    if (unlockCounter === requiredClicks) {
+                        // Give reward
+                        userData.balance += rewardAmount;
+                        userData.totalClicks += requiredClicks;
+                        updateAllUI();
+                        tg.HapticFeedback.notificationOccurred('success');
+                        tg.showPopup({ 
+                            title: 'অভিনন্দন! 🎉', 
+                            message: `টাস্ক সম্পন্ন হয়েছে। আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হয়েছে।`, 
+                            buttons: [{ type: 'ok' }] 
+                        });
+                        
+                        // Reset counter for the next round
+                        unlockCounter = 0;
+                        setTimeout(() => {
+                           unlockBtn.innerHTML = `<span class="icon">🔒</span> Unlock ( ${unlockCounter}/${requiredClicks} )`;
+                        }, 500); // Small delay before resetting text
+                    }
+                });
+            }
+
+            // Attach the activation logic to the initial buttons, only once.
+            joinTelegramBtn.addEventListener('click', function() {
+                activateUnlockTask(this.closest('.task-card'), "https://t.me/LearnerAlom", true);
+            }, { once: true });
+
+            subscribeYoutubeBtn.addEventListener('click', function() {
+                activateUnlockTask(this.closest('.task-card'), "https://youtube.com/@leaneralom?si=YjI8nSOaj1h2Nxjt", false);
+            }, { once: true });
+
         });
     </script>
 </body>
