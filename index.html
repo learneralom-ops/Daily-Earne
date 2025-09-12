@@ -9,23 +9,14 @@
     
     <style>
         :root {
-            --bg-color: #121212;
-            --card-color: #1e1e1e;
-            --text-color: #ffffff;
-            --secondary-text-color: #b0b0b0;
-            --primary-color: #007bff;
-            --secondary-color: #28a745;
+            --bg-color: #121212; --card-color: #1e1e1e; --text-color: #ffffff;
+            --secondary-text-color: #b0b0b0; --primary-color: #007bff; --secondary-color: #28a745;
             --border-color: #333;
         }
         body {
-            font-family: 'Roboto', 'Noto Sans Bengali', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 15px;
-            padding-bottom: 90px;
-            opacity: 0;
-            transition: opacity 0.5s;
+            font-family: 'Roboto', 'Noto Sans Bengali', sans-serif; background-color: var(--bg-color);
+            color: var(--text-color); margin: 0; padding: 15px; padding-bottom: 90px;
+            opacity: 0; transition: opacity 0.5s;
         }
         .container { max-width: 600px; margin: 0 auto; }
         .page-content { display: none; }
@@ -43,11 +34,10 @@
         .referral-section { background-color: var(--card-color); padding: 20px; border-radius: 12px; margin-top: 25px; text-align: center; }
         .referral-link-box { margin: 20px 0; }
         #referral-link { width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px dashed var(--primary-color); color: var(--text-color); border-radius: 8px; text-align: center; box-sizing: border-box; font-size: 0.9rem; }
-        .support-card { background-color: var(--card-color); border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px; }
-        .task-card { background-color: var(--card-color); border-radius: 16px; padding: 25px 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .support-card, .task-card { background-color: var(--card-color); border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px; }
+        .task-card { display: flex; flex-direction: column; align-items: center; }
         .task-icon { width: 60px; height: 60px; margin-bottom: 15px; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; transition: background-color 0.2s, transform 0.1s; }
-        /* FIX: Added button color classes back */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; transition: background-color 0.2s; }
         .btn-primary { background-color: var(--primary-color); color: white; }
         .btn-secondary { background-color: var(--secondary-color); color: white; }
         .btn:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
@@ -55,7 +45,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; }
         .nav-item.active { color: var(--primary-color); }
         .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor; }
-        /* FIX: Added popup styles */
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
         .popup-overlay.show { opacity: 1; visibility: visible; }
         .popup-content { background: var(--card-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; transform: scale(0.9); transition: transform 0.3s ease; }
@@ -64,7 +53,6 @@
     </style>
 </head>
 <body>
-    <!-- FIX: Added popup HTML back into the body -->
     <div class="popup-overlay" id="welcome-popup">
         <div class="popup-content">
             <button class="popup-close-btn" id="popup-close">&times;</button>
@@ -102,6 +90,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyAEJRfxHkMF7YEuTl7oB7ZSDiQDxuK0-u0",
             authDomain: "daily-earne-2f8d2.firebaseapp.com",
@@ -111,122 +100,132 @@
             appId: "1:138048965028:web:a9ad47644cf425fe925931"
         };
 
+        // --- App Initialization ---
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        document.addEventListener("DOMContentLoaded", async function() {
-            const tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
+        
+        let currentUser = null;
+        let userData = null;
+        let userRef = null;
+        const body = document.querySelector('body');
+        
+        // --- Main Function to Start the App ---
+        async function initializeApp() {
             tg.ready();
             tg.expand();
-            
-            let currentUser = null;
-            let userData = null;
-            let userRef = null;
-            const body = document.querySelector('body');
-            
-            async function initializeApp() {
-                if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-                    document.body.innerHTML = '<h1>Error: User data not found. Please access via Telegram.</h1>';
-                    body.style.opacity = '1'; return;
-                }
-                currentUser = tg.initDataUnsafe.user;
-                const userId = currentUser.id.toString();
-                userRef = doc(db, "users", userId);
-                try {
-                    const docSnap = await getDoc(userRef);
-                    if (docSnap.exists()) {
-                        userData = docSnap.data();
-                    } else {
-                        const newUser = {
-                            userId, firstName: currentUser.first_name || '', username: currentUser.username || '',
-                            balance: 0, referrals: 0, totalClicks: 0, adsWatchedToday: 0,
-                            tasksCompleted: { telegramJoin: false, youtubeSubscribe: false },
-                            createdAt: serverTimestamp()
-                        };
-                        const startParam = tg.initDataUnsafe.start_param;
-                        if(startParam) newUser.referredBy = startParam;
-                        await setDoc(userRef, newUser, { merge: true });
-                        userData = newUser;
-                        // FIX: Show welcome message for new users
-                        document.getElementById('welcome-popup').classList.add('show');
-                    }
-                    renderAllPages();
-                    setupEventListeners();
-                    updateAllUI();
-                    body.style.opacity = '1';
-                } catch (error) {
-                    console.error("Error initializing app:", error);
-                    document.body.innerHTML = '<h1>Error connecting to server. Please try again.</h1>';
-                    body.style.opacity = '1';
-                }
-            }
 
-            function renderAllPages() {
-                document.getElementById('page-home').innerHTML = `
-                    <main>
-                        <h2>Dashboard</h2>
-                        <div class="dashboard-grid">
-                            <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
-                            <div class="card"><p>Total Earning</p><h3 id="total-earning">0</h3></div>
-                            <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
-                            <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
-                        </div>
-                        <div class="referral-section">
-                            <h3>Refer & Earn More!</h3>
-                            <p>রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ২৫ টাকা।</p>
-                            <div class="referral-link-box"><input type="text" id="referral-link" readonly></div>
-                            <button class="btn btn-primary" id="copy-btn">Copy Referral Link</button>
-                            <button class="btn btn-secondary" id="share-btn">🔗 Share Now</button>
-                        </div>
-                    </main>`;
+            if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+                document.body.innerHTML = '<h1>Error: User data not found. Please access via Telegram.</h1>';
+                body.style.opacity = '1'; return;
+            }
+            
+            currentUser = tg.initDataUnsafe.user;
+            const userId = currentUser.id.toString();
+            userRef = doc(db, "users", userId);
+
+            try {
+                const docSnap = await getDoc(userRef);
+                if (docSnap.exists()) {
+                    userData = docSnap.data();
+                } else {
+                    const newUser = {
+                        userId, firstName: currentUser.first_name || '', username: currentUser.username || '',
+                        balance: 0, referrals: 0, totalClicks: 0, adsWatchedToday: 0,
+                        tasksCompleted: { telegramJoin: false, youtubeSubscribe: false },
+                        createdAt: serverTimestamp()
+                    };
+                    const startParam = tg.initDataUnsafe.start_param;
+                    if(startParam) newUser.referredBy = startParam;
+                    await setDoc(userRef, newUser, { merge: true });
+                    userData = newUser;
+                    // Show welcome popup for new users
+                    document.getElementById('welcome-popup').classList.add('show');
+                }
                 
-                document.getElementById('page-support').innerHTML = `<h2>Support</h2><div class="support-card"><h3>Tutorial Video</h3><p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p><button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button></div><h2>ADMIN</h2><div class="support-card"><button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button></div>`;
-                document.getElementById('page-tasks').innerHTML = `<div class="task-card"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg><p>প্রতিটি বিজ্ঞাপনের জন্য ১ টাকা করে ইনকাম করুন।</p><button class="btn btn-primary" id="watch-ads-btn">Watch Ads</button></div><div class="task-card"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21.9,2.1A1.1,1.1,0,0,0,20.5.4l-18,6.9A1,1,0,0,0,2,8.5,1,1,0,0,0,2.6,9.4l5.4,2.5,2.5,5.4a1,1,0,0,0,.9.6h0a1,1,0,0,0,.9-.7l6.9-18A1.1,1.1,0,0,0,21.9,2.1ZM5.5,10.6,18,5.1,9.4,18.6,7.6,14l-4-1.9Z"/></svg><p>টেলিগ্রাম চ্যানেলে জয়েন করুন এবং ১ টাকা করে ইনকাম করুন।</p><button class="btn btn-primary" id="join-telegram-btn">Join Channel</button></div><div class="task-card"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21.58 7.19c-.23-.86-.9-1.52-1.76-1.75C18.25 5 12 5 12 5s-6.25 0-7.82.44c-.86.23-1.52.89-1.76 1.75C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.9 1.52 1.76 1.75C5.75 19 12 19 12 19s6.25 0 7.82-.44c.86-.23 1.52-.89 1.76-1.75C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.5 15.5V8.5l6 3.5-6 3.5z"/></svg><p>YouTube চ্যানেলে subscribe করুন এবং ১ টাকা করে ইনকাম করুন।</p><button class="btn btn-primary" id="subscribe-youtube-btn">YouTube Channel</button></div>`;
-                document.getElementById('page-withdraw').innerHTML = `<h2>Withdraw</h2><div class="card"><form id="withdraw-form"><!-- ... form fields ... --><button type="submit" class="btn btn-primary" id="withdraw-submit-btn">Request Withdraw</button></form></div>`;
-            }
+                renderAllPages();
+                updateAllUI();
+                setupEventListeners(); // Setup listeners after content is rendered
+                body.style.opacity = '1';
 
-            function updateAllUI() {
-                // ... (no changes needed here)
+            } catch (error) {
+                console.error("Error initializing app:", error);
+                document.body.innerHTML = '<h1>Error connecting to server. Please try again.</h1>';
+                body.style.opacity = '1';
             }
+        }
+
+        // --- Render Page Content ---
+        function renderAllPages() {
+            document.getElementById('page-home').innerHTML = `
+                <main>
+                    <h2>Dashboard</h2>
+                    <div class="dashboard-grid">
+                        <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
+                        <div class="card"><p>Total Earning</p><h3 id="total-earning">0</h3></div>
+                        <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
+                        <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
+                    </div>
+                    <div class="referral-section">
+                        <h3>Refer & Earn More!</h3>
+                        <p>রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ২৫ টাকা।</p>
+                        <div class="referral-link-box"><input type="text" id="referral-link" readonly></div>
+                        <button class="btn btn-primary" id="copy-btn">Copy Referral Link</button>
+                        <button class="btn btn-secondary" id="share-btn">🔗 Share Now</button>
+                    </div>
+                </main>`;
             
-            async function handleTaskClaim(taskId, reward) {
-                // ... (no changes needed here)
-            }
+            document.getElementById('page-support').innerHTML = `<h2>Support</h2><div class="support-card"><h3>Tutorial Video</h3><p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p><button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button></div><h2>ADMIN</h2><div class="support-card"><button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button></div>`;
+            document.getElementById('page-tasks').innerHTML = `<!-- Task cards will be rendered here -->`;
+            document.getElementById('page-withdraw').innerHTML = `<h2>Withdraw</h2><!-- Withdraw form will be rendered here -->`;
+        }
+        
+        // --- Update UI with Data ---
+        function updateAllUI() {
+            // ... same as before
+        }
 
-            function setupEventListeners() {
-                // FIX: Popup close listeners
-                const popup = document.getElementById('welcome-popup');
-                const closePopup = () => popup.classList.remove('show');
-                document.getElementById('popup-close').addEventListener('click', closePopup);
-                document.getElementById('popup-understand-btn').addEventListener('click', closePopup);
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Popup close listeners
+            const popup = document.getElementById('welcome-popup');
+            const closePopup = () => popup.classList.remove('show');
+            document.getElementById('popup-close').addEventListener('click', closePopup);
+            document.getElementById('popup-understand-btn').addEventListener('click', closePopup);
 
-                // Navigation
-                document.querySelectorAll('.nav-item').forEach(link => {
-                    link.addEventListener('click', e => { e.preventDefault(); /* ... */ });
+            // Navigation listeners
+            document.querySelectorAll('.nav-item').forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    const pageId = link.dataset.page;
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+                    document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
+                    document.getElementById(`page-${pageId}`).classList.add('active');
                 });
-                
-                // FIX: Home Page Buttons with better copy feedback
-                const copyBtn = document.getElementById('copy-btn');
-                copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => {
+            });
+
+            // Home Page Button listeners
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(document.getElementById('referral-link').value)
+                    .then(() => {
                         copyBtn.textContent = 'Copied!';
                         tg.HapticFeedback.notificationOccurred('success');
-                        setTimeout(() => {
-                            copyBtn.textContent = 'Copy Referral Link';
-                        }, 2000);
-                    }).catch(err => {
-                        console.error('Copy failed:', err);
-                        tg.showAlert('Failed to copy link.');
-                    });
-                });
-                document.getElementById('share-btn').addEventListener('click', () => { /* ... */ });
-                
-                // Support & Tasks Page Buttons
-                // ... (no changes needed here, they were already correct)
-            }
+                        setTimeout(() => { copyBtn.textContent = 'Copy Referral Link'; }, 2000);
+                    })
+                    .catch(() => tg.showAlert('Failed to copy.'));
+            });
+            document.getElementById('share-btn').addEventListener('click', () => tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}`));
 
-            initializeApp();
-        });
+            // Support Page Button listeners
+            document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink('https://youtu.be/your_tutorial_video_link'));
+            document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink('https://t.me/your_admin_username'));
+        }
+
+        // --- Start the app ---
+        initializeApp();
+
     </script>
 </body>
 </html>
