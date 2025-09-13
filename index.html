@@ -21,7 +21,6 @@
         .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .profile-section { display: flex; align-items: center; margin-bottom: 0; flex-grow: 1; }
         .notice-btn { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); color: var(--text-color); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; white-space: nowrap; margin-top: 5px; }
-        #notice-body { text-align: left; max-height: 80vh; overflow-y: auto; padding-right: 10px; }
         .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary-color); margin-right: 15px; object-fit: cover; background-color: #333; }
         .profile-info h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
         .verified-tick { color: var(--primary-color); font-size: 1rem; }
@@ -35,7 +34,6 @@
         #referral-link { width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px dashed var(--primary-color); color: var(--text-color); border-radius: 8px; text-align: center; box-sizing: border-box; font-size: 0.9rem; }
         .support-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px; }
         .support-card .emoji-icons { font-size: 2.5rem; margin-bottom: 15px; }
-        /* -- Task card CSS সংশোধন করা হয়েছে -- */
         .task-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 16px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center; }
         .task-icon { width: 60px; height: 60px; margin-bottom: 10px; }
         .task-description { font-size: 1.1rem; color: var(--text-color); line-height: 1.6; margin: 0 0 20px 0; font-weight: 500; }
@@ -50,6 +48,7 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor;}
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; } .popup-overlay.show { opacity: 1; visibility: visible; display: flex;} .popup-content { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; }
+        .popup-body { text-align: left; max-height: 80vh; overflow-y: auto; padding-right: 10px; } /* popup-body class was missing, added */
         .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
         .unlock-task-icon { width: 50px; height: 50px; margin-bottom: 15px; }
         .btn-unlock { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 90%; max-width: 350px; padding: 14px; border-radius: 50px; }
@@ -118,7 +117,6 @@
                     <p>সরাসরি Admin এর সাথে ম্যাসেজ করুন, প্রয়োজন ছাড়া ম্যাসেজ করবেন না।</p>
                     <button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button>
                 </div>
-                <!-- Admin Call কার্ডটি এখানে যুক্ত করা হয়েছে -->
                 <div class="support-card">
                     <p class="emoji-icons">👨‍💼 ☎️</p>
                     <p>সরাসরি Admin এর সাথে কথা বলুন, প্রয়োজন ছাড়া ফোন করবেন না।</p>
@@ -209,64 +207,99 @@
         });
 
         async function initializeAppLogic() {
-            await loadAppSettings();
-            await setupUserListener();
-            setupUIEventListeners();
-            
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.querySelector('.container').style.display = 'block';
-            
-            // --- Welcome Popup Logic ---
-            const welcomeShown = localStorage.getItem('welcomeShown');
-            if (!welcomeShown) {
-                setTimeout(() => {
-                    document.getElementById('welcome-popup').classList.add('show');
-                    localStorage.setItem('welcomeShown', 'true');
-                }, 500);
-            }
-        }
-
-        async function loadAppSettings() {
-            const settingsRef = ref(db, 'settings');
-            const snapshot = await get(settingsRef);
-            if (snapshot.exists()) {
-                appSettings = snapshot.val();
+            try {
+                await loadAppSettings();
+                await setupUserListener();
                 
-                document.getElementById('welcome-content-wrapper').innerHTML = `<div class="popup-header"><h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2></div><div class="popup-body">${appSettings.welcomeMessageBody || ''}</div>`;
-                document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '';
-                document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 25} Taka!`;
-                document.getElementById('referral-desc').innerText = `রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ${appSettings.referralReward || 25} টাকা।`;
-                document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 1} টাকা ইনকাম করুন।`;
+                updateUIWithSettings();
+                setupUIEventListeners();
                 
-                document.getElementById('balance-req-text').innerText = `ন্যূনতম ব্যালেন্স ${appSettings.minWithdrawAmount || 500} টাকা`;
-                document.getElementById('referral-req-text').innerText = `ন্যূনতম রেফারেল ${appSettings.minWithdrawReferrals || 20}টি`;
-
-            } else {
-                console.error("Settings not found in Firebase!");
-                tg.showAlert("Application settings could not be loaded. Please contact admin.");
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+                
+                // --- Welcome Popup Logic ---
+                const welcomeShown = localStorage.getItem('welcomeShown');
+                if (!welcomeShown && appSettings.welcomeMessageBody) {
+                    setTimeout(() => {
+                        document.getElementById('welcome-popup').classList.add('show');
+                        localStorage.setItem('welcomeShown', 'true');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                document.getElementById('loading-overlay').innerText = "Application failed to load. Please contact admin.";
             }
         }
         
-        function setupUserListener() {
-            return new Promise((resolve) => {
-                onValue(userRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        userData = snapshot.val();
-                    } else {
-                        createNewUser();
-                    }
-                    updateAllUI();
-                    resolve(); // Resolve the promise once data is loaded
-                }, { onlyOnce: true }); // Fetch only once at the start, realtime updates will be handled by actions
+        // *** FIXED FUNCTION ***
+        async function loadAppSettings() {
+            try {
+                const settingsRef = ref(db, 'settings');
+                const snapshot = await get(settingsRef);
+                if (snapshot.exists()) {
+                    appSettings = snapshot.val();
+                } else {
+                    console.warn("Firebase settings not found. Using default values.");
+                    // Use default settings if none are found in Firebase
+                    applyDefaultSettings();
+                }
+            } catch (error) {
+                console.error("Error loading Firebase settings:", error);
+                tg.showAlert("Could not load settings from server. Using default values.");
+                // Use default settings on error
+                applyDefaultSettings();
+            }
+        }
+
+        function applyDefaultSettings() {
+            appSettings = {
+                welcomeMessageTitle: 'স্বাগতম!',
+                welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম। নিয়ম মেনে কাজ করুন এবং আয় করুন।</p>',
+                noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>সকল ব্যবহারকারীকে জানানো যাচ্ছে যে, অ্যাপের নিয়মকানুন মেনে কাজ করুন। কোনো সমস্যা হলে সাপোর্টে যোগাযোগ করুন।</p>',
+                referralReward: 25,
+                adReward: 1,
+                minWithdrawAmount: 500,
+                minWithdrawReferrals: 20,
+                tutorialLink: '#',
+                adminChatLink: '#',
+                adminCallLink: '',
+                telegramChannelLink: '#',
+                youtubeChannelLink: '#'
+            };
+        }
+        
+        // This new function updates all UI elements that depend on settings
+        function updateUIWithSettings() {
+            document.getElementById('welcome-content-wrapper').innerHTML = `<div class="popup-header"><h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2></div><div class="popup-body">${appSettings.welcomeMessageBody || ''}</div>`;
+            document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>';
+            document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`;
+            document.getElementById('referral-desc').innerText = `রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`;
+            document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`;
+            document.getElementById('balance-req-text').innerText = `ন্যূনতম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`;
+            document.getElementById('referral-req-text').innerText = `ন্যূনতম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`;
+        }
+
+        async function setupUserListener() {
+            const snapshot = await get(userRef);
+            if (snapshot.exists()) {
+                userData = snapshot.val();
+            } else {
+                await createNewUser();
+            }
+            // Listen for realtime updates after initial load
+            onValue(userRef, (snap) => {
+                userData = snap.val();
+                updateAllUI();
             });
         }
         
-        function createNewUser() {
+        async function createNewUser() {
             let userName = (currentUser.first_name || '') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
             const newUser = {
                 name: userName.trim(), balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString()
             };
-            set(userRef, newUser).then(() => { userData = newUser; });
+            await set(userRef, newUser);
+            userData = newUser;
         }
 
         function updateAllUI() {
@@ -285,13 +318,13 @@
         }
 
         function checkWithdrawEligibility() {
-            const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 500);
-            const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 20);
+            const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 99999);
+            const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 999);
             const balanceStatusEl = document.getElementById('balance-status');
             const referralStatusEl = document.getElementById('referral-status');
-            balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 500}`;
+            balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 0}`;
             balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`;
-            referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 20}`;
+            referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 0}`;
             referralStatusEl.className = `status ${hasEnoughReferrals ? 'success' : 'error'}`;
             document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals);
         }
@@ -325,7 +358,7 @@
                 });
             });
             document.getElementById('share-btn').addEventListener('click', () => {
-                const shareText = `🔥 এই অ্যাপ থেকে সহজেই আয় করুন! 🔥\n\nআমার রেফারেল লিঙ্ক ব্যবহার করে যোগ দিন এবং প্রতি রেফারে ${appSettings.referralReward || 25} টাকা বোনাস পান।`;
+                const shareText = `🔥 এই অ্যাপ থেকে সহজেই আয় করুন! 🔥\n\nআমার রেফারেল লিঙ্ক ব্যবহার করে যোগ দিন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস পান।`;
                 tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`);
             });
 
@@ -349,19 +382,13 @@
             if (typeof show_8954258 === 'function') {
                 show_8954258();
                 tg.HapticFeedback.notificationOccurred('success');
-                const newBalance = (userData.balance || 0) + (appSettings.adReward || 1);
+                const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
                 const newAdsWatched = (userData.adsWatched || 0) + 1;
                 const newTotalClicks = (userData.totalClicks || 0) + 1;
                 
                 update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks });
-                
-                // Update local state immediately for instant UI feedback
-                userData.balance = newBalance;
-                userData.adsWatched = newAdsWatched;
-                userData.totalClicks = newTotalClicks;
-                updateAllUI();
-                
-                tg.showPopup({ title: 'সফল!', message: `বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ${(appSettings.adReward || 1)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }]});
+
+                tg.showPopup({ title: 'সফল!', message: `বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ${(appSettings.adReward || 0)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }]});
             } else {
                 tg.showAlert('Ad could not be loaded.');
             }
@@ -389,8 +416,6 @@
                     set(newRequestRef, withdrawalRequest)
                         .then(() => {
                             update(userRef, { balance: newBalance });
-                            userData.balance = newBalance; // Update local state
-                            updateAllUI();
                             tg.showPopup({ title: 'সফল হয়েছে', message: 'আপনার উইথড্র অনুরোধ সফলভাবে পাঠানো হয়েছে।', buttons: [{ type: 'ok' }] });
                             document.getElementById('withdraw-form').reset();
                         })
@@ -421,10 +446,6 @@
                     const newBalance = (userData.balance || 0) + rewardAmount;
                     const newTotalClicks = (userData.totalClicks || 0) + requiredClicks;
                     update(userRef, { balance: newBalance, totalClicks: newTotalClicks });
-
-                    userData.balance = newBalance;
-                    userData.totalClicks = newTotalClicks;
-                    updateAllUI();
 
                     tg.HapticFeedback.notificationOccurred('success');
                     tg.showPopup({ title: 'অভিনন্দন! 🎉', message: `টাস্ক সম্পন্ন হয়েছে। আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] });
