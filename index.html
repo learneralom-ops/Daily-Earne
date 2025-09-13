@@ -264,14 +264,11 @@
             if(userData) checkWithdrawEligibility();
         }
 
-        // *** পরিবর্তন এখানে ***
         function handleWelcomePopup() {
-            // localStorage এর ব্যবহার তুলে দেওয়া হয়েছে
-            // এখন শুধু মেসেজ থাকলে এবং খালি না হলেই পপ-আপ দেখাবে
             if (appSettings.welcomeMessageBody && appSettings.welcomeMessageBody.trim() !== '') {
                 setTimeout(() => {
                     document.getElementById('welcome-popup').classList.add('show');
-                }, 500); // অ্যাপ খোলার ৫০০ মিলিসেকেন্ড পর
+                }, 500);
             }
         }
 
@@ -304,6 +301,17 @@
             document.getElementById('ads-watched').textContent = `${userData.adsWatched || 0} / 15`;
             document.getElementById('total-referrals').textContent = userData.referrals || 0;
             document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
+            
+            // adsWatched লিমিট চেক করে বাটন অবস্থা আপডেট করা
+            const watchAdsBtn = document.getElementById('watch-ads-btn');
+            if ((userData.adsWatched || 0) >= 15) {
+                watchAdsBtn.textContent = 'Daily Limit Reached';
+                watchAdsBtn.disabled = true;
+            } else {
+                watchAdsBtn.textContent = 'Watch Ads';
+                watchAdsBtn.disabled = false;
+            }
+
             checkWithdrawEligibility();
         }
 
@@ -357,17 +365,58 @@
             document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest);
         }
 
+        // *** নতুন ফাংশনালিটি সহ আপডেট করা ফাংশন ***
         function handleWatchAds() {
-            if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; }
-            if (typeof show_8954258 === 'function') {
-                show_8954258();
-                tg.HapticFeedback.notificationOccurred('success');
-                const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
-                const newAdsWatched = (userData.adsWatched || 0) + 1;
-                const newTotalClicks = (userData.totalClicks || 0) + 1;
-                update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks });
-                tg.showPopup({ title: 'সফল!', message: `বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ${(appSettings.adReward || 0)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }]});
-            } else { tg.showAlert('Ad could not be loaded.'); }
+            const watchAdsBtn = document.getElementById('watch-ads-btn');
+
+            if ((userData.adsWatched || 0) >= 15) {
+                tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।');
+                return;
+            }
+
+            // বাটনটি নিষ্ক্রিয় করুন
+            watchAdsBtn.disabled = true;
+            let countdown = 15;
+            watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
+
+            const timerInterval = setInterval(() => {
+                countdown--;
+                watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
+
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+
+                    // ১৫ সেকেন্ড পর পুরস্কার দেওয়ার প্রক্রিয়া শুরু
+                    if (typeof show_8954258 === 'function') {
+                        show_8954258(); // বিজ্ঞাপন দেখান
+                        tg.HapticFeedback.notificationOccurred('success');
+
+                        const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
+                        const newAdsWatched = (userData.adsWatched || 0) + 1;
+                        const newTotalClicks = (userData.totalClicks || 0) + 1;
+
+                        update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks })
+                            .then(() => {
+                                tg.showPopup({
+                                    title: 'সফল!',
+                                    message: `বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`,
+                                    buttons: [{ type: 'ok' }]
+                                });
+                                // UI আপডেটের জন্য updateAllUI কল করা হবে কারণ onValue listener সক্রিয় আছে
+                            })
+                            .catch(error => {
+                                console.error("Firebase update failed:", error);
+                                tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                                watchAdsBtn.textContent = 'Watch Ads'; // ব্যর্থ হলে বাটন রিসেট করুন
+                                watchAdsBtn.disabled = false;
+                            });
+                    } else {
+                        tg.showAlert('Ad could not be loaded.');
+                        watchAdsBtn.textContent = 'Watch Ads'; // বিজ্ঞাপন লোড না হলে বাটন রিসেট করুন
+                        watchAdsBtn.disabled = false;
+                    }
+                }
+            }, 1000);
         }
 
         function handleWithdrawRequest(e) {
