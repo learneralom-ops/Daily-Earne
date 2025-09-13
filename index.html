@@ -302,16 +302,16 @@
             document.getElementById('total-referrals').textContent = userData.referrals || 0;
             document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
             
-            // adsWatched লিমিট চেক করে বাটন অবস্থা আপডেট করা
             const watchAdsBtn = document.getElementById('watch-ads-btn');
-            if ((userData.adsWatched || 0) >= 15) {
-                watchAdsBtn.textContent = 'Daily Limit Reached';
-                watchAdsBtn.disabled = true;
-            } else {
-                watchAdsBtn.textContent = 'Watch Ads';
-                watchAdsBtn.disabled = false;
+            if (!watchAdsBtn.disabled) { // টাইমার চলার সময় বাটন টেক্সট পরিবর্তন না করার জন্য এই কন্ডিশন
+                if ((userData.adsWatched || 0) >= 15) {
+                    watchAdsBtn.textContent = 'Daily Limit Reached';
+                    watchAdsBtn.disabled = true;
+                } else {
+                    watchAdsBtn.textContent = 'Watch Ads';
+                    watchAdsBtn.disabled = false;
+                }
             }
-
             checkWithdrawEligibility();
         }
 
@@ -365,7 +365,8 @@
             document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest);
         }
 
-        // *** নতুন ফাংশনালিটি সহ আপডেট করা ফাংশন ***
+        // *** পরিবর্তন এখানে ***
+        // প্রথমে বিজ্ঞাপন দেখাবে, তারপর টাইমার শুরু হবে।
         function handleWatchAds() {
             const watchAdsBtn = document.getElementById('watch-ads-btn');
 
@@ -376,21 +377,24 @@
 
             // বাটনটি নিষ্ক্রিয় করুন
             watchAdsBtn.disabled = true;
-            let countdown = 15;
-            watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
 
-            const timerInterval = setInterval(() => {
-                countdown--;
+            // প্রথমে বিজ্ঞাপন দেখানোর চেষ্টা করুন
+            if (typeof show_8954258 === 'function') {
+                show_8954258(); // বিজ্ঞাপন দেখান
+
+                // বিজ্ঞাপন দেখানোর পরে টাইমার শুরু করুন
+                let countdown = 15;
                 watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
 
-                if (countdown <= 0) {
-                    clearInterval(timerInterval);
+                const timerInterval = setInterval(() => {
+                    countdown--;
+                    watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
 
-                    // ১৫ সেকেন্ড পর পুরস্কার দেওয়ার প্রক্রিয়া শুরু
-                    if (typeof show_8954258 === 'function') {
-                        show_8954258(); // বিজ্ঞাপন দেখান
+                    if (countdown <= 0) {
+                        clearInterval(timerInterval);
                         tg.HapticFeedback.notificationOccurred('success');
 
+                        // পুরস্কার দেওয়ার প্রক্রিয়া
                         const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
                         const newAdsWatched = (userData.adsWatched || 0) + 1;
                         const newTotalClicks = (userData.totalClicks || 0) + 1;
@@ -402,7 +406,7 @@
                                     message: `বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`,
                                     buttons: [{ type: 'ok' }]
                                 });
-                                // UI আপডেটের জন্য updateAllUI কল করা হবে কারণ onValue listener সক্রিয় আছে
+                                // Firebase onValue listener স্বয়ংক্রিয়ভাবে UI আপডেট করবে, তাই বাটন নিজে থেকে রিসেট করার প্রয়োজন নেই
                             })
                             .catch(error => {
                                 console.error("Firebase update failed:", error);
@@ -410,13 +414,14 @@
                                 watchAdsBtn.textContent = 'Watch Ads'; // ব্যর্থ হলে বাটন রিসেট করুন
                                 watchAdsBtn.disabled = false;
                             });
-                    } else {
-                        tg.showAlert('Ad could not be loaded.');
-                        watchAdsBtn.textContent = 'Watch Ads'; // বিজ্ঞাপন লোড না হলে বাটন রিসেট করুন
-                        watchAdsBtn.disabled = false;
                     }
-                }
-            }, 1000);
+                }, 1000);
+
+            } else {
+                tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                watchAdsBtn.textContent = 'Watch Ads'; // বিজ্ঞাপন লোড না হলে বাটন রিসেট করুন
+                watchAdsBtn.disabled = false;
+            }
         }
 
         function handleWithdrawRequest(e) {
