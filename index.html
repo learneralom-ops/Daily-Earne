@@ -48,7 +48,7 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor;}
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; } .popup-overlay.show { opacity: 1; visibility: visible; display: flex;} .popup-content { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; }
-        .popup-body { text-align: left; max-height: 80vh; overflow-y: auto; padding-right: 10px; } /* popup-body class was missing, added */
+        .popup-body { text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 10px; }
         .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
         .unlock-task-icon { width: 50px; height: 50px; margin-bottom: 15px; }
         .btn-unlock { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 90%; max-width: 350px; padding: 14px; border-radius: 50px; }
@@ -60,7 +60,7 @@
     <div class="popup-overlay" id="welcome-popup">
         <div class="popup-content">
             <button class="popup-close-btn" id="popup-close">&times;</button>
-            <div id="welcome-content-wrapper"><!-- Content loaded from Firebase --></div>
+            <div class="popup-body" id="welcome-content-wrapper"><!-- Content loaded from Firebase --></div>
             <button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button>
         </div>
     </div>
@@ -73,6 +73,7 @@
     </div>
 
     <div class="container" style="display: none;">
+        <!-- Container-এর বাকি সব HTML অপরিবর্তিত থাকবে -->
         <div class="header-container">
             <header class="profile-section">
                 <img src="https://i.ibb.co/tZ0d4B4/profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="user-photo">
@@ -208,55 +209,46 @@
 
         async function initializeAppLogic() {
             try {
-                await loadAppSettings();
+                // *** পরিবর্তন এখানে: settings এর জন্য রিয়েল-টাইম লিসেনার সেট করা হয়েছে ***
+                setupSettingsListener(); 
+                
                 await setupUserListener();
                 
-                updateUIWithSettings();
                 setupUIEventListeners();
                 
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.querySelector('.container').style.display = 'block';
                 
-                // --- Welcome Popup Logic ---
-                const welcomeShown = localStorage.getItem('welcomeShown');
-                if (!welcomeShown && appSettings.welcomeMessageBody) {
-                    setTimeout(() => {
-                        document.getElementById('welcome-popup').classList.add('show');
-                        localStorage.setItem('welcomeShown', 'true');
-                    }, 500);
-                }
             } catch (error) {
                 console.error("Initialization failed:", error);
                 document.getElementById('loading-overlay').innerText = "Application failed to load. Please contact admin.";
             }
         }
-        
-        // *** FIXED FUNCTION ***
-        async function loadAppSettings() {
-            try {
-                const settingsRef = ref(db, 'settings');
-                const snapshot = await get(settingsRef);
+
+        // *** নতুন ফাংশন: settings এর জন্য রিয়েল-টাইম আপডেট চেক করে ***
+        function setupSettingsListener() {
+            const settingsRef = ref(db, 'settings');
+            onValue(settingsRef, (snapshot) => {
                 if (snapshot.exists()) {
                     appSettings = snapshot.val();
                 } else {
                     console.warn("Firebase settings not found. Using default values.");
-                    // Use default settings if none are found in Firebase
                     applyDefaultSettings();
                 }
-            } catch (error) {
-                console.error("Error loading Firebase settings:", error);
-                tg.showAlert("Could not load settings from server. Using default values.");
-                // Use default settings on error
-                applyDefaultSettings();
-            }
-        }
+                // সেটিংস পাওয়ার পর UI আপডেট করা
+                updateUIWithSettings();
 
+                // ওয়েলকাম পপ-আপ দেখানোর লজিক
+                handleWelcomePopup();
+            });
+        }
+        
         function applyDefaultSettings() {
             appSettings = {
                 welcomeMessageTitle: 'স্বাগতম!',
                 welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম। নিয়ম মেনে কাজ করুন এবং আয় করুন।</p>',
                 noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>সকল ব্যবহারকারীকে জানানো যাচ্ছে যে, অ্যাপের নিয়মকানুন মেনে কাজ করুন। কোনো সমস্যা হলে সাপোর্টে যোগাযোগ করুন।</p>',
-                referralReward: 25,
+                referralReward: 20,
                 adReward: 1,
                 minWithdrawAmount: 500,
                 minWithdrawReferrals: 20,
@@ -268,27 +260,39 @@
             };
         }
         
-        // This new function updates all UI elements that depend on settings
         function updateUIWithSettings() {
-            document.getElementById('welcome-content-wrapper').innerHTML = `<div class="popup-header"><h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2></div><div class="popup-body">${appSettings.welcomeMessageBody || ''}</div>`;
+            document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`;
             document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>';
             document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`;
             document.getElementById('referral-desc').innerText = `রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`;
             document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`;
             document.getElementById('balance-req-text').innerText = `ন্যূনতম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`;
             document.getElementById('referral-req-text').innerText = `ন্যূনতম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`;
+            
+            // উইথড্র শর্তাবলী আপডেট করা
+            if(userData) {
+                checkWithdrawEligibility();
+            }
+        }
+
+        function handleWelcomePopup() {
+            const welcomeShown = localStorage.getItem('welcomeShownForSession');
+            if (!welcomeShown && appSettings.welcomeMessageBody) {
+                setTimeout(() => {
+                    document.getElementById('welcome-popup').classList.add('show');
+                    localStorage.setItem('welcomeShownForSession', 'true');
+                }, 500);
+            }
         }
 
         async function setupUserListener() {
-            const snapshot = await get(userRef);
-            if (snapshot.exists()) {
-                userData = snapshot.val();
-            } else {
-                await createNewUser();
-            }
-            // Listen for realtime updates after initial load
-            onValue(userRef, (snap) => {
-                userData = snap.val();
+            // Listen for realtime updates for user data
+            onValue(userRef, async (snap) => {
+                if(snap.exists()){
+                    userData = snap.val();
+                } else {
+                    await createNewUser();
+                }
                 updateAllUI();
             });
         }
@@ -329,6 +333,8 @@
             document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals);
         }
 
+        // setupUIEventListeners এবং অন্যান্য ফাংশন অপরিবর্তিত থাকবে
+        // ... (বাকি জাভাস্ক্রিপ্ট কোড) ...
         function setupUIEventListeners() {
             const welcomePopup = document.getElementById('welcome-popup');
             document.getElementById('popup-close').addEventListener('click', () => welcomePopup.classList.remove('show'));
