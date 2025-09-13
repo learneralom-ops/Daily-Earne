@@ -303,15 +303,21 @@
             document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
             
             const watchAdsBtn = document.getElementById('watch-ads-btn');
-            if (!watchAdsBtn.disabled) { // টাইমার চলার সময় বাটন টেক্সট পরিবর্তন না করার জন্য এই কন্ডিশন
-                if ((userData.adsWatched || 0) >= 15) {
-                    watchAdsBtn.textContent = 'Daily Limit Reached';
-                    watchAdsBtn.disabled = true;
-                } else {
+            
+            // *** সমাধান এখানে ***
+            // আগের if (!watchAdsBtn.disabled) কন্ডিশনটি তুলে দেওয়া হয়েছে।
+            // এখন ডাটা আপডেট হলেই বাটনের সঠিক অবস্থা সেট হবে।
+            if ((userData.adsWatched || 0) >= 15) {
+                watchAdsBtn.textContent = 'Daily Limit Reached';
+                watchAdsBtn.disabled = true;
+            } else {
+                // টাইমার চলার সময় যেন 'Watch Ads' লেখা না আসে, তাই এই কন্ডিশন।
+                if (!watchAdsBtn.textContent.includes('অপেক্ষা করুন')) {
                     watchAdsBtn.textContent = 'Watch Ads';
-                    watchAdsBtn.disabled = false;
                 }
+                watchAdsBtn.disabled = false;
             }
+
             checkWithdrawEligibility();
         }
 
@@ -364,9 +370,7 @@
             document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true });
             document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest);
         }
-
-        // *** পরিবর্তন এখানে ***
-        // প্রথমে বিজ্ঞাপন দেখাবে, তারপর টাইমার শুরু হবে।
+        
         function handleWatchAds() {
             const watchAdsBtn = document.getElementById('watch-ads-btn');
 
@@ -375,14 +379,11 @@
                 return;
             }
 
-            // বাটনটি নিষ্ক্রিয় করুন
             watchAdsBtn.disabled = true;
 
-            // প্রথমে বিজ্ঞাপন দেখানোর চেষ্টা করুন
             if (typeof show_8954258 === 'function') {
-                show_8954258(); // বিজ্ঞাপন দেখান
+                show_8954258();
 
-                // বিজ্ঞাপন দেখানোর পরে টাইমার শুরু করুন
                 let countdown = 15;
                 watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
 
@@ -394,19 +395,20 @@
                         clearInterval(timerInterval);
                         tg.HapticFeedback.notificationOccurred('success');
 
-                        // পুরস্কার দেওয়ার প্রক্রিয়া
                         const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
                         const newAdsWatched = (userData.adsWatched || 0) + 1;
                         const newTotalClicks = (userData.totalClicks || 0) + 1;
 
+                        // Firebase ডাটাবেস আপডেট করা হচ্ছে
                         update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks })
                             .then(() => {
                                 tg.showPopup({
                                     title: 'সফল!',
-                                    message: `বিজ্ঞাপন দেখার জন্য আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`,
+                                    message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`,
                                     buttons: [{ type: 'ok' }]
                                 });
-                                // Firebase onValue listener স্বয়ংক্রিয়ভাবে UI আপডেট করবে, তাই বাটন নিজে থেকে রিসেট করার প্রয়োজন নেই
+                                // ডাটাবেস আপডেট সফল হলে onValue listener নিজে থেকেই updateAllUI() কল করবে
+                                // এবং updateAllUI() ফাংশন বাটনটিকে আবার সক্রিয় করে দেবে।
                             })
                             .catch(error => {
                                 console.error("Firebase update failed:", error);
@@ -419,7 +421,7 @@
 
             } else {
                 tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
-                watchAdsBtn.textContent = 'Watch Ads'; // বিজ্ঞাপন লোড না হলে বাটন রিসেট করুন
+                watchAdsBtn.textContent = 'Watch Ads';
                 watchAdsBtn.disabled = false;
             }
         }
