@@ -225,7 +225,6 @@
         async function initializeAppLogic() {
             try {
                 setupSettingsListener(); 
-                // *** NEW: Start listening for broadcasts ***
                 setupBroadcastListener(); 
                 await setupUserListener();
                 setupUIEventListeners();
@@ -239,26 +238,15 @@
             }
         }
 
-        // ==========================================================
-        // *** NEW BROADCAST LISTENER FUNCTION ***
-        // ==========================================================
         function setupBroadcastListener() {
             const broadcastRef = ref(db, 'broadcast/latestMessage');
-            
-            // Get the timestamp of the last message shown to the user from local storage
             let lastShownTimestamp = parseInt(localStorage.getItem('lastBroadcastTimestamp') || '0');
 
             onValue(broadcastRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const message = snapshot.val();
-                    
-                    // Only show the message if it's new (timestamp is greater than the last one shown)
                     if (message.timestamp && message.timestamp > lastShownTimestamp) {
-                        
-                        // Show the popup with the message details
                         showBroadcastPopup(message);
-
-                        // Update and save the new latest timestamp
                         lastShownTimestamp = message.timestamp;
                         localStorage.setItem('lastBroadcastTimestamp', lastShownTimestamp);
                     }
@@ -270,24 +258,16 @@
             const popup = document.getElementById('broadcast-popup');
             const bodyEl = document.getElementById('broadcast-body');
             const imageEl = document.getElementById('broadcast-image');
-
-            // Set the message text
-            bodyEl.innerHTML = message.text; // Use innerHTML to allow basic HTML like <b>
-
-            // Handle the image
+            bodyEl.innerHTML = message.text; 
             if (message.imageUrl) {
                 imageEl.src = message.imageUrl;
                 imageEl.style.display = 'block';
             } else {
                 imageEl.style.display = 'none';
             }
-
-            // Show the popup
             popup.classList.add('show');
-            // Give a haptic feedback to the user
             tg.HapticFeedback.notificationOccurred('warning');
         }
-
 
         function setupSettingsListener() {
             const settingsRef = ref(db, 'settings');
@@ -395,7 +375,6 @@
             userData = newUser;
         }
 
-
         function updateAllUI() {
             if (!currentUser || !userData) return;
             let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
@@ -443,7 +422,6 @@
             document.getElementById('notice-btn').addEventListener('click', () => noticePopup.classList.add('show'));
             document.getElementById('notice-close-btn').addEventListener('click', () => noticePopup.classList.remove('show'));
             
-            // *** NEW: Add event listener for the new broadcast popup close button ***
             const broadcastPopup = document.getElementById('broadcast-popup');
             document.getElementById('broadcast-close-btn').addEventListener('click', () => broadcastPopup.classList.remove('show'));
 
