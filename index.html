@@ -187,19 +187,23 @@
             if (tg.initDataUnsafe?.user?.id) {
                 userId = tg.initDataUnsafe.user.id;
                 currentUser = tg.initDataUnsafe.user;
-                console.log("User identified:", userId);
                 userRef = ref(db, 'users/' + userId);
                 initializeAppLogic();
             } else {
-                 document.getElementById('loading-overlay').innerText = "Error: Could not identify Telegram user. Please open this app through the bot.";
+                 document.getElementById('loading-overlay').innerText = "Error: Could not identify Telegram user.";
                  console.error("Telegram user data is missing.");
             }
         });
 
+        // *** কোড উন্নত করা হয়েছে ***
         async function initializeAppLogic() {
             try {
-                await setupSettingsListener(); 
-                await setupBroadcastListener(); 
+                // সব ডেটা একসাথে লোড করার জন্য Promise.all ব্যবহার করা হয়েছে
+                await Promise.all([
+                    loadInitialSettings(),
+                    setupBroadcastListener()
+                ]);
+
                 await setupUserListener();
                 setupUIEventListeners();
                 
@@ -212,121 +216,96 @@
             }
         }
 
+        // *** নতুন ফাংশন ***
+        async function loadInitialSettings() {
+            const settingsRef = ref(db, 'settings');
+            const snapshot = await get(settingsRef);
+            if (snapshot.exists()) {
+                appSettings = snapshot.val();
+            } else {
+                console.warn("Firebase settings not found. Using default values.");
+                applyDefaultSettings();
+            }
+            updateUIWithSettings();
+            handleWelcomePopup();
+            // রিয়েল-টাইম আপডেটের জন্য লিসেনার সেট করা
+            onValue(settingsRef, (snap) => {
+                if (snap.exists()) appSettings = snap.val();
+                updateUIWithSettings();
+            });
+        }
+
         async function setupUserListener() {
-            console.log("Setting up user listener for user ID:", userId);
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
-                console.log("User exists. Loading data.");
                 userData = snapshot.val();
-                onValue(userRef, (snap) => {
-                    userData = snap.val();
-                    updateAllUI();
-                });
             } else {
-                console.log("User does not exist. Creating new user.");
                 await createNewUser();
-                onValue(userRef, (snap) => {
-                    userData = snap.val();
-                    updateAllUI();
-                });
             }
+            // ডেটা লোড বা তৈরি করার পর UI আপডেট করুন
+            updateAllUI(); 
+            // এবং তারপর রিয়েল-টাইম পরিবর্তনের জন্য onValue সেট করুন
+            onValue(userRef, (snap) => {
+                userData = snap.val();
+                updateAllUI();
+            });
         }
         
         async function createNewUser() {
             const referrerId = tg.initDataUnsafe?.start_param;
-            console.log("Attempting to create a new user. Referrer ID from start_param:", referrerId);
-            
             const userName = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim();
 
             const newUser = {
-                name: userName || 'Telegram User',
-                balance: 0,
-                referrals: 0,
-                totalClicks: 0,
-                adsWatched: 0,
-                joinDate: new Date().toISOString(),
+                name: userName || 'Telegram User', balance: 0, referrals: 0,
+                totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(),
                 referredBy: referrerId || null
             };
 
-            // যদি কোনো রেফারার থাকে এবং ব্যবহারকারী নিজেকে রেফার না করে
             if (referrerId && referrerId !== String(userId)) {
-                console.log(`User was referred by ${referrerId}. Attempting to credit referrer.`);
                 const referrerRef = ref(db, 'users/' + referrerId);
                 try {
                     const snapshot = await get(referrerRef);
                     if (snapshot.exists()) {
-                        console.log(`Referrer ${referrerId} found in database.`);
                         const referrerData = snapshot.val();
                         const newReferralCount = (referrerData.referrals || 0) + 1;
                         const referralBonus = appSettings.referralReward || 0;
                         const newBalance = (referrerData.balance || 0) + referralBonus;
-
                         await update(referrerRef, {
                             referrals: newReferralCount,
                             balance: newBalance
                         });
-                        console.log(`Referrer ${referrerId} credited successfully. New referral count: ${newReferralCount}, New balance: ${newBalance}`);
-                    } else {
-                        console.warn(`Referrer with ID ${referrerId} was not found in the database.`);
                     }
                 } catch (error) {
                     console.error("Failed to update referrer data:", error);
                 }
-            } else {
-                console.log("No valid referrer ID found or user referred themselves.");
             }
 
-            // নতুন ব্যবহারকারী তৈরি করুন
             await set(userRef, newUser);
-            console.log("New user created in database:", newUser);
             userData = newUser;
         }
 
-        // --- बाकी সব ফাংশন অপরিবর্তিত থাকবে ---
-
-        function setupBroadcastListener() { /* ... */ }
-        function showBroadcastPopup(message) { /* ... */ }
-        function setupSettingsListener() { /* ... */ }
-        function applyDefaultSettings() { /* ... */ }
-        function updateUIWithSettings() { /* ... */ }
-        function handleWelcomePopup() { /* ... */ }
-        function updateAllUI() {
-            if (!currentUser || !userData) return;
-            let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
-            document.getElementById('user-name').innerHTML = `${userNameDisplay.trim()} <span class="verified-tick">✔</span>`;
-            if (currentUser.photo_url) document.getElementById('user-photo').src = currentUser.photo_url;
-            document.getElementById('user-balance').textContent = (userData.balance || 0).toFixed(2);
-            document.getElementById('total-clicks').textContent = userData.totalClicks || 0;
-            document.getElementById('total-earning').textContent = (userData.balance || 0).toFixed(2);
-            document.getElementById('ads-watched').textContent = `${userData.adsWatched || 0} / 15`;
-            document.getElementById('total-referrals').textContent = userData.referrals || 0;
-            document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
-            
-            const watchAdsBtn = document.getElementById('watch-ads-btn');
-            if ((userData.adsWatched || 0) >= 15) {
-                watchAdsBtn.textContent = 'Daily Limit Reached';
-                watchAdsBtn.disabled = true;
-            } else {
-                if (!watchAdsBtn.textContent.includes('অপেক্ষা করুন')) {
-                     watchAdsBtn.textContent = 'Watch Ads';
+        function setupBroadcastListener() {
+            const broadcastRef = ref(db, 'broadcast/latestMessage');
+            let lastShownTimestamp = parseInt(localStorage.getItem('lastBroadcastTimestamp') || '0');
+            onValue(broadcastRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const message = snapshot.val();
+                    if (message.timestamp && message.timestamp > lastShownTimestamp) {
+                        showBroadcastPopup(message);
+                        lastShownTimestamp = message.timestamp;
+                        localStorage.setItem('lastBroadcastTimestamp', lastShownTimestamp);
+                    }
                 }
-                watchAdsBtn.disabled = false;
-            }
-            checkWithdrawEligibility();
+            });
         }
-        function checkWithdrawEligibility() { /* ... */ }
-        function setupUIEventListeners() { /* ... */ }
-        function handleWatchAds() { /* ... */ }
-        function handleWithdrawRequest(e) { /* ... */ }
-        function activateUnlockTask(taskCardElement, url, isTelegramLink) { /* ... */ }
 
-        // Placeholder for unchanged functions to avoid repetition
-        function setupBroadcastListener() { const broadcastRef = ref(db, 'broadcast/latestMessage'); let lastShownTimestamp = parseInt(localStorage.getItem('lastBroadcastTimestamp') || '0'); onValue(broadcastRef, (snapshot) => { if (snapshot.exists()) { const message = snapshot.val(); if (message.timestamp && message.timestamp > lastShownTimestamp) { showBroadcastPopup(message); lastShownTimestamp = message.timestamp; localStorage.setItem('lastBroadcastTimestamp', lastShownTimestamp); } } }); }
+        // --- বাকি সব ফাংশন অপরিবর্তিত থাকবে ---
+        
         function showBroadcastPopup(message) { const popup = document.getElementById('broadcast-popup'); const bodyEl = document.getElementById('broadcast-body'); const imageEl = document.getElementById('broadcast-image'); bodyEl.innerHTML = message.text; if (message.imageUrl) { imageEl.src = message.imageUrl; imageEl.style.display = 'block'; } else { imageEl.style.display = 'none'; } popup.classList.add('show'); tg.HapticFeedback.notificationOccurred('warning'); }
-        function setupSettingsListener() { const settingsRef = ref(db, 'settings'); onValue(settingsRef, (snapshot) => { if (snapshot.exists()) { appSettings = snapshot.val(); } else { console.warn("Firebase settings not found. Using default values."); applyDefaultSettings(); } updateUIWithSettings(); handleWelcomePopup(); }); }
         function applyDefaultSettings() { appSettings = { welcomeMessageTitle: 'স্বাগতম!', welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম। নিয়ম মেনে কাজ করুন এবং আয় করুন।</p>', noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>সকল ব্যবহারকারীকে জানানো যাচ্ছে যে, অ্যাপের নিয়মকানুন মেনে কাজ করুন। কোনো সমস্যা হলে সাপোর্টে যোগাযোগ করুন।</p>', referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20, tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' }; }
         function updateUIWithSettings() { document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`; document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>'; document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`; document.getElementById('referral-desc').innerText = `রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`; document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`; document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`; document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; if(userData && Object.keys(userData).length) checkWithdrawEligibility(); }
         function handleWelcomePopup() { if (appSettings.welcomeMessageBody && appSettings.welcomeMessageBody.trim() !== '') { setTimeout(() => { document.getElementById('welcome-popup').classList.add('show'); }, 500); } }
+        function updateAllUI() { if (!currentUser || !userData) return; let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : ''); document.getElementById('user-name').innerHTML = `${userNameDisplay.trim()} <span class="verified-tick">✔</span>`; if (currentUser.photo_url) document.getElementById('user-photo').src = currentUser.photo_url; document.getElementById('user-balance').textContent = (userData.balance || 0).toFixed(2); document.getElementById('total-clicks').textContent = userData.totalClicks || 0; document.getElementById('total-earning').textContent = (userData.balance || 0).toFixed(2); document.getElementById('ads-watched').textContent = `${userData.adsWatched || 0} / 15`; document.getElementById('total-referrals').textContent = userData.referrals || 0; document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`; const watchAdsBtn = document.getElementById('watch-ads-btn'); if ((userData.adsWatched || 0) >= 15) { watchAdsBtn.textContent = 'Daily Limit Reached'; watchAdsBtn.disabled = true; } else { if (!watchAdsBtn.textContent.includes('অপেক্ষা করুন')) { watchAdsBtn.textContent = 'Watch Ads'; } watchAdsBtn.disabled = false; } checkWithdrawEligibility(); }
         function checkWithdrawEligibility() { const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 99999); const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 999); const balanceStatusEl = document.getElementById('balance-status'); const referralStatusEl = document.getElementById('referral-status'); balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 0}`; balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`; referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 0}`; referralStatusEl.className = `status ${hasEnoughReferrals ? 'success' : 'error'}`; document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals); }
         function setupUIEventListeners() { document.getElementById('popup-close').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show')); document.getElementById('popup-understand-btn').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show')); document.getElementById('notice-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.add('show')); document.getElementById('notice-close-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.remove('show')); document.getElementById('broadcast-close-btn').addEventListener('click', () => document.getElementById('broadcast-popup').classList.remove('show')); document.querySelectorAll('.nav-item').forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); const pageId = this.dataset.page; document.querySelector('.nav-item.active').classList.remove('active'); this.classList.add('active'); document.querySelector('.page-content.active').classList.remove('active'); document.getElementById(`page-${pageId}`).classList.add('active'); if (pageId === 'withdraw') checkWithdrawEligibility(); }); }); document.getElementById('copy-btn').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => { document.getElementById('copy-btn').textContent = 'Copied!'; tg.HapticFeedback.notificationOccurred('success'); setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000); }); }); document.getElementById('share-btn').addEventListener('click', () => { const shareText = `🔥 এই অ্যাপ থেকে খুব সহজেই ইনকাম করুন! 🔥\n\n রেফারেল লিঙ্ক ব্যবহার করে ইনকাম করুন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস নিন।`; tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`); }); document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink(appSettings.tutorialLink || '#', {try_instant_view: true})); document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink(appSettings.adminChatLink || '#')); document.getElementById('admin-call-btn').addEventListener('click', () => { if(appSettings.adminCallLink) window.location.href = appSettings.adminCallLink; }); document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds); document.getElementById('join-telegram-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.telegramChannelLink, true); }, { once: true }); document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true }); document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest); }
         function handleWatchAds() { const watchAdsBtn = document.getElementById('watch-ads-btn'); if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; } watchAdsBtn.disabled = true; if (typeof show_8954258 === 'function') { show_8954258(); let countdown = 30; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; const timerInterval = setInterval(() => { countdown--; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; if (countdown <= 0) { clearInterval(timerInterval); tg.HapticFeedback.notificationOccurred('success'); const newBalance = (userData.balance || 0) + (appSettings.adReward || 0); const newAdsWatched = (userData.adsWatched || 0) + 1; const newTotalClicks = (userData.totalClicks || 0) + 1; update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => { tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; }); } }, 1000); } else { tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; } }
