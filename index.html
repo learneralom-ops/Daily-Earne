@@ -306,8 +306,8 @@
             document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`;
             document.getElementById('referral-desc').innerText = `রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`;
             document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`;
-            document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা থাকতে হবে`;
-            document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি থাকতে হবে`;
+            document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`;
+            document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`;
             if(userData) checkWithdrawEligibility();
         }
 
