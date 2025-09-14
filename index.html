@@ -195,33 +195,37 @@
             }
         });
 
-        // *** কোড উন্নত করা হয়েছে ***
+        // ==========================================================
+        // *** UPDATED AND MORE RELIABLE INITIALIZATION LOGIC ***
+        // ==========================================================
         async function initializeAppLogic() {
             try {
-                // সব ডেটা একসাথে লোড করার জন্য Promise.all ব্যবহার করা হয়েছে
-                await Promise.all([
-                    loadInitialSettings(),
-                    setupBroadcastListener()
-                ]);
-
+                // ধাপ ১: প্রথমে অ্যাপের সেটিংস লোড হওয়া পর্যন্ত অপেক্ষা করুন
+                await loadInitialSettings();
+                
+                // ধাপ ২: এরপর ব্যবহারকারী নতুন কিনা তা পরীক্ষা করুন এবং ডেটা লোড করুন
                 await setupUserListener();
+
+                // ধাপ ৩: সবশেষে UI এবং অন্যান্য ইভেন্ট সেটআপ করুন
+                setupBroadcastListener();
                 setupUIEventListeners();
                 
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.querySelector('.container').style.display = 'block';
                 
-            } catch (error) {
+            } catch (error)
+             {
                 console.error("Initialization failed:", error);
                 document.getElementById('loading-overlay').innerText = "Application failed to load. Please contact admin.";
             }
         }
 
-        // *** নতুন ফাংশন ***
         async function loadInitialSettings() {
             const settingsRef = ref(db, 'settings');
-            const snapshot = await get(settingsRef);
+            const snapshot = await get(settingsRef); // শুরুতে একবার ডেটা লোড করুন
             if (snapshot.exists()) {
                 appSettings = snapshot.val();
+                console.log("App settings loaded on start:", appSettings);
             } else {
                 console.warn("Firebase settings not found. Using default values.");
                 applyDefaultSettings();
@@ -236,31 +240,37 @@
         }
 
         async function setupUserListener() {
-            const snapshot = await get(userRef);
+            const snapshot = await get(userRef); // ব্যবহারকারী আছে কিনা তা শুরুতে একবার পরীক্ষা করুন
             if (snapshot.exists()) {
+                console.log("Existing user found.");
                 userData = snapshot.val();
             } else {
-                await createNewUser();
+                console.log("This is a new user. Creating profile...");
+                await createNewUser(); // শুধুমাত্র নতুন ব্যবহারকারীর জন্য প্রোফাইল তৈরি করুন
             }
-            // ডেটা লোড বা তৈরি করার পর UI আপডেট করুন
-            updateAllUI(); 
-            // এবং তারপর রিয়েল-টাইম পরিবর্তনের জন্য onValue সেট করুন
+            updateAllUI(); // প্রাথমিক UI আপডেট
+            // রিয়েল-টাইম পরিবর্তনের জন্য onValue সেট করুন
             onValue(userRef, (snap) => {
-                userData = snap.val();
-                updateAllUI();
+                if (snap.exists()){
+                    userData = snap.val();
+                    updateAllUI();
+                }
             });
         }
         
         async function createNewUser() {
             const referrerId = tg.initDataUnsafe?.start_param;
-            const userName = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim();
+            console.log(`Referrer ID from start_param: ${referrerId}`);
+
+            const userName = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim() || 'Telegram User';
 
             const newUser = {
-                name: userName || 'Telegram User', balance: 0, referrals: 0,
+                name: userName, balance: 0, referrals: 0,
                 totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(),
                 referredBy: referrerId || null
             };
 
+            // নিশ্চিত করুন যে রেফারার আইডি আছে এবং ব্যবহারকারী নিজেকে রেফার করছে না
             if (referrerId && referrerId !== String(userId)) {
                 const referrerRef = ref(db, 'users/' + referrerId);
                 try {
@@ -268,12 +278,21 @@
                     if (snapshot.exists()) {
                         const referrerData = snapshot.val();
                         const newReferralCount = (referrerData.referrals || 0) + 1;
-                        const referralBonus = appSettings.referralReward || 0;
-                        const newBalance = (referrerData.balance || 0) + referralBonus;
-                        await update(referrerRef, {
-                            referrals: newReferralCount,
-                            balance: newBalance
-                        });
+                        const referralBonus = appSettings.referralReward || 0; // সেটিংস থেকে বোনাস নিন
+                        
+                        if(referralBonus > 0) {
+                            const newBalance = (referrerData.balance || 0) + referralBonus;
+                            await update(referrerRef, {
+                                referrals: newReferralCount,
+                                balance: newBalance
+                            });
+                             console.log(`Referrer ${referrerId} credited successfully with ${referralBonus} Taka.`);
+                        } else {
+                             await update(referrerRef, { referrals: newReferralCount });
+                             console.log(`Referrer ${referrerId} count incremented. No bonus amount set.`);
+                        }
+                    } else {
+                         console.log(`Referrer with ID ${referrerId} not found in the database.`);
                     }
                 } catch (error) {
                     console.error("Failed to update referrer data:", error);
@@ -281,7 +300,7 @@
             }
 
             await set(userRef, newUser);
-            userData = newUser;
+            userData = newUser; // Set local userData immediately
         }
 
         function setupBroadcastListener() {
