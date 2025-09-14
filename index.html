@@ -470,11 +470,11 @@
                 show_8954258();
 
                 let countdown = 25;
-                watchAdsBtn.textContent = `Watch Ads ${countdown}s`;
+                watchAdsBtn.textContent = `অপেক্ষা করুন...${countdown}s`;
 
                 const timerInterval = setInterval(() => {
                     countdown--;
-                    watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
+                    watchAdsBtn.textContent = `Watch Ads ${countdown}s`;
 
                     if (countdown <= 0) {
                         clearInterval(timerInterval);
