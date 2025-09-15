@@ -206,7 +206,7 @@
                 document.querySelector('.container').style.display = 'block';
                 
             } catch (error) {
-                console.error("Initialization failed:", error);
+                console.error("Initialization failed:", error); // এই লাইনটি ত্রুটিটি কনসোলে লগ করবে।
                 document.getElementById('loading-overlay').innerText = "Application failed to load. Please contact admin.";
             }
         }
@@ -245,25 +245,29 @@
         }
         
         async function createNewUser() {
-            // টেলিগ্রাম start_param থেকে রেফারার আইডি নিন
-            // এই 'start_param' খুবই গুরুত্বপূর্ণ। যখন একজন নতুন ইউজার আপনার রেফারেল লিঙ্কের মাধ্যমে বটে যোগ দেয়,
-            // তখন এই প্যারামিটারে আপনার User ID পাঠানো হয়।
             const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-            console.log("Referrer ID from start_param:", referrerId); // এটি কনসোলে দেখাবে রেফারার আইডি পাচ্ছে কিনা
+            console.log("Referrer ID from start_param:", referrerId);
 
             const userName = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim() || 'Telegram User';
 
             const newUser = {
                 name: userName,
                 balance: 0,
-                referrals: 0, // নতুন ইউজারের জন্য ইনিশিয়ালি রেফারেল সংখ্যা 0 থাকবে, কারণ সে এখনো কাউকে রেফার করেনি।
+                referrals: 0,
                 totalClicks: 0,
                 adsWatched: 0,
                 joinDate: new Date().toISOString(),
-                referredBy: referrerId || null // কে এই ইউজারকে রেফার করেছে, তার আইডি এখানে সংরক্ষণ করা হবে।
+                referredBy: referrerId || null
             };
 
-            // নিশ্চিত করুন যে ইউজার নিজেকে রেফার করছে না এবং রেফারার আইডি আছে।
+            // 1. প্রথমে নতুন ইউজারের ডেটা Firebase-এ সেভ করুন।
+            await set(userRef, newUser);
+            userData = newUser; // স্থানীয় userData অবিলম্বে আপডেট করুন।
+            console.log(`New user ${userId} created with data:`, newUser);
+
+            // 2. তারপর, যদি কোনো রেফারার থাকে, তার ডেটা আপডেট করার চেষ্টা করুন।
+            // এখন, Firebase Security Rules যখন root.child('users').child(auth.uid).child('referredBy').val() চেক করবে,
+            // তখন নতুন ইউজারের ডেটা Firebase-এ ইতিমধ্যেই থাকবে এবং এটি সঠিক মান দেবে।
             if (referrerId && referrerId !== String(userId)) {
                 const referrerRef = ref(db, 'users/' + referrerId);
 
@@ -271,17 +275,15 @@
                     const snapshot = await get(referrerRef);
                     if (snapshot.exists()) {
                         const referrerData = snapshot.val();
-                        // রেফারারের রেফারেল সংখ্যা 1 বৃদ্ধি করুন।
-                        const newReferralCount = (referrerData.referrals || 0) + 1; 
+                        const newReferralCount = (referrerData.referrals || 0) + 1;
                         const referralBonus = appSettings.referralReward || 0;
 
-                        // রেফারার ব্যালেন্স + কাউন্ট আপডেট করুন
                         const updates = { referrals: newReferralCount };
                         if (referralBonus > 0) {
                             updates.balance = (referrerData.balance || 0) + referralBonus;
                         }
 
-                        await update(referrerRef, updates); // রেফারারের ডেটা Firebase-এ আপডেট করা হচ্ছে।
+                        await update(referrerRef, updates);
                         console.log(`Referrer ${referrerId} updated: +1 referral, +${referralBonus} balance.`);
                     } else {
                         console.warn(`Referrer ${referrerId} not found.`);
@@ -290,10 +292,6 @@
                     console.error("Referrer update failed:", error);
                 }
             }
-
-            // নতুন ইউজার ডেটা সেভ করুন
-            await set(userRef, newUser);
-            userData = newUser;
         }
 
         function setupBroadcastListener() {
@@ -365,7 +363,6 @@
         function updateAllUI() {
             if (!userData) return;
 
-            // বর্তমান ইউজারের প্রোফাইল তথ্য আপডেট করুন
             if (currentUser) {
                 let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : ''); 
                 document.getElementById('user-name').innerHTML = `${userNameDisplay.trim()} <span class="verified-tick">✔</span>`;
@@ -378,17 +375,10 @@
             document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
             document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
             document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
-            // এখানে বর্তমান ইউজারের রেফারেল সংখ্যা দেখানো হচ্ছে। এটি সেই সংখ্যা যা এই ইউজার অন্য কাউকে রেফার করেছে।
-            // যখন Firebase-এ ইউজারের (যার রেফারেল লিঙ্ক ব্যবহার করা হয়েছে) referrals ডেটা আপডেট হয়,
-            // তখন এই onValue লিসেনার সেটি ধরে ফেলে এবং UI আপডেট করে।
             document.getElementById('total-referrals').innerText = userData.referrals || 0; 
 
-            // রেফারেল লিঙ্ক আপডেট করুন
-            // আপনার রেফারেল লিঙ্কটি এমনভাবে তৈরি করা হয়েছে যাতে এতে আপনার User ID থাকে।
-            // যখন কেউ এই লিঙ্কটি ব্যবহার করে বটে যোগ দেবে, তখন আপনার ID `start_param` হিসেবে যাবে।
             document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
 
-            // Watch Ads বাটনের অবস্থা আপডেট
             const watchAdsBtn = document.getElementById('watch-ads-btn');
             if ((userData.adsWatched || 0) >= 15) {
                 watchAdsBtn.textContent = 'Daily Limit Reached';
