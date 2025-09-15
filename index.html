@@ -192,56 +192,79 @@
             } else {
                  document.getElementById('loading-overlay').innerText = "Error: Could not identify Telegram user.";
                  console.error("Telegram user data is missing.");
+                 // If user data is missing, we should also hide the loading overlay eventually.
+                 document.getElementById('loading-overlay').style.display = 'none';
             }
         });
 
         async function initializeAppLogic() {
             try {
-                await loadInitialSettings();
-                await setupUserListener();
+                // Step 1: Load and apply initial settings
+                const settingsRef = ref(db, 'settings');
+                const settingsSnapshot = await get(settingsRef);
+                if (settingsSnapshot.exists()) {
+                    appSettings = settingsSnapshot.val();
+                    console.log("Settings loaded:", appSettings); // Debug log
+                } else {
+                    console.warn("Firebase settings not found. Applying default values."); // Debug log
+                    applyDefaultSettings(); // Apply defaults
+                    // Optionally, save these default settings to Firebase once if they don't exist
+                    // await set(settingsRef, appSettings); 
+                }
+                updateUIWithSettings();
+                handleWelcomePopup();
+
+                // Set up real-time listener for settings after initial load
+                // This listener ensures that if settings change in Firebase, the UI updates automatically.
+                onValue(settingsRef, (snap) => {
+                    if (snap.exists()) {
+                        appSettings = snap.val();
+                        updateUIWithSettings();
+                        console.log("Settings updated via listener:", appSettings); // Debug log
+                    }
+                });
+
+                // Step 2: Load or create user data
+                const userSnapshot = await get(userRef);
+                if (userSnapshot.exists()) {
+                    userData = userSnapshot.val();
+                    console.log("User data loaded:", userData); // Debug log
+                } else {
+                    console.log("Creating new user..."); // Debug log
+                    await createNewUser();
+                    console.log("New user created and data set:", userData); // Debug log
+                }
+                updateAllUI(); // Update UI with user data after it's loaded/created
+
+                // Set up real-time listener for user data after initial load
+                // This listener ensures that if user data changes in Firebase, the UI updates automatically.
+                onValue(userRef, (snap) => {
+                    if (snap.exists()) {
+                        userData = snap.val();
+                        updateAllUI();
+                        console.log("User data updated via listener:", userData); // Debug log
+                    }
+                });
+
+                // Step 3: Setup other listeners and event handlers
                 setupBroadcastListener();
                 setupUIEventListeners();
                 
-                document.getElementById('loading-overlay').style.display = 'none';
+                // Step 4: Hide loading overlay and show main content
                 document.querySelector('.container').style.display = 'block';
-                
+                console.log("App initialized successfully."); // Debug log
+
             } catch (error) {
-                console.error("Initialization failed:", error); // এই লাইনটি ত্রুটিটি কনসোলে লগ করবে।
-                document.getElementById('loading-overlay').innerText = "Application failed to load. Please contact admin.";
+                console.error("Initialization failed:", error);
+                // Display error message to user via Telegram popup and on the overlay itself.
+                const errorMessage = `অ্যাপ লোড করতে ব্যর্থ। অ্যাডমিনকে যোগাযোগ করুন। ত্রুটি: ${error.message || error}`;
+                tg.showAlert(errorMessage);
+                document.getElementById('loading-overlay').innerText = errorMessage; // লোডিং টেক্সটকে এরর মেসেজ দিয়ে প্রতিস্থাপন
+            } finally {
+                // Ensure loading overlay is always hidden at the end of initialization attempt
+                // This will make the "Loading..." text disappear, revealing either the app or the error message.
+                document.getElementById('loading-overlay').style.display = 'none';
             }
-        }
-
-        async function loadInitialSettings() {
-            const settingsRef = ref(db, 'settings');
-            const snapshot = await get(settingsRef);
-            if (snapshot.exists()) {
-                appSettings = snapshot.val();
-            } else {
-                console.warn("Firebase settings not found. Using default values.");
-                applyDefaultSettings();
-            }
-            updateUIWithSettings();
-            handleWelcomePopup();
-            onValue(settingsRef, (snap) => {
-                if (snap.exists()) appSettings = snap.val();
-                updateUIWithSettings();
-            });
-        }
-
-        async function setupUserListener() {
-            const snapshot = await get(userRef);
-            if (snapshot.exists()) {
-                userData = snapshot.val();
-            } else {
-                await createNewUser();
-            }
-            updateAllUI(); 
-            onValue(userRef, (snap) => {
-                if (snap.exists()) {
-                    userData = snap.val();
-                    updateAllUI();
-                }
-            });
         }
         
         async function createNewUser() {
@@ -266,8 +289,6 @@
             console.log(`New user ${userId} created with data:`, newUser);
 
             // 2. তারপর, যদি কোনো রেফারার থাকে, তার ডেটা আপডেট করার চেষ্টা করুন।
-            // এখন, Firebase Security Rules যখন root.child('users').child(auth.uid).child('referredBy').val() চেক করবে,
-            // তখন নতুন ইউজারের ডেটা Firebase-এ ইতিমধ্যেই থাকবে এবং এটি সঠিক মান দেবে।
             if (referrerId && referrerId !== String(userId)) {
                 const referrerRef = ref(db, 'users/' + referrerId);
 
@@ -275,7 +296,7 @@
                     const snapshot = await get(referrerRef);
                     if (snapshot.exists()) {
                         const referrerData = snapshot.val();
-                        const newReferralCount = (referrerData.referrals || 0) + 1;
+                        const newReferralCount = (referrerData.referrals || 0) + 1; 
                         const referralBonus = appSettings.referralReward || 0;
 
                         const updates = { referrals: newReferralCount };
