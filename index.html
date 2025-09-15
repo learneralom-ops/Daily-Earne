@@ -544,6 +544,32 @@
                 } 
             }); 
         }
+
+
+
+// ... আপনার কোড ...
+
+        async function initializeAppLogic() {
+            try {
+                await loadInitialSettings();
+                await setupUserListener();
+                setupBroadcastListener();
+                setupUIEventListeners();
+                
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+                
+            } catch (error) {
+                console.error("Initialization failed:", error); 
+                // ত্রুটির মেসেজটি টেলিগ্রাম পপআপে দেখানোর জন্য।
+                tg.showAlert(`অ্যাপ লোড করতে ব্যর্থ। অ্যাডমিনকে যোগাযোগ করুন। ত্রুটি: ${error.message || error}`);
+                document.getElementById('loading-overlay').innerText = "Application failed to load. Please contact admin.";
+            }
+        }
+
+// ... আপনার কোড ...
+
+        
     </script>
 </body>
 </html>
