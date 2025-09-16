@@ -55,32 +55,43 @@
         #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
       
         /* Marquee Styling */
-.marquee-text {
-    /* দুটি নতুন এবং গুরুত্বপূর্ণ লাইন যোগ করা হয়েছে */
-    position: relative;
-    width: fit-content; /* লেখা অনুযায়ী যেন বক্সের সাইজ হয় */
+.marquee-container {
+    width: 100%;
+    background-color: rgba(0, 123, 255, 0.1); /* থিমের সাথে মিলিয়ে রঙ */
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+    display: none; /* ডিফল্টভাবে লুকানো থাকবে, জাভাস্ক্রিপ্ট দিয়ে দেখানো হবে */
+}
 
+.marquee-text {
     display: inline-block;
     color: var(--text-color);
     font-weight: 500;
     padding-left: 100%;
-    animation: marquee-animation 20s linear infinite;
+    animation: marquee-animation 25s linear infinite; /* গতি কমানোর জন্য সময় বাড়ানো হয়েছে */
+    position: relative;
+    width: fit-content;
 }
 
-/* লেখাটির একটি ক্লোন তৈরি করার জন্য ::after ব্যবহার করা হয়েছে */
+/* লেখাটির একটি ক্লোন বা ডুপ্লিকেট তৈরি করা হচ্ছে */
 .marquee-text::after {
     content: attr(data-text); /* জাভাস্ক্রিপ্ট থেকে লেখাটি এখানে আসবে */
     position: absolute;
     top: 0;
-    left: 100%; /* মূল লেখার ঠিক পরেই ক্লোনটি অবস্থান করবে */
-    padding-left: 40px; /* দুটি লেখার মধ্যে সামান্য দূরত্ব */
-    width: 100%; /* ক্লোনটির প্রস্থও মূল লেখার সমান হবে */
+    left: 100%;
+    padding-left: 50px; /* দুটি লেখার মধ্যে দূরত্ব */
+    width: 100%;
 }
 
-/* অ্যানিমেশনটি আপডেট করা হয়েছে */
+/* অ্যানিমেশন কোড */
 @keyframes marquee-animation {
     0%   { transform: translateX(0%); }
-    100% { transform: translateX(-200%); } /* এটি লেখা এবং তার ক্লোনকে পার করে দেবে */
+    100% { transform: translateX(-200%); }
 }
         
     </style>
@@ -110,11 +121,10 @@
                     <h2>Daily Earning</h2>
                     <!-- ========== Marquee Section Start ========== -->
 <div class="marquee-container">
-    <p class="marquee-text" id="offer-text">
-        🔥 রেফার করেই বাম্পার আয়ের সুযোগ! 🔥 প্রতি ৫ জন বন্ধুকে সফলভাবে রেফার করলেই পাচ্ছেন ৫০ টাকা ইনস্ট্যান্ট বোনাস! 💸 অফারটি সীমিত সময়ের জন্য।
-    </p>
+    <p class="marquee-text" id="offer-text"></p>
 </div>
 <!-- ========== Marquee Section End ========== -->
+                    
                     <div class="dashboard-grid">
                         <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
                         <div class="card"><p>Total Earning</p><h3 id="total-earning">0.00</h3></div>
@@ -374,12 +384,35 @@
             document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; 
             if(userData && Object.keys(userData).length) checkWithdrawEligibility(); 
         
-    // নতুন מרকিউ টেক্সট আপডেট করার কোড
-    if (appSettings.marqueeText) {
-        document.getElementById('offer-text').innerText = appSettings.marqueeText;
-        marqueeElement.dataset.text = appSettings.marqueeText;
-    }
+    // --- Marquee Text Logic Start ---
+    const marqueeElement = document.getElementById('offer-text');
+    const marqueeContainer = document.querySelector('.marquee-container');
+
+    // অ্যাডমিন প্যানেল থেকে marqueeText সেট করা আছে কিনা তা পরীক্ষা করুন
+    if (appSettings && appSettings.marqueeText && marqueeElement && marqueeContainer) {
+        
+        const text = appSettings.marqueeText.trim(); // অপ্রয়োজনীয় স্পেস দূর করুন
+
+        if (text) {
+            // 1. মূল লেখাটি আপডেট করুন
+            marqueeElement.innerText = text;
+            
+            // 2. CSS ক্লোনের জন্য 'data-text' attribute-এ লেখাটি সেট করুন
+            marqueeElement.dataset.text = text;
+            
+            // Marquee কন্টেইনারটি দৃশ্যমান করুন
+            marqueeContainer.style.display = 'block';
+        } else {
+            // যদি টেক্সট খালি থাকে, তাহলে Marquee লুকিয়ে রাখুন
+            marqueeContainer.style.display = 'none';
         }
+
+    } else if (marqueeContainer) {
+        // যদি marqueeText সেট করা না থাকে, তাহলে Marquee লুকিয়ে রাখুন
+        marqueeContainer.style.display = 'none';
+    }
+    // --- Marquee Text Logic End ---
+        
         
 
         function handleWelcomePopup() { 
