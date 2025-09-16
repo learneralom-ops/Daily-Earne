@@ -53,13 +53,14 @@
         .unlock-task-icon { width: 50px; height: 50px; margin-bottom: 15px; }
         .btn-unlock { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 90%; max-width: 350px; padding: 14px; border-radius: 50px; }
         #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
+      
         /* Marquee Styling */
 .marquee-container {
     width: 100%;
     background-color: rgba(0, 123, 255, 0.1); /* আপনার থিমের সাথে মিলিয়ে রঙ */
     border: 1px solid var(--primary-color);
     border-radius: 8px;
-    padding: 10px 0;
+    padding: 5px 0;
     margin-bottom: 20px;
     overflow: hidden; /* মূল কাজটি এখানেই হয় */
     white-space: nowrap; /* লেখাগুলোকে এক লাইনে রাখে */
@@ -71,7 +72,7 @@
     color: var(--text-color);
     font-weight: 500;
     padding-left: 100%; /* লেখাটি স্ক্রিনের বাইরে থেকে শুরু হয় */
-    animation: marquee-animation 20s linear infinite;
+    animation: marquee-animation 10s linear infinite;
 }
 
 /* Animation Keyframes */
@@ -469,7 +470,7 @@
             if (typeof show_8954258 === 'function') { 
                 show_8954258(); 
                 let countdown = 30; 
-                watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; 
+                watchAdsBtn.textContent = `Watch Ads ${countdown}s`; 
                 const timerInterval = setInterval(() => { 
                     countdown--; 
                     watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; 
