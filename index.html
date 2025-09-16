@@ -161,8 +161,9 @@
     </nav>
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-        import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAEJRfxHkMF7YEuTl7oB7ZSDiQDxuK0-u0",
@@ -176,22 +177,40 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
         const tg = window.Telegram.WebApp;
 
         let currentUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
 
         document.addEventListener("DOMContentLoaded", function() {
-            tg.ready();
-            tg.expand();
+    tg.ready();
+    tg.expand();
+    
+    // Firebase এ গোপনে সাইন-ইন করার চেষ্টা
+    signInAnonymously(auth)
+        .then(() => {
+            // সাইন-ইন সফল হলে
+            console.log("Firebase anonymous sign-in successful.");
             
             if (tg.initDataUnsafe?.user?.id) {
                 userId = tg.initDataUnsafe.user.id;
                 currentUser = tg.initDataUnsafe.user;
                 userRef = ref(db, 'users/' + userId);
-                initializeAppLogic();
+                initializeAppLogic(); // আপনার মূল ফাংশনটি এখান থেকে কল হবে
             } else {
                  document.getElementById('loading-overlay').innerText = "Error: Could not identify Telegram user.";
                  console.error("Telegram user data is missing.");
+                 document.getElementById('loading-overlay').style.display = 'none';
+            }
+        })
+        .catch((error) => {
+            // সাইন-ইন ব্যর্থ হলে
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error("Anonymous sign-in failed:", error);
+            document.getElementById('loading-overlay').innerText = "Authentication Error. Please contact admin. " + errorMessage;
+        });
+});
                  // If user data is missing, we should also hide the loading overlay eventually.
                  document.getElementById('loading-overlay').style.display = 'none';
             }
