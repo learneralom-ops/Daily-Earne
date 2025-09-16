@@ -474,7 +474,7 @@
                 watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; 
                 const timerInterval = setInterval(() => { 
                     countdown--; 
-                    watchAdsBtn.textContent = `Watch Ads ${countdown}s`; 
+                    watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; 
                     if (countdown <= 0) { 
                         clearInterval(timerInterval); 
                         tg.HapticFeedback.notificationOccurred('success'); 
@@ -493,7 +493,7 @@
                 }, 1000); 
             } else { 
                 tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'); 
-                watchAdsBtn.textContent = 'অপেক্ষা করুন...'; 
+                watchAdsBtn.textContent = 'Watch Ads'; 
                 watchAdsBtn.disabled = false; 
             } 
         }
