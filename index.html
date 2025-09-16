@@ -46,7 +46,7 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; } .btn:disabled { background-color: #555; color: #aaa; cursor: not-allowed; }
         .btn-primary { background-color: var(--primary-color); color: white; } .btn-secondary { background-color: var(--secondary-color); color: white; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor;}
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; background: none; border: none; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor;}
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; } .popup-overlay.show { opacity: 1; visibility: visible; display: flex;} .popup-content { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; }
         .popup-body { text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 10px; }
         .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
@@ -154,137 +154,109 @@
     </div>
     
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></a>
-        <a href="#" class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></a>
-        <a href="#" class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></a>
-        <a href="#" class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></a>
+        <button class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></button>
+        <button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button>
+        <button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button>
+        <button class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></button>
     </nav>
     
-            <script type="module">
-            // === Firebase and Telegram SDK Imports ===
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-            import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-            import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+    <script type="module">
+        // === Firebase SDK Imports (সঠিক সংস্করণ এবং auth যোগ করা হয়েছে) ===
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-            console.log("Script execution started.");
-
-            // === Firebase Configuration ===
-            const firebaseConfig = {
-  apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
-  authDomain: "daily-earne-aea89.firebaseapp.com",
-  databaseURL: "https://daily-earne-aea89-default-rtdb.firebaseio.com",
-  projectId: "daily-earne-aea89",
-  storageBucket: "daily-earne-aea89.firebasestorage.app",
-  messagingSenderId: "444567470638",
-  appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
-};
-                // === Firebase অ্যাপ এবং ডাটাবেস চালু করুন ===
-// 1. প্রথমে Firebase অ্যাপটি চালু করা হয়
-const app = initializeApp(firebaseConfig);
-
-// 2. তারপর, চালু হওয়া অ্যাপ থেকে ডাটাবেস (db) কানেকশন তৈরি করা হয়
-const db = getDatabase(app);
-
-// এখন আপনার সম্পূর্ণ কোডে 'db' ভেরিয়েবলটি সঠিকভাবে কাজ করবে।
-// আপনার বাকি কোড (যেমন let auth, let userId, main function ইত্যাদি) এর নিচে থাকবে।
-
-            // === Global Variables ===
-            let currentUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const tg = window.Telegram.WebApp;
-
-            // === Failsafe Timer ===
-            // যদি ১৫ সেকেন্ডের মধ্যে অ্যাপ লোড না হয়, তাহলে এরর দেখাবে
-            const failsafeTimer = setTimeout(() => {
-                console.error("Failsafe timer triggered. App took too long to load.");
-                loadingOverlay.innerText = "অ্যাপটি লোড হতে অনেক সময় লাগছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন অথবা অ্যাডমিনের সাথে যোগাযোগ করুন।";
-            }, 15000);
-
-            try {
-                // === App Initialization ===
-                console.log("Initializing Firebase app...");
-                const app = initializeApp(firebaseConfig);
-                const db = getDatabase(app);
-                const auth = getAuth(app);
-                console.log("Firebase app initialized successfully.");
-
-                // === Main Logic ===
-                document.addEventListener("DOMContentLoaded", () => {
-                    tg.ready();
-                    tg.expand();
-                    console.log("DOM Loaded. Attempting anonymous sign-in...");
-
-                    signInAnonymously(auth)
-                        .then(() => {
-                            console.log("Firebase anonymous sign-in successful.");
-                            
-                            if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
-                                console.log("Telegram user ID found:", tg.initDataUnsafe.user.id);
-                                userId = tg.initDataUnsafe.user.id;
-                                currentUser = tg.initDataUnsafe.user;
-                                userRef = ref(db, 'users/' + userId);
-                                initializeAppLogic(db); // Pass db to the function
-                            } else {
-                                console.error("CRITICAL: Telegram user data not found. App cannot start.");
-                                loadingOverlay.innerText = "ত্রুটি: টেলিগ্রাম ব্যবহারকারী সনাক্ত করা যায়নি। অ্যাপটি টেলিগ্রাম বট থেকে খুলুন।";
-                                clearTimeout(failsafeTimer);
-                            }
-                        })
-                        .catch((error) => {
-                            console.error("Firebase anonymous sign-in failed:", error);
-                            loadingOverlay.innerText = `Authentication Error: ${error.message}`;
-                            clearTimeout(failsafeTimer);
-                        });
-                });
-
-            } catch (e) {
-                console.error("A critical error occurred during Firebase initialization:", e);
-                loadingOverlay.innerText = `A critical error occurred: ${e.message}`;
-                clearTimeout(failsafeTimer);
-            }
-
-            async function initializeAppLogic(db) {
-                console.log("initializeAppLogic started.");
-                try {
-                    const settingsRef = ref(db, 'settings');
-                    const settingsSnapshot = await get(settingsRef);
-                    appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
-                    if (!settingsSnapshot.exists()) applyDefaultSettings();
-                    updateUIWithSettings();
-                    handleWelcomePopup();
-                    onValue(settingsRef, (snap) => { if(snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
-
-                    const userSnapshot = await get(userRef);
-                    if (userSnapshot.exists()) {
-                        userData = userSnapshot.val();
-                    } else {
-                        await createNewUser(db);
-                    }
-                    updateAllUI();
-                    onValue(userRef, (snap) => { if(snap.exists()) { userData = snap.val(); updateAllUI(); }});
-
-                    setupBroadcastListener(db);
-                    setupUIEventListeners();
-                    
-                    document.querySelector('.container').style.display = 'block';
-                    console.log("App initialized successfully. Hiding loading overlay.");
-                    loadingOverlay.style.display = 'none';
-                    clearTimeout(failsafeTimer); // সফলভাবে লোড হলে টাইমার বন্ধ করুন
-
-                } catch (error) {
-                    console.error("Error within initializeAppLogic:", error);
-                    loadingOverlay.innerText = `অ্যাপ লোড করতে ব্যর্থ। ত্রুটি: ${error.message}`;
-                    clearTimeout(failsafeTimer);
-                }
-            }
-            
-            // আপনার বাকি সকল ফাংশন (createNewUser, etc.) এখানে অপরিবর্তিত থাকবে
-            // ... (আগের কোড থেকে কপি করে এখানে পেস্ট করুন) ...
+        // === আপনার নতুন Firebase কনফিগারেশন ===
+        const firebaseConfig = {
+          apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
+          authDomain: "daily-earne-aea89.firebaseapp.com",
+          databaseURL: "https://daily-earne-aea89-default-rtdb.firebaseio.com",
+          projectId: "daily-earne-aea89",
+          storageBucket: "daily-earne-aea89.firebasestorage.app",
+          messagingSenderId: "444567470638",
+          appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
+        };
         
+        // === Global Variables ===
+        let db, auth;
+        let currentUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
+        const tg = window.Telegram.WebApp;
+
+        // === মূল অ্যাপ চালু করার ফাংশন ===
+        document.addEventListener("DOMContentLoaded", async () => {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            try {
+                tg.ready();
+                tg.expand();
+
+                // 1. Firebase অ্যাপ এবং সার্ভিস চালু করুন
+                const app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
+                auth = getAuth(app);
+                
+                // 2. Firebase-এ গোপনে সাইন-ইন করুন (এটাই মূল সমাধান)
+                await signInAnonymously(auth);
+
+                // 3. সাইন-ইন সফল হলে, অ্যাপের বাকি কাজ শুরু করুন
+                if (tg.initDataUnsafe?.user?.id) {
+                    userId = tg.initDataUnsafe.user.id.toString();
+                    currentUser = tg.initDataUnsafe.user;
+                    userRef = ref(db, 'users/' + userId);
+                    await initializeAppLogic(); // এখন এই ফাংশনটি কল হবে
+                } else {
+                    throw new Error("Telegram user could not be identified.");
+                }
+
+            } catch (error) {
+                console.error("Initialization Failed:", error);
+                loadingOverlay.innerText = `Error: ${error.message}`;
+            }
+        });
+
+        // === অ্যাপের মূল লজিক (ডেটা লোডিং ও UI সেটআপ) ===
+        async function initializeAppLogic() {
+            try {
+                // সেটিংস লোড করুন
+                const settingsRef = ref(db, 'settings');
+                const settingsSnapshot = await get(settingsRef);
+                if (settingsSnapshot.exists()) {
+                    appSettings = settingsSnapshot.val();
+                } else {
+                    applyDefaultSettings(); 
+                }
+                updateUIWithSettings();
+                handleWelcomePopup();
+                onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
+
+                // ব্যবহারকারীর ডেটা লোড বা তৈরি করুন
+                const userSnapshot = await get(userRef);
+                if (userSnapshot.exists()) {
+                    userData = userSnapshot.val();
+                } else {
+                    await createNewUser();
+                }
+                updateAllUI();
+                onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
+
+                // অন্যান্য ফাংশন ও ইভেন্ট লিসেনার সেটআপ করুন
+                setupBroadcastListener();
+                setupUIEventListeners();
+                
+                // লোডিং স্ক্রিন সরিয়ে মূল কন্টেন্ট দেখান
+                document.querySelector('.container').style.display = 'block';
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (error) {
+                console.error("App Logic Error:", error);
+                document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
+            }
+        }
+        
+        // --- আপনার বাকি সকল ফাংশন (createNewUser, updateAllUI, ইত্যাদি) এখানে অপরিবর্তিত থাকবে ---
+        // ... (নিচের কোডটি আপনার আগের কোডের মতোই) ...
+
         async function createNewUser() {
             const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-            console.log("Referrer ID from start_param:", referrerId);
-
             const userName = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim() || 'Telegram User';
 
             const newUser = {
@@ -297,35 +269,24 @@ const db = getDatabase(app);
                 referredBy: referrerId || null
             };
 
-            // 1. প্রথমে নতুন ইউজারের ডেটা Firebase-এ সেভ করুন।
             await set(userRef, newUser);
-            userData = newUser; // স্থানীয় userData অবিলম্বে আপডেট করুন।
-            console.log(`New user ${userId} created with data:`, newUser);
+            userData = newUser;
 
-            // 2. তারপর, যদি কোনো রেফারার থাকে, তার ডেটা আপডেট করার চেষ্টা করুন।
             if (referrerId && referrerId !== String(userId)) {
                 const referrerRef = ref(db, 'users/' + referrerId);
-
                 try {
                     const snapshot = await get(referrerRef);
                     if (snapshot.exists()) {
                         const referrerData = snapshot.val();
                         const newReferralCount = (referrerData.referrals || 0) + 1; 
                         const referralBonus = appSettings.referralReward || 0;
-
                         const updates = { referrals: newReferralCount };
                         if (referralBonus > 0) {
                             updates.balance = (referrerData.balance || 0) + referralBonus;
                         }
-
                         await update(referrerRef, updates);
-                        console.log(`Referrer ${referrerId} updated: +1 referral, +${referralBonus} balance.`);
-                    } else {
-                        console.warn(`Referrer ${referrerId} not found.`);
                     }
-                } catch (error) {
-                    console.error("Referrer update failed:", error);
-                }
+                } catch (error) { console.error("Referrer update failed:", error); }
             }
         }
 
@@ -337,8 +298,7 @@ const db = getDatabase(app);
                     const message = snapshot.val();
                     if (message.timestamp && message.timestamp > lastShownTimestamp) {
                         showBroadcastPopup(message);
-                        lastShownTimestamp = message.timestamp;
-                        localStorage.setItem('lastBroadcastTimestamp', lastShownTimestamp);
+                        localStorage.setItem('lastBroadcastTimestamp', message.timestamp);
                     }
                 }
             });
@@ -352,9 +312,7 @@ const db = getDatabase(app);
             if (message.imageUrl) { 
                 imageEl.src = message.imageUrl; 
                 imageEl.style.display = 'block'; 
-            } else { 
-                imageEl.style.display = 'none'; 
-            } 
+            } else { imageEl.style.display = 'none'; } 
             popup.classList.add('show'); 
             tg.HapticFeedback.notificationOccurred('warning'); 
         }
@@ -362,17 +320,10 @@ const db = getDatabase(app);
         function applyDefaultSettings() { 
             appSettings = { 
                 welcomeMessageTitle: 'স্বাগতম!', 
-                welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম। নিয়ম মেনে কাজ করুন এবং আয় করুন।</p>', 
-                noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>সকল ব্যবহারকারীকে জানানো যাচ্ছে যে, অ্যাপের নিয়মকানুন মেনে কাজ করুন। কোনো সমস্যা হলে সাপোর্টে যোগাযোগ করুন।</p>', 
-                referralReward: 20, 
-                adReward: 1, 
-                minWithdrawAmount: 500, 
-                minWithdrawReferrals: 20, 
-                tutorialLink: '#', 
-                adminChatLink: '#', 
-                adminCallLink: '', 
-                telegramChannelLink: '#', 
-                youtubeChannelLink: '#' 
+                welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', 
+                noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>অ্যাপের নিয়মকানুন মেনে কাজ করুন।</p>', 
+                referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20,
+                tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' 
             }; 
         }
 
@@ -380,7 +331,7 @@ const db = getDatabase(app);
             document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`; 
             document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>'; 
             document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`; 
-            document.getElementById('referral-desc').innerText = `রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`; 
+            document.getElementById('referral-desc').innerText = `প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`; 
             document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`; 
             document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`; 
             document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; 
@@ -388,31 +339,23 @@ const db = getDatabase(app);
         }
 
         function handleWelcomePopup() { 
-            if (appSettings.welcomeMessageBody && appSettings.welcomeMessageBody.trim() !== '') { 
-                setTimeout(() => { 
-                    document.getElementById('welcome-popup').classList.add('show'); 
-                }, 500); 
+            if (appSettings.welcomeMessageBody) { 
+                setTimeout(() => { document.getElementById('welcome-popup').classList.add('show'); }, 500); 
             } 
         }
 
         function updateAllUI() {
             if (!userData) return;
-
-            if (currentUser) {
-                let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : ''); 
-                document.getElementById('user-name').innerHTML = `${userNameDisplay.trim()} <span class="verified-tick">✔</span>`;
-                if (currentUser.photo_url) document.getElementById('user-photo').src = currentUser.photo_url;
-            } else {
-                 document.getElementById('user-name').innerHTML = `${userData.name || "Telegram User"} <span class="verified-tick">✔</span>`;
-            }
+            let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : ''); 
+            document.getElementById('user-name').innerHTML = `${userNameDisplay.trim()} <span class="verified-tick">✔</span>`;
+            if (currentUser.photo_url) document.getElementById('user-photo').src = currentUser.photo_url;
             
             document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
             document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
             document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
             document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
             document.getElementById('total-referrals').innerText = userData.referrals || 0; 
-
-            document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
+            document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`; // আপনার বটের ইউজারনেম দিন
 
             const watchAdsBtn = document.getElementById('watch-ads-btn');
             if ((userData.adsWatched || 0) >= 15) {
@@ -424,7 +367,6 @@ const db = getDatabase(app);
                 }
                 watchAdsBtn.disabled = false;
             }
-
             checkWithdrawEligibility();
         }
 
@@ -446,8 +388,9 @@ const db = getDatabase(app);
             document.getElementById('notice-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.add('show')); 
             document.getElementById('notice-close-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.remove('show')); 
             document.getElementById('broadcast-close-btn').addEventListener('click', () => document.getElementById('broadcast-popup').classList.remove('show')); 
-            document.querySelectorAll('.nav-item').forEach(link => { 
-                link.addEventListener('click', function(e) { 
+            
+            document.querySelectorAll('.nav-item').forEach(item => { 
+                item.addEventListener('click', function(e) { 
                     e.preventDefault(); 
                     const pageId = this.dataset.page; 
                     document.querySelector('.nav-item.active').classList.remove('active'); 
@@ -457,6 +400,7 @@ const db = getDatabase(app);
                     if (pageId === 'withdraw') checkWithdrawEligibility(); 
                 }); 
             }); 
+
             document.getElementById('copy-btn').addEventListener('click', () => { 
                 navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => { 
                     document.getElementById('copy-btn').textContent = 'Copied!'; 
