@@ -57,10 +57,13 @@
         /* Marquee Styling */
 .marquee-container {
     
+    background-color: rgba(0, 123, 255, 0.1); /* থিমের সাথে মিলিয়ে রঙ */
+    border: 1px solid var(--primary-color);
+    padding: 5px 5;
     margin-bottom: 10px;
-    margin-top: 10px;
     overflow: hidden;
     white-space: nowrap;
+    box-sizing: border-box;
     display: none; /* ডিফল্টভাবে লুকানো থাকবে, জাভাস্ক্রিপ্ট দিয়ে দেখানো হবে */
 }
 
@@ -114,7 +117,7 @@
         <div id="page-wrapper">
             <div id="page-home" class="page-content active">
                 <main>
-                    <h2>Daily Earning 💰</h2>
+                    <h2>Daily Earning ✅</h2>
                     <!-- ========== Marquee Section Start ========== -->
 <div class="marquee-container">
     <p class="marquee-text" id="offer-text"></p>
