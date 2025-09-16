@@ -55,32 +55,34 @@
         #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
       
         /* Marquee Styling */
-.marquee-container {
-    width: 100%;
-    height: 50px;
-    background-color: rgba(0, 123, 255, 0.1); /* আপনার থিমের সাথে মিলিয়ে রঙ */
-    border: 1px solid var(--primary-color);
-    border-radius: 8px;
-    padding: 5px 5;
-    margin-bottom: 10px;
-    overflow: hidden; /* মূল কাজটি এখানেই হয় */
-    white-space: nowrap; /* লেখাগুলোকে এক লাইনে রাখে */
-    box-sizing: border-box;
-}
-
 .marquee-text {
+    /* দুটি নতুন এবং গুরুত্বপূর্ণ লাইন যোগ করা হয়েছে */
+    position: relative;
+    width: fit-content; /* লেখা অনুযায়ী যেন বক্সের সাইজ হয় */
+
     display: inline-block;
     color: var(--text-color);
     font-weight: 500;
-    padding-left: 100%; /* লেখাটি স্ক্রিনের বাইরে থেকে শুরু হয় */
-    animation: marquee-animation 50s linear infinite;
+    padding-left: 100%;
+    animation: marquee-animation 20s linear infinite;
 }
 
-/* Animation Keyframes */
+/* লেখাটির একটি ক্লোন তৈরি করার জন্য ::after ব্যবহার করা হয়েছে */
+.marquee-text::after {
+    content: attr(data-text); /* জাভাস্ক্রিপ্ট থেকে লেখাটি এখানে আসবে */
+    position: absolute;
+    top: 0;
+    left: 100%; /* মূল লেখার ঠিক পরেই ক্লোনটি অবস্থান করবে */
+    padding-left: 40px; /* দুটি লেখার মধ্যে সামান্য দূরত্ব */
+    width: 100%; /* ক্লোনটির প্রস্থও মূল লেখার সমান হবে */
+}
+
+/* অ্যানিমেশনটি আপডেট করা হয়েছে */
 @keyframes marquee-animation {
     0%   { transform: translateX(0%); }
-    100% { transform: translateX(-200%); } /* লেখাটিকে সম্পূর্ণরূপে পার করে দেয় */
+    100% { transform: translateX(-200%); } /* এটি লেখা এবং তার ক্লোনকে পার করে দেবে */
 }
+        
     </style>
 </head>
 <body>
@@ -375,6 +377,7 @@
     // নতুন מרকিউ টেক্সট আপডেট করার কোড
     if (appSettings.marqueeText) {
         document.getElementById('offer-text').innerText = appSettings.marqueeText;
+        marqueeElement.dataset.text = appSettings.marqueeText;
     }
         }
         
