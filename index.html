@@ -61,7 +61,7 @@
     background-color: rgba(0, 123, 255, 0.1); /* আপনার থিমের সাথে মিলিয়ে রঙ */
     border: 1px solid var(--primary-color);
     border-radius: 8px;
-    padding: 5px;
+    padding: 5px 5;
     margin-bottom: 10px;
     overflow: hidden; /* মূল কাজটি এখানেই হয় */
     white-space: nowrap; /* লেখাগুলোকে এক লাইনে রাখে */
@@ -493,7 +493,7 @@
                 }, 1000); 
             } else { 
                 tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'); 
-                watchAdsBtn.textContent = 'Watch Ads'; 
+                watchAdsBtn.textContent = 'অপেক্ষা করুন...'; 
                 watchAdsBtn.disabled = false; 
             } 
         }
