@@ -161,9 +161,10 @@
     </nav>
     
     <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+      
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAEJRfxHkMF7YEuTl7oB7ZSDiQDxuK0-u0",
@@ -177,45 +178,101 @@ import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } fr
         
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
+        const auth = getAuth(app); // Auth service চালু করুন
         const tg = window.Telegram.WebApp;
 
         let currentUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
 
         document.addEventListener("DOMContentLoaded", function() {
-    tg.ready();
-    tg.expand();
-    
-    // Firebase এ গোপনে সাইন-ইন করার চেষ্টা
-    signInAnonymously(auth)
-        .then(() => {
-            // সাইন-ইন সফল হলে
-            console.log("Firebase anonymous sign-in successful.");
+            tg.ready();
+            tg.expand();
             
-            if (tg.initDataUnsafe?.user?.id) {
-                userId = tg.initDataUnsafe.user.id;
-                currentUser = tg.initDataUnsafe.user;
-                userRef = ref(db, 'users/' + userId);
-                initializeAppLogic(); // আপনার মূল ফাংশনটি এখান থেকে কল হবে
-            } else {
-                 document.getElementById('loading-overlay').innerText = "Error: Could not identify Telegram user.";
-                 console.error("Telegram user data is missing.");
-                 document.getElementById('loading-overlay').style.display = 'none';
-            }
-        })
-        .catch((error) => {
-            // সাইন-ইন ব্যর্থ হলে
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.error("Anonymous sign-in failed:", error);
-            document.getElementById('loading-overlay').innerText = "Authentication Error. Please contact admin. " + errorMessage;
-        });
-});
-                 // If user data is missing, we should also hide the loading overlay eventually.
-                 document.getElementById('loading-overlay').style.display = 'none';
-            }
+            console.log("DOM Loaded. Attempting anonymous sign-in...");
+
+            // Firebase-এ গোপনে সাইন-ইন করুন
+            signInAnonymously(auth)
+                .then(() => {
+                    console.log("Firebase anonymous sign-in successful.");
+                    
+                    // টেলিগ্রাম ব্যবহারকারীর ডেটা আছে কিনা তা পরীক্ষা করুন
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+                        console.log("Telegram user ID found:", tg.initDataUnsafe.user.id);
+                        userId = tg.initDataUnsafe.user.id;
+                        currentUser = tg.initDataUnsafe.user;
+                        userRef = ref(db, 'users/' + userId);
+                        initializeAppLogic(); // মূল অ্যাপ চালু করুন
+                    } else {
+                        // যদি টেলিগ্রাম ডেটা না পাওয়া যায়, তাহলে একটি স্পষ্ট এরর দেখান
+                        console.error("CRITICAL ERROR: Telegram user data is missing. Ensure you are running this inside the Telegram app.");
+                        document.getElementById('loading-overlay').innerText = "ত্রুটি: টেলিগ্রাম ব্যবহারকারী সনাক্ত করা যায়নি। অনুগ্রহ করে আপনার টেলিগ্রাম বট থেকে অ্যাপটি খুলুন।";
+                    }
+                })
+                .catch((error) => {
+                    console.error("Firebase anonymous sign-in failed:", error);
+                    document.getElementById('loading-overlay').innerText = `Authentication Error: ${error.message}. Please check Firebase settings.`;
+                });
         });
 
+        async function initializeAppLogic() {
+            console.log("initializeAppLogic started.");
+            try {
+                // Step 1: সেটিংস লোড করুন
+                const settingsRef = ref(db, 'settings');
+                const settingsSnapshot = await get(settingsRef);
+                if (settingsSnapshot.exists()) {
+                    appSettings = settingsSnapshot.val();
+                } else {
+                    console.warn("Firebase settings not found. Applying default values.");
+                    applyDefaultSettings();
+                }
+                updateUIWithSettings();
+                handleWelcomePopup();
+
+                onValue(settingsRef, (snap) => {
+                    if (snap.exists()) {
+                        appSettings = snap.val();
+                        updateUIWithSettings();
+                    }
+                });
+
+                // Step 2: ব্যবহারকারীর ডেটা লোড বা তৈরি করুন
+                const userSnapshot = await get(userRef);
+                if (userSnapshot.exists()) {
+                    userData = userSnapshot.val();
+                } else {
+                    await createNewUser();
+                }
+                updateAllUI();
+
+                onValue(userRef, (snap) => {
+                    if (snap.exists()) {
+                        userData = snap.val();
+                        updateAllUI();
+                    }
+                });
+
+                // Step 3: অন্যান্য লিসেনার সেটআপ করুন
+                setupBroadcastListener();
+                setupUIEventListeners();
+                
+                // Step 4: মূল কন্টেন্ট দেখান
+                document.querySelector('.container').style.display = 'block';
+                console.log("App initialized successfully.");
+
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                const errorMessage = `অ্যাপ লোড করতে ব্যর্থ। অ্যাডমিনকে যোগাযোগ করুন। ত্রুটি: ${error.message || error}`;
+                tg.showAlert(errorMessage);
+                document.getElementById('loading-overlay').innerText = errorMessage;
+            } finally {
+                // সফল হোক বা ব্যর্থ, লোডিং স্ক্রিন অবশ্যই আড়াল হবে
+                console.log("Hiding loading overlay.");
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+        
+        // আপনার বাকি সকল ফাংশন (createNewUser, setupBroadcastListener, ইত্যাদি) এখানে অপরিবর্তিত থাকবে...
+        // ... (আগের কোড থেকে কপি করে এখানে পেস্ট করুন) ...
         async function initializeAppLogic() {
             try {
                 // Step 1: Load and apply initial settings
