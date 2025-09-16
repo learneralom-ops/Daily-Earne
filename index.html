@@ -53,6 +53,32 @@
         .unlock-task-icon { width: 50px; height: 50px; margin-bottom: 15px; }
         .btn-unlock { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 90%; max-width: 350px; padding: 14px; border-radius: 50px; }
         #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
+        /* Marquee Styling */
+.marquee-container {
+    width: 100%;
+    background-color: rgba(0, 123, 255, 0.1); /* আপনার থিমের সাথে মিলিয়ে রঙ */
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    overflow: hidden; /* মূল কাজটি এখানেই হয় */
+    white-space: nowrap; /* লেখাগুলোকে এক লাইনে রাখে */
+    box-sizing: border-box;
+}
+
+.marquee-text {
+    display: inline-block;
+    color: var(--text-color);
+    font-weight: 500;
+    padding-left: 100%; /* লেখাটি স্ক্রিনের বাইরে থেকে শুরু হয় */
+    animation: marquee-animation 20s linear infinite;
+}
+
+/* Animation Keyframes */
+@keyframes marquee-animation {
+    0%   { transform: translateX(0%); }
+    100% { transform: translateX(-200%); } /* লেখাটিকে সম্পূর্ণরূপে পার করে দেয় */
+}
     </style>
 </head>
 <body>
@@ -78,6 +104,13 @@
             <div id="page-home" class="page-content active">
                 <main>
                     <h2>Daily Earning</h2>
+                    <!-- ========== Marquee Section Start ========== -->
+<div class="marquee-container">
+    <p class="marquee-text" id="offer-text">
+        🔥 রেফার করেই বাম্পার আয়ের সুযোগ! 🔥 প্রতি ৫ জন বন্ধুকে সফলভাবে রেফার করলেই পাচ্ছেন ৫০ টাকা ইনস্ট্যান্ট বোনাস! 💸 অফারটি সীমিত সময়ের জন্য।
+    </p>
+</div>
+<!-- ========== Marquee Section End ========== -->
                     <div class="dashboard-grid">
                         <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
                         <div class="card"><p>Total Earning</p><h3 id="total-earning">0.00</h3></div>
@@ -336,7 +369,13 @@
             document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`; 
             document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; 
             if(userData && Object.keys(userData).length) checkWithdrawEligibility(); 
+        
+    // নতুন מרকিউ টেক্সট আপডেট করার কোড
+    if (appSettings.marqueeText) {
+        document.getElementById('offer-text').innerText = appSettings.marqueeText;
+    }
         }
+        
 
         function handleWelcomePopup() { 
             if (appSettings.welcomeMessageBody) { 
