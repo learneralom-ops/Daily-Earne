@@ -178,6 +178,15 @@
   messagingSenderId: "444567470638",
   appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
 };
+                // === Firebase অ্যাপ এবং ডাটাবেস চালু করুন ===
+// 1. প্রথমে Firebase অ্যাপটি চালু করা হয়
+const app = initializeApp(firebaseConfig);
+
+// 2. তারপর, চালু হওয়া অ্যাপ থেকে ডাটাবেস (db) কানেকশন তৈরি করা হয়
+const db = getDatabase(app);
+
+// এখন আপনার সম্পূর্ণ কোডে 'db' ভেরিয়েবলটি সঠিকভাবে কাজ করবে।
+// আপনার বাকি কোড (যেমন let auth, let userId, main function ইত্যাদি) এর নিচে থাকবে।
 
             // === Global Variables ===
             let currentUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
