@@ -55,44 +55,25 @@
         #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
       
         /* Marquee Styling */
-.marquee-container {
-    width: 100%;
-    background-color: rgba(0, 123, 255, 0.1); /* থিমের সাথে মিলিয়ে রঙ */
-    border: 1px solid var(--primary-color);
-    border-radius: 8px;
-    padding: 2px 2;
-    margin-bottom: 20px;
-    overflow: hidden;
-    white-space: nowrap;
-    box-sizing: border-box;
-    display: none; /* ডিফল্টভাবে লুকানো থাকবে, জাভাস্ক্রিপ্ট দিয়ে দেখানো হবে */
-}
-
-.marquee-text {
-    display: inline-block;
-    color: var(--text-color);
-    font-weight: 500;
-    padding-left: 100%;
-    animation: marquee-animation 55s linear infinite; /* গতি কমানোর জন্য সময় বাড়ানো হয়েছে */
-    position: relative;
-    width: fit-content;
-}
-
-/* লেখাটির একটি ক্লোন বা ডুপ্লিকেট তৈরি করা হচ্ছে */
-.marquee-text::after {
-    content: attr(data-text); /* জাভাস্ক্রিপ্ট থেকে লেখাটি এখানে আসবে */
-    position: absolute;
-    top: 0;
-    left: 100%;
-    padding-left: 50px; /* দুটি লেখার মধ্যে দূরত্ব */
-    width: 100%;
-}
-
-/* অ্যানিমেশন কোড */
-@keyframes marquee-animation {
-    0%   { transform: translateX(0%); }
-    100% { transform: translateX(-200%); }
-}
+        .marquee-container { width: 100%; background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 8px; padding: 2px 2; margin-bottom: 20px; overflow: hidden; white-space: nowrap; box-sizing: border-box; display: none; }
+        .marquee-text { display: inline-block; color: var(--text-color); font-weight: 500; padding-left: 100%; animation: marquee-animation 55s linear infinite; position: relative; width: fit-content; }
+        .marquee-text::after { content: attr(data-text); position: absolute; top: 0; left: 100%; padding-left: 50px; width: 100%; }
+        @keyframes marquee-animation { 0% { transform: translateX(0%); } 100% { transform: translateX(-200%); } }
+        
+        /* ========== নতুন টিউটোরিয়াল পেজের জন্য CSS ========== */
+        .tutorial-header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .back-btn { background: none; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 5px 10px; border-radius: 8px; cursor: pointer; margin-right: 15px; font-size: 1rem; }
+        #page-tutorial h2 { text-align: center; color: var(--primary-color); margin: 0; flex-grow: 1; }
+        .tutorial-card { background-color: var(--card-color); border-radius: 12px; border-left: 4px solid var(--primary-color); padding: 20px; margin-bottom: 20px; }
+        .tutorial-card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .tutorial-card-header .icon { font-size: 2rem; }
+        .tutorial-card-header h3 { margin: 0; font-size: 1.4rem; color: var(--text-color); font-weight: 500; }
+        .tutorial-card p { font-size: 1rem; color: var(--secondary-text-color); line-height: 1.7; margin: 10px 0 15px 0; }
+        .tutorial-card ul { list-style-type: none; padding-left: 5px; margin: 0; }
+        .tutorial-card li { padding: 10px 5px; border-top: 1px solid var(--border-color); font-size: 0.95rem; }
+        .tutorial-card li:first-child { border-top: none; }
+        .tutorial-card strong { color: var(--primary-color); font-weight: 700; }
+        .tutorial-footer { text-align: center; margin-top: 30px; padding: 20px; background-color: rgba(0, 123, 255, 0.1); border-radius: 12px; }
         
     </style>
 </head>
@@ -119,12 +100,7 @@
             <div id="page-home" class="page-content active">
                 <main>
                     <h2>Daily Earning ✅</h2>
-                    <!-- ========== Marquee Section Start ========== -->
-<div class="marquee-container">
-    <p class="marquee-text" id="offer-text"></p>
-</div>
-<!-- ========== Marquee Section End ========== -->
-                    
+                    <div class="marquee-container"><p class="marquee-text" id="offer-text"></p></div>
                     <div class="dashboard-grid">
                         <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
                         <div class="card"><p>Total Earning</p><h3 id="total-earning">0.00</h3></div>
@@ -145,12 +121,10 @@
                  <h2>Support</h2>
                 <div class="support-card">
                     <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="var(--primary-color)"><path d="M8 5v14l11-7z"></path></svg></div>
-                    <h3>Tutorial Video</h3>
+                    <h3>Tutorial</h3>
                     <p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p>
                     <button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button>
                 </div>
-                <!-- ========== অডিও টিউটোরিয়াল (বেস৬৪ এনকোডেড) ========== -->
-
                 <div class="support-card">
                     <p class="emoji-icons">👨‍💼 💬</p>
                     <p>সরাসরি Admin এর সাথে ম্যাসেজ করুন, প্রয়োজন ছাড়া ম্যাসেজ করবেন না।</p>
@@ -161,6 +135,51 @@
                     <p>সরাসরি Admin এর সাথে কথা বলুন, প্রয়োজন ছাড়া ফোন করবেন না।</p>
                     <button class="btn btn-primary" id="admin-call-btn">Admin Call</button>
                 </div>
+            </div>
+
+            <!-- ========== নতুন টিউটোরিয়াল পেজ এখানে যোগ করা হলো ========== -->
+            <div id="page-tutorial" class="page-content">
+                <header class="tutorial-header">
+                    <button class="back-btn" id="tutorial-back-btn">← Back</button>
+                    <h2>অ্যাপ ব্যবহার নির্দেশিকা</h2>
+                </header>
+                <main>
+                    <div class="tutorial-card">
+                        <div class="tutorial-card-header">
+                            <span class="icon">🏠</span><h3>হোম পেজ (Home Page)</h3>
+                        </div>
+                        <p>অ্যাপ খোলার পর যে পেজটি সবার আগে আসে, সেটিই হোম পেজ। এখানে আপনি আপনার আয়ের सारांश দেখতে পাবেন।</p>
+                        <ul>
+                            <li><strong>প্রোফাইল:</strong> সবার উপরে আপনার নাম, ছবি এবং বর্তমান ব্যালেন্স (কত টাকা আছে) দেখতে পাবেন।</li>
+                            <li><strong>ড্যাশবোর্ড:</strong> চারটি ছোট বক্সে আপনার মোট আয়, মোট ক্লিক, আজকের দেখা বিজ্ঞাপনের সংখ্যা এবং মোট রেফারেলের সংখ্যা দেখানো হয়।</li>
+                            <li><strong>রেফারেল লিঙ্ক:</strong> আপনার বন্ধুদের জয়েন করানোর জন্য একটি লিঙ্ক দেওয়া আছে। <strong>"Copy"</strong> বাটনে ক্লিক করে লিঙ্কটি কপি করুন অথবা <strong>"Share"</strong> বাটনে ক্লিক করে সরাসরি শেয়ার করুন।</li>
+                        </ul>
+                    </div>
+                    <div class="tutorial-card">
+                        <div class="tutorial-card-header">
+                            <span class="icon">📝</span><h3>কিভাবে কাজ করবেন (Tasks Page)</h3>
+                        </div>
+                        <p>টাকা আয় করার জন্য আপনাকে "Tasks" পেজে যেতে হবে। এখানে আয়ের জন্য বিভিন্ন অপশন রয়েছে।</p>
+                        <ul>
+                            <li><strong>বিজ্ঞাপন দেখা (Watch Ads):</strong> এটি প্রতিদিনের প্রধান কাজ। <strong>"Watch Ads"</strong> বাটনে ক্লিক করলে একটি বিজ্ঞাপন চালু হবে এবং ৩০ সেকেন্ড অপেক্ষা করতে হবে। সময় শেষ হলে আপনার অ্যাকাউন্টে স্বয়ংক্রিয়ভাবে টাকা যোগ হবে। আপনি দিনে মোট <strong>১৫টি</strong> বিজ্ঞাপন দেখতে পারবেন।</li>
+                            <li><strong>বিশেষ টাস্ক (Special Tasks):</strong> এখানে টেলিগ্রাম চ্যানেল বা ইউটিউব চ্যানেলে জয়েন করার মতো কাজ থাকবে। এই কাজগুলো একবারই করা যায় এবং এর জন্য আপনি এককালীন বোনাস পাবেন।</li>
+                        </ul>
+                    </div>
+                    <div class="tutorial-card">
+                        <div class="tutorial-card-header">
+                            <span class="icon">💸</span><h3>টাকা তোলা (Withdraw Page)</h3>
+                        </div>
+                        <p>আপনার আয় করা টাকা তোলার জন্য "Withdraw" পেজে যেতে হবে। তবে টাকা তোলার আগে দুটি শর্ত পূরণ করতে হবে:</p>
+                        <ul>
+                            <li><strong>১. ন্যূনতম ব্যালেন্স:</strong> আপনার অ্যাকাউন্টে নির্দিষ্ট পরিমাণ টাকা জমা থাকতে হবে।</li>
+                            <li><strong>২. ন্যূনতম রেফারেল:</strong> আপনাকে নির্দিষ্ট সংখ্যক বন্ধুকে সফলভাবে রেফার করতে হবে।</li>
+                        </ul>
+                        <p>এই দুটি শর্ত পূরণ হলে, আপনি আপনার বিকাশ বা নগদ নম্বর দিয়ে টাকা তোলার জন্য অনুরোধ করতে পারবেন। অনুরোধ করার ২৪-৭২ ঘণ্টার মধ্যে আপনার পেমেন্ট সম্পন্ন করা হবে।</p>
+                    </div>
+                    <div class="tutorial-footer">
+                        <p>আশা করি, এই নির্দেশিকাটি আপনাকে অ্যাপটি সহজে ব্যবহার করতে সাহায্য করবে।<br><strong>শুভকামনা!</strong></p>
+                    </div>
+                </main>
             </div>
             
             <div id="page-tasks" class="page-content">
@@ -205,17 +224,17 @@
     <nav class="bottom-nav">
         <button class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></button>
         <button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button>
-        <button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button>
+        <button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2-H7v2zm0 4h14v-2-H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button>
         <button class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></button>
     </nav>
     
     <script type="module">
-        // === Firebase SDK Imports (সঠিক সংস্করণ এবং auth যোগ করা হয়েছে) ===
+        // === Firebase SDK Imports ===
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-        // === আপনার নতুন Firebase কনফিগারেশন ===
+        // === Firebase কনফিগারেশন ===
         const firebaseConfig = {
           apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
           authDomain: "daily-earne-aea89.firebaseapp.com",
@@ -237,25 +256,18 @@
             try {
                 tg.ready();
                 tg.expand();
-
-                // 1. Firebase অ্যাপ এবং সার্ভিস চালু করুন
                 const app = initializeApp(firebaseConfig);
                 db = getDatabase(app);
                 auth = getAuth(app);
-                
-                // 2. Firebase-এ গোপনে সাইন-ইন করুন (এটাই মূল সমাধান)
                 await signInAnonymously(auth);
-
-                // 3. সাইন-ইন সফল হলে, অ্যাপের বাকি কাজ শুরু করুন
                 if (tg.initDataUnsafe?.user?.id) {
                     userId = tg.initDataUnsafe.user.id.toString();
                     currentUser = tg.initDataUnsafe.user;
                     userRef = ref(db, 'users/' + userId);
-                    await initializeAppLogic(); // এখন এই ফাংশনটি কল হবে
+                    await initializeAppLogic();
                 } else {
                     throw new Error("Telegram user could not be identified.");
                 }
-
             } catch (error) {
                 console.error("Initialization Failed:", error);
                 loadingOverlay.innerText = `Error: ${error.message}`;
@@ -265,62 +277,34 @@
         // === অ্যাপের মূল লজিক (ডেটা লোডিং ও UI সেটআপ) ===
         async function initializeAppLogic() {
             try {
-                // সেটিংস লোড করুন
                 const settingsRef = ref(db, 'settings');
                 const settingsSnapshot = await get(settingsRef);
-                if (settingsSnapshot.exists()) {
-                    appSettings = settingsSnapshot.val();
-                } else {
-                    applyDefaultSettings(); 
-                }
+                if (settingsSnapshot.exists()) appSettings = settingsSnapshot.val();
+                else applyDefaultSettings();
                 updateUIWithSettings();
                 handleWelcomePopup();
                 onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
-
-                // ব্যবহারকারীর ডেটা লোড বা তৈরি করুন
                 const userSnapshot = await get(userRef);
-                if (userSnapshot.exists()) {
-                    userData = userSnapshot.val();
-                } else {
-                    await createNewUser();
-                }
+                if (userSnapshot.exists()) userData = userSnapshot.val();
+                else await createNewUser();
                 updateAllUI();
                 onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
-
-                // অন্যান্য ফাংশন ও ইভেন্ট লিসেনার সেটআপ করুন
                 setupBroadcastListener();
                 setupUIEventListeners();
-                
-                // লোডিং স্ক্রিন সরিয়ে মূল কন্টেন্ট দেখান
                 document.querySelector('.container').style.display = 'block';
                 document.getElementById('loading-overlay').style.display = 'none';
-
             } catch (error) {
                 console.error("App Logic Error:", error);
                 document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
             }
         }
         
-        // --- আপনার বাকি সকল ফাংশন (createNewUser, updateAllUI, ইত্যাদি) এখানে অপরিবর্তিত থাকবে ---
-        // ... (নিচের কোডটি আপনার আগের কোডের মতোই) ...
-
         async function createNewUser() {
             const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
             const userName = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim() || 'Telegram User';
-
-            const newUser = {
-                name: userName,
-                balance: 0,
-                referrals: 0,
-                totalClicks: 0,
-                adsWatched: 0,
-                joinDate: new Date().toISOString(),
-                referredBy: referrerId || null
-            };
-
+            const newUser = { name: userName, balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(), referredBy: referrerId || null };
             await set(userRef, newUser);
             userData = newUser;
-
             if (referrerId && referrerId !== String(userId)) {
                 const referrerRef = ref(db, 'users/' + referrerId);
                 try {
@@ -330,9 +314,7 @@
                         const newReferralCount = (referrerData.referrals || 0) + 1; 
                         const referralBonus = appSettings.referralReward || 0;
                         const updates = { referrals: newReferralCount };
-                        if (referralBonus > 0) {
-                            updates.balance = (referrerData.balance || 0) + referralBonus;
-                        }
+                        if (referralBonus > 0) updates.balance = (referrerData.balance || 0) + referralBonus;
                         await update(referrerRef, updates);
                     }
                 } catch (error) { console.error("Referrer update failed:", error); }
@@ -368,11 +350,10 @@
 
         function applyDefaultSettings() { 
             appSettings = { 
-                welcomeMessageTitle: 'স্বাগতম!', 
-                welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', 
+                welcomeMessageTitle: 'স্বাগতম!', welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', 
                 noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>অ্যাপের নিয়মকানুন মেনে কাজ করুন।</p>', 
                 referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20,
-                tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' 
+                adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' 
             }; 
         }
 
@@ -385,65 +366,35 @@
             document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`; 
             document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; 
             if(userData && Object.keys(userData).length) checkWithdrawEligibility(); 
-        
-    // --- Marquee Text Logic Start ---
-    const marqueeElement = document.getElementById('offer-text');
-    const marqueeContainer = document.querySelector('.marquee-container');
-
-    // অ্যাডমিন প্যানেল থেকে marqueeText সেট করা আছে কিনা তা পরীক্ষা করুন
-    if (appSettings && appSettings.marqueeText && marqueeElement && marqueeContainer) {
-        
-        const text = appSettings.marqueeText.trim(); // অপ্রয়োজনীয় স্পেস দূর করুন
-
-        if (text) {
-            // 1. মূল লেখাটি আপডেট করুন
-            marqueeElement.innerText = text;
-            
-            // 2. CSS ক্লোনের জন্য 'data-text' attribute-এ লেখাটি সেট করুন
-            marqueeElement.dataset.text = text;
-            
-            // Marquee কন্টেইনারটি দৃশ্যমান করুন
-            marqueeContainer.style.display = 'block';
-        } else {
-            // যদি টেক্সট খালি থাকে, তাহলে Marquee লুকিয়ে রাখুন
-            marqueeContainer.style.display = 'none';
+            const marqueeElement = document.getElementById('offer-text'), marqueeContainer = document.querySelector('.marquee-container');
+            if (appSettings && appSettings.marqueeText && appSettings.marqueeText.trim()) {
+                marqueeElement.innerText = appSettings.marqueeText.trim();
+                marqueeElement.dataset.text = appSettings.marqueeText.trim();
+                marqueeContainer.style.display = 'block';
+            } else {
+                marqueeContainer.style.display = 'none';
+            }
         }
 
-    } else if (marqueeContainer) {
-        // যদি marqueeText সেট করা না থাকে, তাহলে Marquee লুকিয়ে রাখুন
-        marqueeContainer.style.display = 'none';
-    }
-    // --- Marquee Text Logic End ---
-        
-        }
-
-        function handleWelcomePopup() { 
-            if (appSettings.welcomeMessageBody) { 
-                setTimeout(() => { document.getElementById('welcome-popup').classList.add('show'); }, 500); 
-            } 
-        }
+        function handleWelcomePopup() { if (appSettings.welcomeMessageBody) setTimeout(() => document.getElementById('welcome-popup').classList.add('show'), 500); }
 
         function updateAllUI() {
             if (!userData) return;
             let userNameDisplay = (currentUser.first_name || 'User') + (currentUser.last_name ? ' ' + currentUser.last_name : ''); 
             document.getElementById('user-name').innerHTML = `${userNameDisplay.trim()} <span class="verified-tick">✔</span>`;
             if (currentUser.photo_url) document.getElementById('user-photo').src = currentUser.photo_url;
-            
             document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
             document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
             document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
             document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
             document.getElementById('total-referrals').innerText = userData.referrals || 0; 
             document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`; // আপনার বটের ইউজারনেম দিন
-
             const watchAdsBtn = document.getElementById('watch-ads-btn');
             if ((userData.adsWatched || 0) >= 15) {
                 watchAdsBtn.textContent = 'Daily Limit Reached';
                 watchAdsBtn.disabled = true;
             } else {
-                if (!watchAdsBtn.textContent.includes('Watch Ads')) {
-                    watchAdsBtn.textContent = 'Watch Ads';
-                }
+                if (!watchAdsBtn.textContent.includes('Watch Ads')) watchAdsBtn.textContent = 'Watch Ads';
                 watchAdsBtn.disabled = false;
             }
             checkWithdrawEligibility();
@@ -452,8 +403,7 @@
         function checkWithdrawEligibility() { 
             const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 99999); 
             const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 999); 
-            const balanceStatusEl = document.getElementById('balance-status'); 
-            const referralStatusEl = document.getElementById('referral-status'); 
+            const balanceStatusEl = document.getElementById('balance-status'), referralStatusEl = document.getElementById('referral-status'); 
             balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 0}`; 
             balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`; 
             referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 0}`; 
@@ -461,6 +411,7 @@
             document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals); 
         }
 
+        // ========== আপডেটেড UI Event Listeners ==========
         function setupUIEventListeners() { 
             document.getElementById('popup-close').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show')); 
             document.getElementById('popup-understand-btn').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show')); 
@@ -487,11 +438,24 @@
                     setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000); 
                 }); 
             }); 
+
             document.getElementById('share-btn').addEventListener('click', () => { 
                 const shareText = `🔥 এই অ্যাপ থেকে খুব সহজেই ইনকাম করুন! 🔥\n\n রেফারেল লিঙ্ক ব্যবহার করে ইনকাম করুন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস নিন।`; 
                 tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`); 
             }); 
-            document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink(appSettings.tutorialLink || '#', {try_instant_view: true})); 
+            
+            // টিউটোরিয়াল বাটন ক্লিক ইভেন্ট
+            document.getElementById('open-tutorial-btn').addEventListener('click', () => {
+                document.querySelector('.page-content.active').classList.remove('active');
+                document.getElementById('page-tutorial').classList.add('active');
+            });
+            
+            // টিউটোরিয়াল পেজের Back বাটন ক্লিক ইভেন্ট
+            document.getElementById('tutorial-back-btn').addEventListener('click', () => {
+                document.getElementById('page-tutorial').classList.remove('active');
+                document.getElementById('page-support').classList.add('active');
+            });
+
             document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink(appSettings.adminChatLink || '#')); 
             document.getElementById('admin-call-btn').addEventListener('click', () => { if(appSettings.adminCallLink) window.location.href = appSettings.adminCallLink; }); 
             document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds); 
@@ -502,9 +466,7 @@
 
         function handleWatchAds() { 
             const watchAdsBtn = document.getElementById('watch-ads-btn'); 
-            if ((userData.adsWatched || 0) >= 15) { 
-                tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; 
-            } 
+            if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; } 
             watchAdsBtn.disabled = true; 
             if (typeof show_8954258 === 'function') { 
                 show_8954258(); 
@@ -543,27 +505,13 @@
             const method = document.querySelector('input[name="payment_method"]:checked').value; 
             const number = document.getElementById('account-number').value.trim(); 
             const minAmount = appSettings.minWithdrawAmount || 500; 
-            if (!amount || amount < minAmount) { 
-                tg.showAlert(`দুঃখিত, সর্বনিম্ন ${minAmount} টাকা উইথড্র করতে পারবেন।`); return; 
-            } 
-            if (amount > userData.balance) { 
-                tg.showAlert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।'); return; 
-            } 
-            if (number.length !== 11 || !/^\d+$/.test(number)) { 
-                tg.showAlert('দয়া করে একটি সঠিক ১১ ডিজিটের অ্যাকাউন্ট নম্বর দিন।'); return; 
-            } 
+            if (!amount || amount < minAmount) { tg.showAlert(`দুঃখিত, সর্বনিম্ন ${minAmount} টাকা উইথড্র করতে পারবেন।`); return; } 
+            if (amount > userData.balance) { tg.showAlert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।'); return; } 
+            if (number.length !== 11 || !/^\d+$/.test(number)) { tg.showAlert('দয়া করে একটি সঠিক ১১ ডিজিটের অ্যাকাউন্ট নম্বর দিন।'); return; } 
             tg.showConfirm(`আপনি কি নিশ্চিত যে আপনি ${amount} টাকা আপনার ${method} নম্বর ${number}-এ পাঠাতে চান?`, (ok) => { 
                 if (ok) { 
                     const newBalance = userData.balance - amount; 
-                    const withdrawalRequest = { 
-                        userId, 
-                        userName: userData.name, 
-                        amount, 
-                        method, 
-                        accountNumber: number, 
-                        timestamp: serverTimestamp(), 
-                        status: 'pending' 
-                    }; 
+                    const withdrawalRequest = { userId, userName: userData.name, amount, method, accountNumber: number, timestamp: serverTimestamp(), status: 'pending' }; 
                     const newRequestRef = push(ref(db, 'withdrawals/pending')); 
                     set(newRequestRef, withdrawalRequest).then(() => { 
                         update(userRef, { balance: newBalance }); 
@@ -575,9 +523,7 @@
         }
 
         function activateUnlockTask(taskCardElement, url, isTelegramLink) { 
-            if (!url || url === '#') { 
-                tg.showAlert("This task is not available right now."); return; 
-            } 
+            if (!url || url === '#') { tg.showAlert("This task is not available right now."); return; } 
             isTelegramLink ? tg.openTelegramLink(url) : tg.openLink(url, {try_instant_view: true}); 
             let unlockCounter = 0; 
             const requiredClicks = 10, rewardAmount = 10; 
