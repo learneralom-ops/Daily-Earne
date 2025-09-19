@@ -602,29 +602,6 @@
                 } 
             }); 
         }
-
-
-        
-auth.signInAnonymously()
-    .then(() => {
-      console.log("✅ Firebase Auth সফল হয়েছে");
-      const user = auth.currentUser;
-      console.log("User UID:", user.uid);
-
-      // এবার ইউজার ডেটা ডাটাবেজে লিখতে পারবেন
-      database.ref("users/" + user.uid).set({
-        name: "New Telegram User",
-        balance: 0,
-        referrals: 0,
-        totalClicks: 0,
-        adsWatched: 0,
-        joinDate: new Date().toISOString()
-      });
-    })
-    .catch((error) => {
-      console.error("Auth Error:", error);
-    });
-
         
     </script>
 </body>
