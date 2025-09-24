@@ -454,10 +454,8 @@
         // =========================================================
 
         // --- Giga Pub বিজ্ঞাপন দেখানোর ফাংশন ---
-        async function showGigapubAd() {
-      try { await window.showGiga(); return true; }
-      catch(e){ console.log('Ad not shown', e); return false; }
-    }
+        function showGigaPubAd() {
+            console.log("Attempting to show Giga Pub Ad...");
             // Giga Pub SDK কোনো নির্দিষ্ট ফাংশন দিলে সেটি এখানে লিখতে হবে।
             // উদাহরণস্বরূপ: if (typeof gigapub.show === 'function') { gigapub.show(); }
             // আপাতত, আমরা ধরে নিচ্ছি SDK নিজে থেকেই কাজ করবে।
