@@ -6,7 +6,9 @@
     <title>Daily Earning</title>
     <!-- Telegram Web App Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Giga pub SDK (এখন সব বাটনের জন্য ব্যবহৃত) -->
+    <!-- Monetag SDK Code -->
+    <script src='//libtl.com/sdk.js' data-zone='8954258' data-sdk='show_8954258'></script>
+    <!-- Giga pub SDK -->
     <script src="https://ad.gigapub.tech/script?id=3247"></script> 
 
     <style>
@@ -50,11 +52,15 @@
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; } .popup-overlay.show { opacity: 1; visibility: visible; display: flex;} .popup-content { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; }
         .popup-body { text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 10px; }
         .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .unlock-task-icon { width: 50px; height: 50px; margin-bottom: 15px; }
+        .btn-unlock { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 90%; max-width: 350px; padding: 14px; border-radius: 50px; }
         #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
         .marquee-container { width: 100%; background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 8px; padding: 2px 2; margin-bottom: 20px; overflow: hidden; white-space: nowrap; box-sizing: border-box; display: none; }
         .marquee-text { display: inline-block; color: var(--text-color); font-weight: 500; padding-left: 100%; animation: marquee-animation 25s linear infinite; position: relative; width: fit-content; }
         .marquee-text::after { content: attr(data-text); position: absolute; top: 0; left: 100%; padding-left: 50px; width: 100%; }
         @keyframes marquee-animation { 0% { transform: translateX(0%); } 100% { transform: translateX(-200%); } }
+
+        /* ========== নতুন অথেন্টিকেশন সেকশনের CSS ========== */
         #auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         .auth-card { background-color: var(--card-color); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; text-align: center; }
         .auth-logo { width: 80px; height: 80px; margin-bottom: 20px; border-radius: 50%; object-fit: cover; }
@@ -67,6 +73,8 @@
         .btn-google svg { width: 20px; height: 20px; }
         .form-switcher { margin-top: 25px; font-size: 0.9rem; color: var(--secondary-text-color); }
         .form-switcher a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+
+        /* ========== নতুন হোম পেজের জন্য CSS ========== */
         .home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
         .home-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: transform 0.2s, background-color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
         .home-card:hover { transform: translateY(-5px); background-color: rgba(0, 123, 255, 0.2); }
@@ -79,11 +87,41 @@
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 9999; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem;">Loading...</div>
-    <div id="auth-container" style="display: none;"><div class="auth-card"><img src="https://i.ibb.co/hR5z06w/auth-logo.png" alt="App Logo" class="auth-logo"><h2 class="auth-title">Daily Earning 💰</h2><form id="signup-form"><div class="form-group"><input type="text" id="signup-name" class="form-control" placeholder="Full Name" required></div><div class="form-group"><input type="tel" id="signup-mobile" class="form-control" placeholder="Mobile Number" required></div><div class="form-group"><input type="email" id="signup-email" class="form-control" placeholder="Email" required></div><div class="form-group"><input type="password" id="signup-password" class="form-control" placeholder="Password" required></div><button type="submit" class="btn btn-primary">Sign Up</button><p class="form-switcher">Already have an account? <a href="#" id="show-login">Login</a></p></form><form id="login-form" style="display: none;"><div class="form-group"><input type="email" id="login-email" class="form-control" placeholder="Email" required></div><div class="form-group"><input type="password" id="login-password" class="form-control" placeholder="Password" required></div><button type="submit" class="btn btn-primary">Login</button><p class="form-switcher">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p></form><div class="divider">OR</div><button type="button" id="google-signin-btn" class="btn btn-google"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg><span>Sign in with Google</span></button></div></div>
+
+    <!-- ========== লগইন/সাইন-আপ সেকশন ========== -->
+    <div id="auth-container" style="display: none;">
+        <div class="auth-card">
+            <img src="https://i.ibb.co/hR5z06w/auth-logo.png" alt="App Logo" class="auth-logo">
+            <h2 class="auth-title">Daily Earning 💰</h2>
+            <form id="signup-form">
+                <div class="form-group"><input type="text" id="signup-name" class="form-control" placeholder="Full Name" required></div>
+                <div class="form-group"><input type="tel" id="signup-mobile" class="form-control" placeholder="Mobile Number" required></div>
+                <div class="form-group"><input type="email" id="signup-email" class="form-control" placeholder="Email" required></div>
+                <div class="form-group"><input type="password" id="signup-password" class="form-control" placeholder="Password" required></div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+                 <p class="form-switcher">Already have an account? <a href="#" id="show-login">Login</a></p>
+            </form>
+            <form id="login-form" style="display: none;">
+                <div class="form-group"><input type="email" id="login-email" class="form-control" placeholder="Email" required></div>
+                <div class="form-group"><input type="password" id="login-password" class="form-control" placeholder="Password" required></div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p class="form-switcher">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+            </form>
+            <div class="divider">OR</div>
+            <button type="button" id="google-signin-btn" class="btn btn-google">
+                <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+                <span>Sign in with Google</span>
+            </button>
+        </div>
+    </div>
+    <!-- ========== লগইন/সাইন-আপ সেকশন শেষ ========== -->
+
+
     <div class="popup-overlay" id="welcome-popup"><div class="popup-content"><button class="popup-close-btn" id="popup-close">&times;</button><div class="popup-body" id="welcome-content-wrapper"></div><button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button></div></div>
     <div class="popup-overlay" id="notice-popup"><div class="popup-content"><button class="popup-close-btn" id="notice-close-btn">&times;</button><div class="popup-body" id="notice-body"></div></div></div>
     <div class="popup-overlay" id="broadcast-popup"><div class="popup-content"><button class="popup-close-btn" id="broadcast-close-btn">&times;</button><div class="popup-body"><h2>📢 Message from Admin</h2><img id="broadcast-image" src="" alt="Broadcast Image"><div id="broadcast-body" style="white-space: pre-wrap; word-wrap: break-word;"></div></div></div></div>
 
+    <!-- এটি মূল অ্যাপ কন্টেইনার, যা লগইন করার পর দেখানো হবে -->
     <div class="container" style="display: none;">
         <div class="header-container">
             <header class="profile-section">
@@ -97,6 +135,7 @@
         </div>
         
         <div id="page-wrapper">
+            <!-- ===== নতুন হোম পেজ ===== -->
             <div id="page-home" class="page-content active">
                 <div class="marquee-container"><p class="marquee-text" id="offer-text"></p></div>
                 <div class="home-grid">
@@ -104,7 +143,6 @@
                         <span class="home-card-icon">🎁</span>
                         <h4 class="home-card-title">Daily Bonus</h4>
                     </button>
-                    <!-- এই বাটনগুলোতে giga-ad-trigger ক্লাস যোগ করা হয়েছে -->
                     <button class="home-card giga-ad-trigger">
                         <span class="home-card-icon">📺</span>
                         <h4 class="home-card-title">Watch Ads</h4>
@@ -118,27 +156,116 @@
                         <h4 class="home-card-title">Start Earn</h4>
                     </button>
                 </div>
-                <div class="auto-ads-container"><button class="btn btn-secondary" id="auto-ads-btn">▶️ Auto Ads</button><button class="btn btn-primary" id="stop-ads-btn" disabled>⏹️ Stop Ads</button></div>
-                <a href="https://t.me/LearnerAlom" target="_blank" class="btn developer-btn">Developer By Learner Alom</a>
-                <div class="referral-section"><h3 id="referral-title">Refer & Earn More!</h3><p class="referral-text" id="referral-desc">রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন।</p><div><input type="text" id="referral-link" value="Loading..." readonly></div><button class="btn btn-primary" id="copy-btn">Copy Referral Link</button><button class="btn btn-secondary" id="share-btn">🔗 Share Now</button></div>
+
+                <div class="auto-ads-container">
+                    <button class="btn btn-secondary" id="auto-ads-btn">▶️ Auto Ads</button>
+                    <button class="btn btn-primary" id="stop-ads-btn" disabled>⏹️ Stop Ads</button>
+                </div>
+
+                <a href="https://t.me/LearnerAlom" target="_blank" class="btn developer-btn">
+                    Developer By Learner Alom
+                </a>
+                
+                <!-- রেফারেল সেকশনটি এখানে আনা হয়েছে -->
+                <div class="referral-section">
+                    <h3 id="referral-title">Refer & Earn More!</h3>
+                    <p class="referral-text" id="referral-desc">রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন।</p>
+                    <div><input type="text" id="referral-link" value="Loading..." readonly></div>
+                    <button class="btn btn-primary" id="copy-btn">Copy Referral Link</button>
+                    <button class="btn btn-secondary" id="share-btn">🔗 Share Now</button>
+                </div>
             </div>
 
-            <!-- অন্যান্য পেজগুলো এখানে অপরিবর্তিত থাকবে -->
-            <div id="page-account" class="page-content"><main><h2>My Account ✅</h2><div class="dashboard-grid"><div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div><div class="card"><p>Total Earning</p><h3 id="total-earning">0.00</h3></div><div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div><div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div></div><button id="logout-btn" class="btn" style="background-color: var(--error-color); color: white; margin-top: 25px;">Log Out</button></main></div>
-            <div id="page-support" class="page-content"><h2>Support</h2><div class="support-card"><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="var(--primary-color)"><path d="M8 5v14l11-7z"></path></svg></div><h3>Tutorial Video</h3><p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p><button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button></div><div class="support-card"><p class="emoji-icons">👨‍💼 💬</p><p>সরাসরি Admin এর সাথে ম্যাসেজ করুন, প্রয়োজন ছাড়া ম্যাসেজ করবেন না।</p><button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button></div><div class="support-card"><p class="emoji-icons">👨‍💼 ☎️</p><p>সরাসরি Admin এর সাথে কথা বলুন, প্রয়োজন ছাড়া ফোন করবেন না।</p><button class="btn btn-primary" id="admin-call-btn">Admin Call</button></div></div>
-            <div id="page-tasks" class="page-content"><div class="task-card" id="task-card-ads"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg><p class="task-description" id="ad-task-desc">প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং আয় করুন।</p><button class="btn btn-primary task-btn" id="watch-ads-btn-taskpage">Watch Ads</button></div><div class="task-card" id="task-card-telegram"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.9,2.1A1.1,1.1,0,0,0,20.5.4l-18,6.9A1,1,0,0,0,2,8.5,1,1,0,0,0,2.6,9.4l5.4,2.5,2.5,5.4a1,1,0,0,0,.9.6h0a1,1,0,0,0,.9-.7l6.9-18A1.1,1.1,0,0,0,21.9,2.1ZM5.5,10.6,18,5.1,9.4,18.6,7.6,14l-4-1.9Z"></path></svg><p class="task-description">টেলিগ্রাম চ্যানেলে জয়েন করে ১০ টাকা ইনকাম করুন।</p><button class="btn btn-primary task-btn" id="join-telegram-btn">Join Channel</button></div><div class="task-card" id="task-card-youtube"><svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.58 7.19c-.23-.86-.9-1.52-1.76-1.75C18.25 5 12 5 12 5s-6.25 0-7.82.44c-.86-.23-1.52.89-1.76 1.75C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.9 1.52 1.76 1.75C5.75 19 12 19 12 19s6.25 0 7.82-.44c.86-.23 1.52-.89 1.76-1.75C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.5 15.5V8.5l6 3.5-6 3.5z"></path></svg><p class="task-description">ইউটিউব চ্যানেল সাবস্ক্রাইব করে ১০ টাকা ইনকাম করুন।</p><button class="btn btn-primary task-btn" id="subscribe-youtube-btn">YouTube Channel</button></div></div>
-            <div id="page-withdraw" class="page-content"><h2>Withdraw</h2><div class="withdraw-notice"><p>উইথড্র করার জন্য নিচের শর্তগুলো পূরণ করতে হবে:</p><ul class="requirements"><li><span id="balance-req-text">মিনিমাম ব্যালেন্স.</span><span id="balance-status" class="status"></span></li><li><span id="referral-req-text">মিনমাম রেফারেল.</span><span id="referral-status" class="status"></span></li></ul></div><div class="card" id="withdraw-form-card"><form id="withdraw-form"><div class="form-group"><label for="withdraw-amount">টাকার পরিমাণ</label><input type="number" id="withdraw-amount" class="form-control" placeholder="e.g., 500"></div><div class="form-group"><label>পেমেন্ট পদ্ধতি</label><div class="payment-method-selector"><input type="radio" id="bkash" name="payment_method" value="Bkash" checked=""><label for="bkash">বিকাশ</label><input type="radio" id="nogod" name="payment_method" value="Nogod"><label for="nogod">নগদ</label></div></div><div class="form-group"><label for="account-number">অ্যাকাউন্ট নম্বর</label><input type="tel" id="account-number" class="form-control" placeholder="আপনার ১১ ডিজিটের নম্বর দিন"></div><button type="submit" class="btn btn-primary" id="withdraw-submit-btn" disabled>Request Withdraw</button></form></div></div>
-
+            <!-- ===== অ্যাকাউন্ট পেজ (এখন খালি নয়, তবে রেফারেল সেকশনটি হোমে সরানো হয়েছে) ===== -->
+            <div id="page-account" class="page-content">
+                <main>
+                    <h2>My Account ✅</h2>
+                    <div class="dashboard-grid">
+                        <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
+                        <div class="card"><p>Total Earning</p><h3 id="total-earning">0.00</h3></div>
+                        <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
+                        <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
+                    </div>
+                    <!-- ===== নতুন লগ আউট বাটন ===== -->
+                    <button id="logout-btn" class="btn" style="background-color: var(--error-color); color: white; margin-top: 25px;">Log Out</button>
+                </main>
+            </div>
+            
+            <div id="page-support" class="page-content">
+                 <h2>Support</h2>
+                <div class="support-card">
+                    <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="var(--primary-color)"><path d="M8 5v14l11-7z"></path></svg></div>
+                    <h3>Tutorial Video</h3>
+                    <p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p>
+                    <button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button>
+                </div>
+                <div class="support-card">
+                    <p class="emoji-icons">👨‍💼 💬</p>
+                    <p>সরাসরি Admin এর সাথে ম্যাসেজ করুন, প্রয়োজন ছাড়া ম্যাসেজ করবেন না।</p>
+                    <button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button>
+                </div>
+                <div class="support-card">
+                    <p class="emoji-icons">👨‍💼 ☎️</p>
+                    <p>সরাসরি Admin এর সাথে কথা বলুন, প্রয়োজন ছাড়া ফোন করবেন না।</p>
+                    <button class="btn btn-primary" id="admin-call-btn">Admin Call</button>
+                </div>
+            </div>
+            
+            <div id="page-tasks" class="page-content">
+                 <div class="task-card" id="task-card-ads">
+                    <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                    <p class="task-description" id="ad-task-desc">প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং আয় করুন।</p>
+                    <button class="btn btn-primary task-btn" id="watch-ads-btn">Watch Ads</button>
+                </div>
+                <div class="task-card" id="task-card-telegram">
+                    <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.9,2.1A1.1,1.1,0,0,0,20.5.4l-18,6.9A1,1,0,0,0,2,8.5,1,1,0,0,0,2.6,9.4l5.4,2.5,2.5,5.4a1,1,0,0,0,.9.6h0a1,1,0,0,0,.9-.7l6.9-18A1.1,1.1,0,0,0,21.9,2.1ZM5.5,10.6,18,5.1,9.4,18.6,7.6,14l-4-1.9Z"></path></svg>
+                    <p class="task-description">টেলিগ্রাম চ্যানেলে জয়েন করে ১০ টাকা ইনকাম করুন।</p>
+                    <button class="btn btn-primary task-btn" id="join-telegram-btn">Join Channel</button>
+                </div>
+                <div class="task-card" id="task-card-youtube">
+                    <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M21.58 7.19c-.23-.86-.9-1.52-1.76-1.75C18.25 5 12 5 12 5s-6.25 0-7.82.44c-.86-.23-1.52.89-1.76 1.75C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.9 1.52 1.76 1.75C5.75 19 12 19 12 19s6.25 0 7.82-.44c.86-.23 1.52-.89 1.76-1.75C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.5 15.5V8.5l6 3.5-6 3.5z"></path></svg>
+                    <p class="task-description">ইউটিউব চ্যানেল সাবস্ক্রাইব করে ১০ টাকা ইনকাম করুন।</p>
+                    <button class="btn btn-primary task-btn" id="subscribe-youtube-btn">YouTube Channel</button>
+                </div>
+            </div>
+             
+            <div id="page-withdraw" class="page-content">
+                <h2>Withdraw</h2>
+                <div class="withdraw-notice">
+                    <p>উইথড্র করার জন্য নিচের শর্তগুলো পূরণ করতে হবে:</p>
+                    <ul class="requirements">
+                        <li><span id="balance-req-text">মিনিমাম ব্যালেন্স.</span><span id="balance-status" class="status"></span></li>
+                        <li><span id="referral-req-text">মিনমাম রেফারেল.</span><span id="referral-status" class="status"></span></li>
+                    </ul>
+                </div>
+                <div class="card" id="withdraw-form-card">
+                    <form id="withdraw-form">
+                        <div class="form-group"><label for="withdraw-amount">টাকার পরিমাণ</label><input type="number" id="withdraw-amount" class="form-control" placeholder="e.g., 500"></div>
+                        <div class="form-group"><label>পেমেন্ট পদ্ধতি</label><div class="payment-method-selector"><input type="radio" id="bkash" name="payment_method" value="Bkash" checked=""><label for="bkash">বিকাশ</label><input type="radio" id="nogod" name="payment_method" value="Nogod"><label for="nogod">নগদ</label></div></div>
+                        <div class="form-group"><label for="account-number">অ্যাকাউন্ট নম্বর</label><input type="tel" id="account-number" class="form-control" placeholder="আপনার ১১ ডিজিটের নম্বর দিন"></div>
+                        <button type="submit" class="btn btn-primary" id="withdraw-submit-btn" disabled>Request Withdraw</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     
-    <nav class="bottom-nav" style="display: none;"><button class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></button><button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button><button class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></button><button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button><button class="nav-item" data-page="account"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Account</span></button></nav>
+    <!-- ===== পরিবর্তিত নেভিগেশন বার ===== -->
+    <nav class="bottom-nav" style="display: none;"><!-- লগইন করার পর দেখানো হবে -->
+        <button class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></button>
+        <button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button>
+        <button class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></button>
+        <button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button>
+        <button class="nav-item" data-page="account"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Account</span></button>
+    </nav>
     
     <script type="module">
+        // === Firebase SDK Imports (signOut যোগ করা হয়েছে) ===
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
+        // === আপনার Firebase কনফিগারেশন ===
         const firebaseConfig = {
           apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
           authDomain: "daily-earne-aea89.firebaseapp.com",
@@ -149,178 +276,382 @@
           appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
         };
         
+        // === Global Variables ===
         let db, auth;
         let firebaseUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
         let autoAdsInterval = null;
         const tg = window.Telegram.WebApp;
 
+        // === মূল অ্যাপ চালু করার ফাংশন ===
         document.addEventListener("DOMContentLoaded", () => {
             tg.ready();
             tg.expand();
+            
             const app = initializeApp(firebaseConfig);
             db = getDatabase(app);
             auth = getAuth(app);
+
             setupAuthEventListeners(); 
+
             onAuthStateChanged(auth, async (user) => {
                 const loadingOverlay = document.getElementById('loading-overlay');
                 const authContainer = document.getElementById('auth-container');
                 const mainContainer = document.querySelector('.container');
                 const bottomNav = document.querySelector('.bottom-nav');
+
                 if (user) {
-                    firebaseUser = user; userId = user.uid; userRef = ref(db, 'users/' + userId);
-                    authContainer.style.display = 'none'; loadingOverlay.style.display = 'flex';
+                    firebaseUser = user;
+                    userId = user.uid;
+                    userRef = ref(db, 'users/' + userId);
+                    authContainer.style.display = 'none';
+                    loadingOverlay.style.display = 'flex';
                     await initializeAppLogic();
-                    mainContainer.style.display = 'block'; bottomNav.style.display = 'flex';
+                    mainContainer.style.display = 'block';
+                    bottomNav.style.display = 'flex';
                     loadingOverlay.style.display = 'none';
                 } else {
-                    loadingOverlay.style.display = 'none'; mainContainer.style.display = 'none';
-                    bottomNav.style.display = 'none'; authContainer.style.display = 'flex';
+                    loadingOverlay.style.display = 'none';
+                    mainContainer.style.display = 'none';
+                    bottomNav.style.display = 'none';
+                    authContainer.style.display = 'flex';
                 }
             });
         });
 
+        // === অ্যাপের মূল লজিক (ডেটা লোডিং ও UI সেটআপ) ===
         async function initializeAppLogic() {
             try {
                 const settingsRef = ref(db, 'settings');
                 const settingsSnapshot = await get(settingsRef);
                 appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
                 if (!appSettings.welcomeMessageTitle) applyDefaultSettings();
-                updateUIWithSettings(); handleWelcomePopup();
+                updateUIWithSettings();
+                handleWelcomePopup();
                 onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
+
                 const userSnapshot = await get(userRef);
-                if (userSnapshot.exists()) { userData = userSnapshot.val(); } else { await createNewUser(firebaseUser); }
+                if (userSnapshot.exists()) {
+                    userData = userSnapshot.val();
+                } else {
+                    await createNewUser(firebaseUser);
+                }
                 updateAllUI();
                 onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
-                setupBroadcastListener(); setupUIEventListeners();
-            } catch (error) { console.error("App Logic Error:", error); document.getElementById('loading-overlay').innerText = `Error: ${error.message}`; }
+
+                setupBroadcastListener();
+                setupUIEventListeners();
+                
+            } catch (error) {
+                console.error("App Logic Error:", error);
+                document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
+            }
         }
         
-        // --- আপনার অনুরোধ অনুযায়ী পরিবর্তিত এবং নতুন ফাংশনসমূহ ---
+        // ===== লগআউট ফাংশন =====
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                console.log("User signed out successfully.");
+            } catch (error) {
+                console.error("Sign out error:", error);
+                tg.showAlert("Log out failed. Please try again.");
+            }
+        }
+        
+        // === অথেন্টিকেশন ফাংশনসমূহ ===
+        function setupAuthEventListeners() {
+            const signupForm = document.getElementById('signup-form');
+            const loginForm = document.getElementById('login-form');
+            const googleBtn = document.getElementById('google-signin-btn');
+            const showLoginLink = document.getElementById('show-login');
+            const showSignupLink = document.getElementById('show-signup');
 
-        // --- Daily Bonus হ্যান্ডেল করার নতুন ফাংশন (Giga Pub ব্যবহার করে) ---
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: name });
+                } catch (error) { alert("Sign up failed: " + error.message); }
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                try { await signInWithEmailAndPassword(auth, email, password); } 
+                catch (error) { alert("Login failed: " + error.message); }
+            });
+
+            googleBtn.addEventListener('click', async () => {
+                const provider = new GoogleAuthProvider();
+                try { await signInWithPopup(auth, provider); }
+                catch (error) { alert("Google sign-in failed: " + error.message); }
+            });
+
+            showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.style.display = 'none'; loginForm.style.display = 'block'; });
+            showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; signupForm.style.display = 'block'; });
+        }
+        
+        async function createNewUser(user) {
+            const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+            const telegramUser = tg.initDataUnsafe?.user || {};
+            const mobileNumber = document.getElementById('signup-mobile')?.value || '';
+            const newUser = {
+                name: user.displayName || telegramUser.first_name || 'New User', email: user.email, mobile: mobileNumber, photoUrl: user.photoURL || telegramUser.photo_url || null, balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(), referredBy: referrerId || null, lastBonusClaimed: null
+            };
+            await set(userRef, newUser);
+            userData = newUser;
+
+            if (referrerId && referrerId !== String(userId)) {
+                 const referrerRef = ref(db, 'users/' + referrerId);
+                try {
+                    const snapshot = await get(referrerRef);
+                    if (snapshot.exists()) {
+                        const referrerData = snapshot.val();
+                        const newReferralCount = (referrerData.referrals || 0) + 1;
+                        const referralBonus = appSettings.referralReward || 0;
+                        const updates = { referrals: newReferralCount };
+                        if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
+                        await update(referrerRef, updates);
+                    }
+                } catch (error) { console.error("Referrer update failed:", error); }
+            }
+        }
+        
+        function updateAllUI() {
+            if (!userData || !firebaseUser) return;
+            document.getElementById('user-name').innerHTML = `${userData.name || firebaseUser.displayName || 'User'} <span class="verified-tick">✔</span>`;
+            document.getElementById('user-photo').src = userData.photoUrl || firebaseUser.photoURL || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
+            document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
+            document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
+            document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
+            document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
+            document.getElementById('total-referrals').innerText = userData.referrals || 0; 
+            document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
+            const watchAdsBtn = document.getElementById('watch-ads-btn');
+            if ((userData.adsWatched || 0) >= 15) {
+                watchAdsBtn.textContent = 'Daily Limit Reached';
+                watchAdsBtn.disabled = true;
+            } else {
+                if (!watchAdsBtn.textContent.includes('Watch Ads')) { watchAdsBtn.textContent = 'Watch Ads'; }
+                watchAdsBtn.disabled = false;
+            }
+            checkWithdrawEligibility();
+            updateDailyBonusButtonState();
+        }
+
+        // =========================================================
+        // === নতুন এবং পরিবর্তিত হোম পেজের ফাংশনসমূহ (আপনার চাহিদা অনুযায়ী) ===
+        // =========================================================
+        
+        // --- Daily Bonus বাটনের অবস্থা আপডেট করার ফাংশন ---
+        function updateDailyBonusButtonState() {
+            const bonusBtn = document.getElementById('daily-bonus-btn');
+            if (!bonusBtn) return;
+            
+            const today = new Date().toISOString().slice(0, 10);
+            if (userData.lastBonusClaimed === today) {
+                bonusBtn.disabled = true;
+                bonusBtn.querySelector('.home-card-title').textContent = 'Claimed Today';
+            } else {
+                bonusBtn.disabled = false;
+                bonusBtn.querySelector('.home-card-title').textContent = 'Daily Bonus';
+            }
+        }
+
+        // --- Daily Bonus হ্যান্ডেল করার ফাংশন ---
         async function handleDailyBonus() {
             const bonusBtn = document.getElementById('daily-bonus-btn');
-            const today = new Date().toISOString().slice(0, 10);
+            bonusBtn.disabled = true;
 
+            const today = new Date().toISOString().slice(0, 10);
             if (userData.lastBonusClaimed === today) {
                 tg.showAlert('আপনি আজকের বোনাস ইতোমধ্যে নিয়ে নিয়েছেন।');
                 return;
             }
-            bonusBtn.disabled = true;
 
-            if (typeof window.showGiga !== 'function') {
-                tg.showAlert("বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।");
-                bonusBtn.disabled = false;
-                return;
+            // Monetag বিজ্ঞাপন দেখানো হচ্ছে
+            if (typeof show_8954258 === 'function') {
+                show_8954258();
+            } else {
+                console.error("Monetag ad function not found.");
             }
-            
-            try {
-                await window.showGiga(); // Giga Pub বিজ্ঞাপন দেখানো হচ্ছে
 
-                // বিজ্ঞাপন সফল হলে, বোনাস দেওয়া হবে এবং আজকের তারিখ সেভ করা হবে
-                const newBalance = (userData.balance || 0) + 1; // বোনাস ১ টাকা
-                const newTotalClicks = (userData.totalClicks || 0) + 1;
-                await update(userRef, {
-                    balance: newBalance,
-                    totalClicks: newTotalClicks,
-                    lastBonusClaimed: today // আজকের তারিখ সেভ করা হচ্ছে
-                });
+            tg.showPopup({ title: "অনুগ্রহ করে অপেক্ষা করুন...", message: "বিজ্ঞাপন দেখার পর আপনার বোনাস যোগ হবে।", buttons:[] });
 
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showPopup({
-                    title: 'অভিনন্দন! 🎉',
-                    message: 'আপনার অ্যাকাউন্টে ১ টাকা বোনাস যোগ হয়েছে।',
-                    buttons: [{ type: 'ok' }]
-                });
-            } catch (adError) {
-                // বিজ্ঞাপন ব্যর্থ হলে বা ব্যবহারকারী বন্ধ করে দিলে
-                console.error("Daily bonus ad error:", adError);
-                tg.showAlert("বিজ্ঞাপনটি দেখানো সম্ভব হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।");
-                bonusBtn.disabled = false; // বাটন আবার সক্রিয় করা হচ্ছে
+            // বিজ্ঞাপন দেখার জন্য ১০ সেকেন্ড পর রিওয়ার্ড দেওয়া হবে
+            setTimeout(async () => {
+                try {
+                    const newBalance = (userData.balance || 0) + 1;
+                    const newTotalClicks = (userData.totalClicks || 0) + 1;
+                    await update(userRef, {
+                        balance: newBalance,
+                        totalClicks: newTotalClicks,
+                        lastBonusClaimed: today
+                    });
+                    tg.closeScanQrPopup(); // انتظار পপ-আপ বন্ধ করা
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showPopup({
+                        title: 'অভিনন্দন! 🎉',
+                        message: 'আপনার অ্যাকাউন্টে ১ টাকা বোনাস যোগ হয়েছে।',
+                        buttons: [{ type: 'ok' }]
+                    });
+                } catch (error) {
+                    console.error("Daily bonus update failed:", error);
+                    tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                    bonusBtn.disabled = false; // কোনো সমস্যা হলে বাটন আবার চালু হবে
+                }
+            }, 10000); // ১০ সেকেন্ড অপেক্ষা
+        }
+        
+        // --- Watch Ads/Video/Start Earn বাটনের জন্য ফাংশন ---
+        async function handleGigaAdReward(event) {
+            const button = event.currentTarget;
+            button.disabled = true; // ডাবল ক্লিক এড়ানোর জন্য বাটন নিষ্ক্রিয় করা
+
+            if (typeof window.showGiga === 'function') {
+                try {
+                    await window.showGiga(); // Giga Pub বিজ্ঞাপন দেখানো হচ্ছে
+                    
+                    tg.showPopup({ title: "বিজ্ঞাপন চলছে...", message: "পুরস্কার পেতে অনুগ্রহ করে ১৫ সেকেন্ড অপেক্ষা করুন।", buttons:[] });
+
+                    // ১৫ সেকেন্ড পর রিওয়ার্ড দেওয়া হবে
+                    setTimeout(async () => {
+                        try {
+                            const newBalance = (userData.balance || 0) + 1;
+                            const newTotalClicks = (userData.totalClicks || 0) + 1;
+                            await update(userRef, {
+                                balance: newBalance,
+                                totalClicks: newTotalClicks
+                            });
+                            
+                            tg.closeScanQrPopup(); // انتظار পপ-আপ বন্ধ করা
+                            tg.HapticFeedback.notificationOccurred('success');
+                            tg.showAlert('সফল! আপনার অ্যাকাউন্টে ১ টাকা যোগ হয়েছে।');
+                        } catch (dbError) {
+                            console.error("Error updating balance:", dbError);
+                            tg.showAlert('ব্যালেন্স যোগ করতে একটি সমস্যা হয়েছে।');
+                        } finally {
+                           button.disabled = false; // কাজ শেষে বাটন আবার চালু করা
+                        }
+                    }, 15000); // ১৫ সেকেন্ড অপেক্ষা
+
+                } catch (adError) {
+                    console.error("Giga Pub ad error:", adError);
+                    tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না।");
+                    button.disabled = false;
+                }
+            } else {
+                tg.showAlert("বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।");
+                button.disabled = false;
             }
         }
         
-        // --- Watch Ads/Video/Start Earn বাটনের জন্য পরিবর্তিত ফাংশন ---
-        async function handleGigaAdReward(event) {
-            const button = event.currentTarget;
-            button.disabled = true;
-
+        // --- Auto Ads এর জন্য বিজ্ঞাপন ও রিওয়ার্ড দেওয়ার ফাংশন ---
+        async function showGigaAndRewardAuto() {
             if (typeof window.showGiga !== 'function') {
-                tg.showAlert("বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।");
-                button.disabled = false;
+                console.log("Auto Ads stopped: Giga function not available.");
+                stopAutoAds(); 
+                tg.showAlert("Auto Ads পরিষেবাটি একটি সমস্যার কারণে বন্ধ হয়ে গেছে।");
                 return;
             }
 
             try {
-                await window.showGiga(); // Giga Pub বিজ্ঞাপন দেখানো হচ্ছে
-                
-                // বিজ্ঞাপন সফলভাবে দেখা শেষ হলে ব্যালেন্স আপডেট হবে
-                const newBalance = (userData.balance || 0) + 1; // পুরস্কার: ১ টাকা
+                await window.showGiga(); // বিজ্ঞাপন দেখানো
+                const newBalance = (userData.balance || 0) + 0.5;
                 const newTotalClicks = (userData.totalClicks || 0) + 1;
                 await update(userRef, {
                     balance: newBalance,
                     totalClicks: newTotalClicks
                 });
-                
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert('সফল! আপনার অ্যাকাউন্টে ১ টাকা যোগ হয়েছে।');
-
-            } catch (adError) {
-                // বিজ্ঞাপন ব্যর্থ হলে বা ব্যবহারকারী বন্ধ করে দিলে
-                console.error("Giga Pub ad error:", adError);
-                tg.showAlert("বিজ্ঞাপনটি দেখানো সম্ভব হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।");
-            } finally {
-                // সফল হোক বা ব্যর্থ, বাটনটি আবার সক্রিয় হবে
-                button.disabled = false;
+                console.log("Auto Ad Reward: +0.5 Taka added.");
+            } catch(e) {
+                console.error("Auto Ad Error, will try again:", e);
             }
         }
+
+        // --- Auto Ads চালু করার ফাংশন ---
+        function startAutoAds() {
+            if (autoAdsInterval) return; 
+
+            const autoBtn = document.getElementById('auto-ads-btn');
+            const stopBtn = document.getElementById('stop-ads-btn');
+            
+            showGigaAndRewardAuto(); // চালু করার সাথে সাথে প্রথমবার রিওয়ার্ড
+            autoAdsInterval = setInterval(showGigaAndRewardAuto, 16000); // প্রতি ১৬ সেকেন্ড পর পর
+
+            autoBtn.disabled = true;
+            stopBtn.disabled = false;
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // --- Auto Ads বন্ধ করার ফাংশন ---
+        function stopAutoAds() {
+            if (!autoAdsInterval) return;
+
+            const autoBtn = document.getElementById('auto-ads-btn');
+            const stopBtn = document.getElementById('stop-ads-btn');
+
+            clearInterval(autoAdsInterval);
+            autoAdsInterval = null;
+
+            autoBtn.disabled = false;
+            stopBtn.disabled = true;
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+
+        // --- আপনার বাকি সকল ফাংশন অপরিবর্তিত থাকবে ---
+        function setupBroadcastListener() {
+            const broadcastRef = ref(db, 'broadcast/latestMessage');
+            let lastShownTimestamp = parseInt(localStorage.getItem('lastBroadcastTimestamp') || '0');
+            onValue(broadcastRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const message = snapshot.val();
+                    if (message.timestamp && message.timestamp > lastShownTimestamp) {
+                        showBroadcastPopup(message);
+                        localStorage.setItem('lastBroadcastTimestamp', message.timestamp);
+                    }
+                }
+            });
+        }
+        function showBroadcastPopup(message) { const popup = document.getElementById('broadcast-popup'); const bodyEl = document.getElementById('broadcast-body'); const imageEl = document.getElementById('broadcast-image'); bodyEl.innerHTML = message.text; if (message.imageUrl) { imageEl.src = message.imageUrl; imageEl.style.display = 'block'; } else { imageEl.style.display = 'none'; } popup.classList.add('show'); tg.HapticFeedback.notificationOccurred('warning'); }
+        function applyDefaultSettings() { appSettings = { welcomeMessageTitle: 'স্বাগতম!', welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>অ্যাপের নিয়মকানুন মেনে কাজ করুন।</p>', referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20, tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' }; }
+        function updateUIWithSettings() { document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`; document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>'; document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`; document.getElementById('referral-desc').innerText = `প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`; document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`; document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`; document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; if(userData && Object.keys(userData).length) checkWithdrawEligibility(); const marqueeElement = document.getElementById('offer-text'); const marqueeContainer = document.querySelector('.marquee-container'); if (appSettings && appSettings.marqueeText && marqueeElement && marqueeContainer) { const text = appSettings.marqueeText.trim(); if (text) { marqueeElement.innerText = text; marqueeElement.dataset.text = text; marqueeContainer.style.display = 'block'; } else { marqueeContainer.style.display = 'none'; } } else if (marqueeContainer) { marqueeContainer.style.display = 'none'; } }
+        function handleWelcomePopup() { if (appSettings.welcomeMessageBody) { setTimeout(() => { document.getElementById('welcome-popup').classList.add('show'); }, 500); } }
+        function checkWithdrawEligibility() { const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 99999); const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 999); const balanceStatusEl = document.getElementById('balance-status'); const referralStatusEl = document.getElementById('referral-status'); balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 0}`; balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`; referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 0}`; referralStatusEl.className = `status ${hasEnoughReferrals ? 'success' : 'error'}`; document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals); }
         
-        // --- Auto Ads এর ফাংশন (অপরিবর্তিত) ---
-        async function showGigaAndRewardAuto() { if (typeof window.showGiga !== 'function') { stopAutoAds(); tg.showAlert("Auto Ads পরিষেবাটি একটি সমস্যার কারণে বন্ধ হয়ে গেছে।"); return; } try { await window.showGiga(); const newBalance = (userData.balance || 0) + 0.5; const newTotalClicks = (userData.totalClicks || 0) + 1; await update(userRef, { balance: newBalance, totalClicks: newTotalClicks }); } catch(e) { console.error("Auto Ad Error:", e); } }
-        function startAutoAds() { if (autoAdsInterval) return; const autoBtn = document.getElementById('auto-ads-btn'); const stopBtn = document.getElementById('stop-ads-btn'); showGigaAndRewardAuto(); autoAdsInterval = setInterval(showGigaAndRewardAuto, 16000); autoBtn.disabled = true; stopBtn.disabled = false; tg.HapticFeedback.impactOccurred('light'); }
-        function stopAutoAds() { if (!autoAdsInterval) return; const autoBtn = document.getElementById('auto-ads-btn'); const stopBtn = document.getElementById('stop-ads-btn'); clearInterval(autoAdsInterval); autoAdsInterval = null; autoBtn.disabled = false; stopBtn.disabled = true; tg.HapticFeedback.impactOccurred('light'); }
-        
-        // --- UI ইভেন্ট লিসেনার সেটআপ (আপডেট করা হয়েছে) ---
         function setupUIEventListeners() { 
             document.getElementById('popup-close').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show'));
             document.getElementById('popup-understand-btn').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show'));
             document.getElementById('notice-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.add('show'));
             document.getElementById('notice-close-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.remove('show'));
             document.getElementById('broadcast-close-btn').addEventListener('click', () => document.getElementById('broadcast-popup').classList.remove('show')); 
+            
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
             document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', function(e) { e.preventDefault(); const pageId = this.dataset.page; document.querySelector('.nav-item.active').classList.remove('active'); this.classList.add('active'); document.querySelector('.page-content.active').classList.remove('active'); document.getElementById(`page-${pageId}`).classList.add('active'); if (pageId === 'withdraw') checkWithdrawEligibility(); }); });
             document.getElementById('copy-btn').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => { document.getElementById('copy-btn').textContent = 'Copied!'; tg.HapticFeedback.notificationOccurred('success'); setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000); }); }); 
             document.getElementById('share-btn').addEventListener('click', () => { const shareText = `🔥 এই অ্যাপ থেকে খুব সহজেই ইনকাম করুন! 🔥\n\n রেফারেল লিঙ্ক ব্যবহার করে ইনকাম করুন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস নিন।`; tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`); }); 
             document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink(appSettings.tutorialLink || '#', {try_instant_view: true})); document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink(appSettings.adminChatLink || '#')); document.getElementById('admin-call-btn').addEventListener('click', () => { if(appSettings.adminCallLink) window.location.href = appSettings.adminCallLink; }); 
-            document.getElementById('join-telegram-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.telegramChannelLink, true); }, { once: true }); document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true }); 
+            document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds); document.getElementById('join-telegram-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.telegramChannelLink, true); }, { once: true }); document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true }); 
             document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest); 
-            // Task পেজের Watch Ads বাটনের জন্য আলাদা ইভেন্ট লিসেনার
-            document.getElementById('watch-ads-btn-taskpage').addEventListener('click', handleWatchAdsTaskPage);
-            
-            // --- হোম পেজের বাটনগুলোর জন্য নতুন ইভেন্ট লিসেনার ---
+
+            // --- নতুন হোম পেজের ইভেন্ট লিসেনার (আপডেট করা হয়েছে) ---
             document.getElementById('daily-bonus-btn').addEventListener('click', handleDailyBonus);
             document.querySelectorAll('.giga-ad-trigger').forEach(btn => {
-                btn.addEventListener('click', handleGigaAdReward); 
+                btn.addEventListener('click', handleGigaAdReward); // পরিবর্তিত ফাংশন যোগ করা হয়েছে
             });
             document.getElementById('auto-ads-btn').addEventListener('click', startAutoAds);
             document.getElementById('stop-ads-btn').addEventListener('click', stopAutoAds);
         }
-
-        // --- নিচে আপনার আগের অপরিবর্তিত ফাংশনগুলো রয়েছে ---
-        async function handleLogout() { try { await signOut(auth); } catch (error) { console.error("Sign out error:", error); tg.showAlert("Log out failed."); } }
-        function setupAuthEventListeners() { const signupForm = document.getElementById('signup-form'); const loginForm = document.getElementById('login-form'); const googleBtn = document.getElementById('google-signin-btn'); const showLoginLink = document.getElementById('show-login'); const showSignupLink = document.getElementById('show-signup'); signupForm.addEventListener('submit', async (e) => { e.preventDefault(); const name = document.getElementById('signup-name').value; const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); await updateProfile(userCredential.user, { displayName: name }); } catch (error) { alert("Sign up failed: " + error.message); } }); loginForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; try { await signInWithEmailAndPassword(auth, email, password); } catch (error) { alert("Login failed: " + error.message); } }); googleBtn.addEventListener('click', async () => { const provider = new GoogleAuthProvider(); try { await signInWithPopup(auth, provider); } catch (error) { alert("Google sign-in failed: " + error.message); } }); showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.style.display = 'none'; loginForm.style.display = 'block'; }); showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; signupForm.style.display = 'block'; }); }
-        async function createNewUser(user) { const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null; const telegramUser = tg.initDataUnsafe?.user || {}; const mobileNumber = document.getElementById('signup-mobile')?.value || ''; const newUser = { name: user.displayName || telegramUser.first_name || 'New User', email: user.email, mobile: mobileNumber, photoUrl: user.photoURL || telegramUser.photo_url || null, balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(), referredBy: referrerId || null, lastBonusClaimed: null }; await set(userRef, newUser); userData = newUser; if (referrerId && referrerId !== String(userId)) { const referrerRef = ref(db, 'users/' + referrerId); try { const snapshot = await get(referrerRef); if (snapshot.exists()) { const referrerData = snapshot.val(); const newReferralCount = (referrerData.referrals || 0) + 1; const referralBonus = appSettings.referralReward || 0; const updates = { referrals: newReferralCount }; if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; } await update(referrerRef, updates); } } catch (error) { console.error("Referrer update failed:", error); } } }
-        function updateAllUI() { if (!userData || !firebaseUser) return; document.getElementById('user-name').innerHTML = `${userData.name || firebaseUser.displayName || 'User'} <span class="verified-tick">✔</span>`; document.getElementById('user-photo').src = userData.photoUrl || firebaseUser.photoURL || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg'; document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2); document.getElementById('total-clicks').innerText = userData.totalClicks || 0; document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`; document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2); document.getElementById('total-referrals').innerText = userData.referrals || 0; document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`; const watchAdsBtn = document.getElementById('watch-ads-btn-taskpage'); if ((userData.adsWatched || 0) >= 15) { watchAdsBtn.textContent = 'Daily Limit Reached'; watchAdsBtn.disabled = true; } else { if (!watchAdsBtn.textContent.includes('Watch Ads')) { watchAdsBtn.textContent = 'Watch Ads'; } watchAdsBtn.disabled = false; } checkWithdrawEligibility(); updateDailyBonusButtonState(); }
-        function updateDailyBonusButtonState() { const bonusBtn = document.getElementById('daily-bonus-btn'); if (!bonusBtn) return; const today = new Date().toISOString().slice(0, 10); if (userData.lastBonusClaimed === today) { bonusBtn.disabled = true; bonusBtn.querySelector('.home-card-title').textContent = 'Claimed Today'; } else { bonusBtn.disabled = false; bonusBtn.querySelector('.home-card-title').textContent = 'Daily Bonus'; } }
-        function setupBroadcastListener() { const broadcastRef = ref(db, 'broadcast/latestMessage'); let lastShownTimestamp = parseInt(localStorage.getItem('lastBroadcastTimestamp') || '0'); onValue(broadcastRef, (snapshot) => { if (snapshot.exists()) { const message = snapshot.val(); if (message.timestamp && message.timestamp > lastShownTimestamp) { showBroadcastPopup(message); localStorage.setItem('lastBroadcastTimestamp', message.timestamp); } } }); }
-        function showBroadcastPopup(message) { const popup = document.getElementById('broadcast-popup'); const bodyEl = document.getElementById('broadcast-body'); const imageEl = document.getElementById('broadcast-image'); bodyEl.innerHTML = message.text; if (message.imageUrl) { imageEl.src = message.imageUrl; imageEl.style.display = 'block'; } else { imageEl.style.display = 'none'; } popup.classList.add('show'); tg.HapticFeedback.notificationOccurred('warning'); }
-        function applyDefaultSettings() { appSettings = { welcomeMessageTitle: 'স্বাগতম!', welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>অ্যাপের নিয়মকানুন মেনে কাজ করুন।</p>', referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20, tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' }; }
-        function updateUIWithSettings() { document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`; document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>'; document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`; document.getElementById('referral-desc').innerText = `প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`; document.getElementById('ad-task-desc').innerText = `প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং ${appSettings.adReward || 0} টাকা ইনকাম করুন।`; document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`; document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`; if(userData && Object.keys(userData).length) checkWithdrawEligibility(); const marqueeElement = document.getElementById('offer-text'); const marqueeContainer = document.querySelector('.marquee-container'); if (appSettings && appSettings.marqueeText && marqueeElement && marqueeContainer) { const text = appSettings.marqueeText.trim(); if (text) { marqueeElement.innerText = text; marqueeElement.dataset.text = text; marqueeContainer.style.display = 'block'; } else { marqueeContainer.style.display = 'none'; } } else if (marqueeContainer) { marqueeContainer.style.display = 'none'; } }
-        function handleWelcomePopup() { if (appSettings.welcomeMessageBody) { setTimeout(() => { document.getElementById('welcome-popup').classList.add('show'); }, 500); } }
-        function checkWithdrawEligibility() { const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 99999); const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 999); const balanceStatusEl = document.getElementById('balance-status'); const referralStatusEl = document.getElementById('referral-status'); balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 0}`; balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`; referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 0}`; referralStatusEl.className = `status ${hasEnoughReferrals ? 'success' : 'error'}`; document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals); }
-        function handleWatchAdsTaskPage() { const watchAdsBtn = document.getElementById('watch-ads-btn-taskpage'); if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; } watchAdsBtn.disabled = true; if (typeof window.showGiga === 'function') { window.showGiga(); let countdown = 30; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; const timerInterval = setInterval(() => { countdown--; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; if (countdown <= 0) { clearInterval(timerInterval); tg.HapticFeedback.notificationOccurred('success'); const newBalance = (userData.balance || 0) + (appSettings.adReward || 0); const newAdsWatched = (userData.adsWatched || 0) + 1; const newTotalClicks = (userData.totalClicks || 0) + 1; update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => { tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.disabled = false; }); } }, 1000); } else { tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.disabled = false; } }
+        
+        function handleWatchAds() { const watchAdsBtn = document.getElementById('watch-ads-btn'); if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; } watchAdsBtn.disabled = true; if (typeof show_8954258 === 'function') { show_8954258(); let countdown = 30; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; const timerInterval = setInterval(() => { countdown--; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; if (countdown <= 0) { clearInterval(timerInterval); tg.HapticFeedback.notificationOccurred('success'); const newBalance = (userData.balance || 0) + (appSettings.adReward || 0); const newAdsWatched = (userData.adsWatched || 0) + 1; const newTotalClicks = (userData.totalClicks || 0) + 1; update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => { tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; }); } }, 1000); } else { tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; } }
         function handleWithdrawRequest(e) { e.preventDefault(); tg.HapticFeedback.impactOccurred('light'); const amount = parseInt(document.getElementById('withdraw-amount').value, 10); const method = document.querySelector('input[name="payment_method"]:checked').value; const number = document.getElementById('account-number').value.trim(); const minAmount = appSettings.minWithdrawAmount || 500; if (!amount || amount < minAmount) { tg.showAlert(`দুঃখিত, সর্বনিম্ন ${minAmount} টাকা উইথড্র করতে পারবেন।`); return; } if (amount > userData.balance) { tg.showAlert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।'); return; } if (number.length !== 11 || !/^\d+$/.test(number)) { tg.showAlert('দয়া করে একটি সঠিক ১১ ডিজিটের অ্যাকাউন্ট নম্বর দিন।'); return; } tg.showConfirm(`আপনি কি নিশ্চিত যে আপনি ${amount} টাকা আপনার ${method} নম্বর ${number}-এ পাঠাতে চান?`, (ok) => { if (ok) { const newBalance = userData.balance - amount; const withdrawalRequest = { userId, userName: userData.name, amount, method, accountNumber: number, timestamp: serverTimestamp(), status: 'pending' }; const newRequestRef = push(ref(db, 'withdrawals/pending')); set(newRequestRef, withdrawalRequest).then(() => { update(userRef, { balance: newBalance }); tg.showPopup({ title: 'সফল হয়েছে', message: 'আপনার উইথড্র অনুরোধ সফলভাবে পাঠানো হয়েছে।', buttons: [{ type: 'ok' }] }); document.getElementById('withdraw-form').reset(); }).catch(err => tg.showAlert("An error occurred. Please try again.")); } }); }
-        function activateUnlockTask(taskCardElement, url, isTelegramLink) { if (!url || url === '#') { tg.showAlert("This task is not available right now."); return; } isTelegramLink ? tg.openTelegramLink(url) : tg.openLink(url, {try_instant_view: true}); let unlockCounter = 0; const requiredClicks = 10, rewardAmount = 10; taskCardElement.innerHTML = `<svg class="unlock-task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg><p>আপনি ১০ বার Ads দেখার পরে আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হবে।</p>`; const unlockBtn = document.createElement('button'); unlockBtn.className = 'btn btn-unlock task-btn'; unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; taskCardElement.appendChild(unlockBtn); unlockBtn.addEventListener('click', () => { tg.HapticFeedback.impactOccurred('light'); unlockCounter++; if (unlockCounter < requiredClicks && typeof window.showGiga === 'function') window.showGiga(); unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; if (unlockCounter === requiredClicks) { const newBalance = (userData.balance || 0) + rewardAmount; const newTotalClicks = (userData.totalClicks || 0) + requiredClicks; update(userRef, { balance: newBalance, totalClicks: newTotalClicks }); tg.HapticFeedback.notificationOccurred('success'); tg.showPopup({ title: 'অভিনন্দন! 🎉', message: `টাস্ক সম্পন্ন হয়েছে। আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); unlockCounter = 0; setTimeout(() => { unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; }, 500); } }); }
+        function activateUnlockTask(taskCardElement, url, isTelegramLink) { if (!url || url === '#') { tg.showAlert("This task is not available right now."); return; } isTelegramLink ? tg.openTelegramLink(url) : tg.openLink(url, {try_instant_view: true}); let unlockCounter = 0; const requiredClicks = 10, rewardAmount = 10; taskCardElement.innerHTML = `<svg class="unlock-task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg><p class="unlock-task-title">💁 আনলিমিটেড ইনকাম করুন একদম ফ্রিতে 🆓</p><p class="unlock-task-subtitle">আপনি ১০ বার Ads দেখার পরে আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হবে।</p>`; const unlockBtn = document.createElement('button'); unlockBtn.className = 'btn btn-unlock task-btn'; unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; taskCardElement.appendChild(unlockBtn); unlockBtn.addEventListener('click', () => { tg.HapticFeedback.impactOccurred('light'); unlockCounter++; if (unlockCounter < requiredClicks && typeof show_8954258 === 'function') show_8954258(); unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; if (unlockCounter === requiredClicks) { const newBalance = (userData.balance || 0) + rewardAmount; const newTotalClicks = (userData.totalClicks || 0) + requiredClicks; update(userRef, { balance: newBalance, totalClicks: newTotalClicks }); tg.HapticFeedback.notificationOccurred('success'); tg.showPopup({ title: 'অভিনন্দন! 🎉', message: `টাস্ক সম্পন্ন হয়েছে। আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); unlockCounter = 0; setTimeout(() => { unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; }, 500); } }); }
         
     </script>
 </body>
