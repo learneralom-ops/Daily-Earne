@@ -8,9 +8,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Monetag SDK Code -->
     <script src='//libtl.com/sdk.js' data-zone='8954258' data-sdk='show_8954258'></script>
-    <!-- Giga pub SDK (নতুন যোগ করা হয়েছে) -->
-    
-<script src="https://ad.gigapub.tech/script?id=3247"></script> 
+    <!-- Giga pub SDK -->
+    <script src="https://ad.gigapub.tech/script?id=3247"></script> 
 
     <style>
         /* আপনার সকল CSS কোড এখানে অপরিবর্তিত থাকবে */
@@ -280,7 +279,7 @@
         // === Global Variables ===
         let db, auth;
         let firebaseUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
-        let autoAdsInterval = null; // নতুন ভ্যারিয়েবল
+        let autoAdsInterval = null;
         const tg = window.Telegram.WebApp;
 
         // === মূল অ্যাপ চালু করার ফাংশন ===
@@ -292,9 +291,8 @@
             db = getDatabase(app);
             auth = getAuth(app);
 
-            setupAuthEventListeners(); // লগইন/সাইনআপ ইভেন্ট লিসেনার সেটআপ
+            setupAuthEventListeners(); 
 
-            // অথেন্টিকেশন স্টেট পরিবর্তন হচ্ছে কিনা তা শোনার জন্য
             onAuthStateChanged(auth, async (user) => {
                 const loadingOverlay = document.getElementById('loading-overlay');
                 const authContainer = document.getElementById('auth-container');
@@ -305,16 +303,12 @@
                     firebaseUser = user;
                     userId = user.uid;
                     userRef = ref(db, 'users/' + userId);
-
                     authContainer.style.display = 'none';
                     loadingOverlay.style.display = 'flex';
-
                     await initializeAppLogic();
-                    
                     mainContainer.style.display = 'block';
                     bottomNav.style.display = 'flex';
                     loadingOverlay.style.display = 'none';
-
                 } else {
                     loadingOverlay.style.display = 'none';
                     mainContainer.style.display = 'none';
@@ -353,11 +347,10 @@
             }
         }
         
-        // ===== নতুন লগআউট ফাংশন =====
+        // ===== লগআউট ফাংশন =====
         async function handleLogout() {
             try {
                 await signOut(auth);
-                // onAuthStateChanged হ্যান্ডলার বাকি কাজ করবে (লগইন পেজ দেখাবে)
                 console.log("User signed out successfully.");
             } catch (error) {
                 console.error("Sign out error:", error);
@@ -365,7 +358,7 @@
             }
         }
         
-        // === নতুন অথেন্টিকেশন ফাংশনসমূহ ===
+        // === অথেন্টিকেশন ফাংশনসমূহ ===
         function setupAuthEventListeners() {
             const signupForm = document.getElementById('signup-form');
             const loginForm = document.getElementById('login-form');
@@ -447,36 +440,44 @@
                 watchAdsBtn.disabled = false;
             }
             checkWithdrawEligibility();
-            updateDailyBonusButtonState(); // নতুন ফাংশন কল
+            updateDailyBonusButtonState();
         }
 
         // =========================================================
-        // === নতুন হোম পেজের ফাংশনসমূহ (এখানে যোগ করা হয়েছে) ===
+        // === নতুন এবং পরিবর্তিত হোম পেজের ফাংশনসমূহ ===
         // =========================================================
 
-        // --- Giga Pub বিজ্ঞাপন দেখানোর ফাংশন ---
-        
-window.showGiga()
-  .then(() => {
-    // Your reward logic here
-  })
-  .catch(e => {
-    // Handle errors here
-  });
-        const adShow = yourPreviousSdk.init();
-
-        window.AdGigaFallback = adShow;
-if (window.showGiga === undefined)
-    window.showGiga = () => window.AdGigaFallback();
-
-        
+        // --- Giga Pub বিজ্ঞাপন দেখানোর ফাংশন (পরিবর্তিত) ---
+        function showGigaPubAd() {
+            // SDK লোড হয়েছে কিনা তা পরীক্ষা করা
+            if (typeof window.showGiga === 'function') {
+                tg.HapticFeedback.impactOccurred('light');
+                
+                window.showGiga()
+                    .then(() => {
+                        // বিজ্ঞাপন সফলভাবে দেখানো হলে এই কোড চলবে
+                        console.log("Giga Pub ad shown successfully.");
+                        tg.HapticFeedback.notificationOccurred('success');
+                        // এখানে বিজ্ঞাপন দেখার জন্য কোনো রিওয়ার্ড যোগ করা হয়নি, কারণ এটি "আনলিমিটেড"
+                    })
+                    .catch(e => {
+                        // বিজ্ঞাপন দেখাতে কোনো সমস্যা হলে এই কোড চলবে
+                        console.error("Giga Pub ad error:", e);
+                        tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না। অনুগ্রহ করে একটু পর আবার চেষ্টা করুন।");
+                    });
+            } else {
+                // SDK ফাংশন খুঁজে পাওয়া না গেলে
+                console.error("Giga Pub SDK function 'showGiga' not found.");
+                tg.showAlert("বিজ্ঞাপন পরিষেবা উপলব্ধ নয়। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।");
+            }
+        }
 
         // --- Daily Bonus বাটনের অবস্থা আপডেট করার ফাংশন ---
         function updateDailyBonusButtonState() {
             const bonusBtn = document.getElementById('daily-bonus-btn');
             if (!bonusBtn) return;
             
-            const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD ফরম্যাট
+            const today = new Date().toISOString().slice(0, 10);
             if (userData.lastBonusClaimed === today) {
                 bonusBtn.disabled = true;
                 bonusBtn.querySelector('.home-card-title').textContent = 'Claimed Today';
@@ -489,7 +490,7 @@ if (window.showGiga === undefined)
         // --- Daily Bonus হ্যান্ডেল করার ফাংশন ---
         async function handleDailyBonus() {
             const bonusBtn = document.getElementById('daily-bonus-btn');
-            bonusBtn.disabled = true; // ডাবল ক্লিক এড়ানোর জন্য
+            bonusBtn.disabled = true;
 
             const today = new Date().toISOString().slice(0, 10);
             if (userData.lastBonusClaimed === today) {
@@ -518,13 +519,13 @@ if (window.showGiga === undefined)
 
         // --- Auto Ads চালু করার ফাংশন ---
         function startAutoAds() {
-            if (autoAdsInterval) return; // যদি আগে থেকেই চালু থাকে
+            if (autoAdsInterval) return; 
 
             const autoBtn = document.getElementById('auto-ads-btn');
             const stopBtn = document.getElementById('stop-ads-btn');
             
-            showGigaPubAd(); // প্রথমে একবার বিজ্ঞাপন দেখাবে
-            autoAdsInterval = setInterval(showGigaPubAd, 15000); // প্রতি ১৫ সেকেন্ড পর পর
+            showGigaPubAd(); 
+            autoAdsInterval = setInterval(showGigaPubAd, 15000); 
 
             autoBtn.disabled = true;
             stopBtn.disabled = false;
