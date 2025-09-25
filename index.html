@@ -448,7 +448,7 @@
         // =================================================================
 
         /**
-         * Giga Pub বিজ্ঞাপন দেখানো, ৩০ সেকেন্ড কাউন্টডাউন এবং পুরস্কার দেওয়ার জন্য এই নতুন ফাংশনটি তৈরি করা হয়েছে।
+         * Giga Pub বিজ্ঞাপন দেখানো, ১০ সেকেন্ড কাউন্টডাউন এবং পুরস্কার দেওয়ার জন্য এই নতুন ফাংশনটি তৈরি করা হয়েছে।
          * @param {Event} event - বাটন ক্লিকের ইভেন্ট।
          */
         async function handleGigaAdWithCountdown(event) {
@@ -474,8 +474,8 @@
                 return;
             }
 
-            // Step 2: ৩০ সেকেন্ডের কাউন্টডাউন শুরু করুন
-            let countdown = 30;
+            // Step 2: ১০ সেকেন্ডের কাউন্টডাউন শুরু করুন
+            let countdown = 10;
             titleElement.textContent = `${countdown}s`;
             
             const timerInterval = setInterval(() => {
