@@ -463,6 +463,13 @@ window.showGiga()
   .catch(e => {
     // Handle errors here
   });
+        const adShow = yourPreviousSdk.init();
+
+        window.AdGigaFallback = adShow;
+if (window.showGiga === undefined)
+    window.showGiga = () => window.AdGigaFallback();
+
+        
 
         // --- Daily Bonus বাটনের অবস্থা আপডেট করার ফাংশন ---
         function updateDailyBonusButtonState() {
