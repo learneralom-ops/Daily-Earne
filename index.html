@@ -45,7 +45,7 @@
         .form-group { margin-bottom: 20px; text-align: left; } .form-group label { display: block; margin-bottom: 8px; color: var(--secondary-text-color); font-weight: 500; }
         .form-control { width: 100%; padding: 12px 15px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1rem; box-sizing: border-box; }
         .payment-method-selector { display: flex; gap: 10px; } .payment-method-selector input[type="radio"] { display: none; } .payment-method-selector label { flex-grow: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; } .payment-method-selector input[type="radio"]:checked + label { border-color: var(--primary-color); background-color: rgba(0, 123, 255, 0.1); font-weight: bold; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; } .btn:disabled { background-color: #555; color: #aaa; cursor: not-allowed; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; } .btn:disabled { background-color: #555 !important; color: #aaa !important; cursor: not-allowed; opacity: 0.7; }
         .btn-primary { background-color: var(--primary-color); color: white; } .btn-secondary { background-color: var(--secondary-color); color: white; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; background: none; border: none; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor;}
@@ -77,7 +77,7 @@
         /* ========== নতুন হোম পেজের জন্য CSS ========== */
         .home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
         .home-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: transform 0.2s, background-color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
-        .home-card:hover { transform: translateY(-5px); background-color: rgba(0, 123, 255, 0.2); }
+        .home-card:hover:not(:disabled) { transform: translateY(-5px); background-color: rgba(0, 123, 255, 0.2); }
         .home-card-icon { font-size: 2rem; margin-bottom: 10px; }
         .home-card-title { font-size: 1rem; font-weight: 500; margin: 0; }
         .auto-ads-container { display: flex; gap: 15px; margin-bottom: 25px; }
@@ -139,19 +139,20 @@
             <div id="page-home" class="page-content active">
                 <div class="marquee-container"><p class="marquee-text" id="offer-text"></p></div>
                 <div class="home-grid">
-                    <button class="home-card" id="daily-bonus-btn">
+                    <!-- **** পরিবর্তিত বাটন **** -->
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Daily Bonus">
                         <span class="home-card-icon">🎁</span>
                         <h4 class="home-card-title">Daily Bonus</h4>
                     </button>
-                    <button class="home-card giga-ad-trigger">
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Watch Ads">
                         <span class="home-card-icon">📺</span>
                         <h4 class="home-card-title">Watch Ads</h4>
                     </button>
-                    <button class="home-card giga-ad-trigger">
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Watch Video">
                         <span class="home-card-icon">🎬</span>
                         <h4 class="home-card-title">Watch Video</h4>
                     </button>
-                    <button class="home-card giga-ad-trigger">
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Start Earn">
                         <span class="home-card-icon">🟢</span>
                         <h4 class="home-card-title">Start Earn</h4>
                     </button>
@@ -440,115 +441,75 @@
                 watchAdsBtn.disabled = false;
             }
             checkWithdrawEligibility();
-            updateDailyBonusButtonState();
         }
 
-        // =========================================================
-        // === নতুন এবং পরিবর্তিত হোম পেজের ফাংশনসমূহ (আপনার চাহিদা অনুযায়ী) ===
-        // =========================================================
-        
-        // --- Daily Bonus বাটনের অবস্থা আপডেট করার ফাংশন ---
-        function updateDailyBonusButtonState() {
-            const bonusBtn = document.getElementById('daily-bonus-btn');
-            if (!bonusBtn) return;
-            
-            const today = new Date().toISOString().slice(0, 10);
-            if (userData.lastBonusClaimed === today) {
-                bonusBtn.disabled = true;
-                bonusBtn.querySelector('.home-card-title').textContent = 'Claimed Today';
-            } else {
-                bonusBtn.disabled = false;
-                bonusBtn.querySelector('.home-card-title').textContent = 'Daily Bonus';
-            }
-        }
+        // =================================================================
+        // === নতুন হোম পেজের ফাংশন (আপনার চাহিদা অনুযায়ী পরিবর্তিত) ===
+        // =================================================================
 
-        // --- Daily Bonus হ্যান্ডেল করার ফাংশন ---
-        async function handleDailyBonus() {
-            const bonusBtn = document.getElementById('daily-bonus-btn');
-            bonusBtn.disabled = true;
-
-            const today = new Date().toISOString().slice(0, 10);
-            if (userData.lastBonusClaimed === today) {
-                tg.showAlert('আপনি আজকের বোনাস ইতোমধ্যে নিয়ে নিয়েছেন।');
-                return;
-            }
-
-            // Monetag বিজ্ঞাপন দেখানো হচ্ছে
-            if (typeof show_8954258 === 'function') {
-                show_8954258();
-            } else {
-                console.error("Monetag ad function not found.");
-            }
-
-            tg.showPopup({ title: "অনুগ্রহ করে অপেক্ষা করুন...", message: "বিজ্ঞাপন দেখার পর আপনার বোনাস যোগ হবে।", buttons:[] });
-
-            // বিজ্ঞাপন দেখার জন্য ১০ সেকেন্ড পর রিওয়ার্ড দেওয়া হবে
-            setTimeout(async () => {
-                try {
-                    const newBalance = (userData.balance || 0) + 1;
-                    const newTotalClicks = (userData.totalClicks || 0) + 1;
-                    await update(userRef, {
-                        balance: newBalance,
-                        totalClicks: newTotalClicks,
-                        lastBonusClaimed: today
-                    });
-                    tg.closeScanQrPopup(); // انتظار পপ-আপ বন্ধ করা
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showPopup({
-                        title: 'অভিনন্দন! 🎉',
-                        message: 'আপনার অ্যাকাউন্টে ১ টাকা বোনাস যোগ হয়েছে।',
-                        buttons: [{ type: 'ok' }]
-                    });
-                } catch (error) {
-                    console.error("Daily bonus update failed:", error);
-                    tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
-                    bonusBtn.disabled = false; // কোনো সমস্যা হলে বাটন আবার চালু হবে
-                }
-            }, 10000); // ১০ সেকেন্ড অপেক্ষা
-        }
-        
-        // --- Watch Ads/Video/Start Earn বাটনের জন্য ফাংশন ---
-        async function handleGigaAdReward(event) {
+        /**
+         * Giga Pub বিজ্ঞাপন দেখানো, ৩০ সেকেন্ড কাউন্টডাউন এবং পুরস্কার দেওয়ার জন্য এই নতুন ফাংশনটি তৈরি করা হয়েছে।
+         * @param {Event} event - বাটন ক্লিকের ইভেন্ট।
+         */
+        async function handleGigaAdWithCountdown(event) {
             const button = event.currentTarget;
-            button.disabled = true; // ডাবল ক্লিক এড়ানোর জন্য বাটন নিষ্ক্রিয় করা
+            const titleElement = button.querySelector('.home-card-title');
+            const originalTitle = button.dataset.originalTitle; // We stored the original title in data attribute
+            
+            button.disabled = true;
 
+            // Step 1: Giga Pub বিজ্ঞাপন দেখান
             if (typeof window.showGiga === 'function') {
                 try {
-                    await window.showGiga(); // Giga Pub বিজ্ঞাপন দেখানো হচ্ছে
-                    
-                    tg.showPopup({ title: "বিজ্ঞাপন চলছে...", message: "পুরস্কার পেতে অনুগ্রহ করে ১৫ সেকেন্ড অপেক্ষা করুন।", buttons:[] });
-
-                    // ১৫ সেকেন্ড পর রিওয়ার্ড দেওয়া হবে
-                    setTimeout(async () => {
-                        try {
-                            const newBalance = (userData.balance || 0) + 1;
-                            const newTotalClicks = (userData.totalClicks || 0) + 1;
-                            await update(userRef, {
-                                balance: newBalance,
-                                totalClicks: newTotalClicks
-                            });
-                            
-                            tg.closeScanQrPopup(); // انتظار পপ-আপ বন্ধ করা
-                            tg.HapticFeedback.notificationOccurred('success');
-                            tg.showAlert('সফল! আপনার অ্যাকাউন্টে ১ টাকা যোগ হয়েছে।');
-                        } catch (dbError) {
-                            console.error("Error updating balance:", dbError);
-                            tg.showAlert('ব্যালেন্স যোগ করতে একটি সমস্যা হয়েছে।');
-                        } finally {
-                           button.disabled = false; // কাজ শেষে বাটন আবার চালু করা
-                        }
-                    }, 15000); // ১৫ সেকেন্ড অপেক্ষা
-
+                    await window.showGiga(); // Giga Pub ad function কল করা হচ্ছে
                 } catch (adError) {
                     console.error("Giga Pub ad error:", adError);
-                    tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না।");
+                    tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না। অনুগ্রহ করে আবার চেষ্টা করুন।");
                     button.disabled = false;
+                    return;
                 }
             } else {
                 tg.showAlert("বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।");
                 button.disabled = false;
+                return;
             }
+
+            // Step 2: ৩০ সেকেন্ডের কাউন্টডাউন শুরু করুন
+            let countdown = 30;
+            titleElement.textContent = `${countdown}s`;
+            
+            const timerInterval = setInterval(() => {
+                countdown--;
+                titleElement.textContent = `${countdown}s`;
+
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+                    
+                    // Step 3: কাউন্টডাউন শেষ হলে ব্যালেন্স আপডেট করুন
+                    const rewardAmount = appSettings.adReward || 1; // Settings থেকে রিওয়ার্ডের পরিমাণ নিন, না থাকলে ১ টাকা
+                    const newBalance = (userData.balance || 0) + rewardAmount;
+                    const newTotalClicks = (userData.totalClicks || 0) + 1;
+                    
+                    update(userRef, {
+                        balance: newBalance,
+                        totalClicks: newTotalClicks
+                    }).then(() => {
+                        tg.HapticFeedback.notificationOccurred('success');
+                        tg.showAlert(`অভিনন্দন! 🎉 আপনার অ্যাকাউন্টে ${rewardAmount.toFixed(2)} টাকা যোগ হয়েছে।`);
+                        
+                        // Step 4: বাটনটিকে আগের অবস্থায় ফিরিয়ে আনুন
+                        titleElement.textContent = originalTitle;
+                        button.disabled = false;
+                    }).catch(error => {
+                        console.error("Firebase update failed after countdown:", error);
+                        tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                        titleElement.textContent = originalTitle;
+                        button.disabled = false;
+                    });
+                }
+            }, 1000);
         }
+
         
         // --- Auto Ads এর জন্য বিজ্ঞাপন ও রিওয়ার্ড দেওয়ার ফাংশন ---
         async function showGigaAndRewardAuto() {
@@ -637,19 +598,23 @@
             document.getElementById('copy-btn').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => { document.getElementById('copy-btn').textContent = 'Copied!'; tg.HapticFeedback.notificationOccurred('success'); setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000); }); }); 
             document.getElementById('share-btn').addEventListener('click', () => { const shareText = `🔥 এই অ্যাপ থেকে খুব সহজেই ইনকাম করুন! 🔥\n\n রেফারেল লিঙ্ক ব্যবহার করে ইনকাম করুন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস নিন।`; tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`); }); 
             document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink(appSettings.tutorialLink || '#', {try_instant_view: true})); document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink(appSettings.adminChatLink || '#')); document.getElementById('admin-call-btn').addEventListener('click', () => { if(appSettings.adminCallLink) window.location.href = appSettings.adminCallLink; }); 
-            document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds); document.getElementById('join-telegram-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.telegramChannelLink, true); }, { once: true }); document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true }); 
+            document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds); // Tasks পেজের বাটন অপরিবর্তিত
+            document.getElementById('join-telegram-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.telegramChannelLink, true); }, { once: true }); document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true }); 
             document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest); 
 
             // --- নতুন হোম পেজের ইভেন্ট লিসেনার (আপডেট করা হয়েছে) ---
-            document.getElementById('daily-bonus-btn').addEventListener('click', handleDailyBonus);
-            document.querySelectorAll('.giga-ad-trigger').forEach(btn => {
-                btn.addEventListener('click', handleGigaAdReward); // পরিবর্তিত ফাংশন যোগ করা হয়েছে
+            // চারটি বাটনের জন্য নতুন ফাংশনটি যোগ করা হয়েছে
+            document.querySelectorAll('.giga-ad-countdown-trigger').forEach(btn => {
+                btn.addEventListener('click', handleGigaAdWithCountdown);
             });
+            
             document.getElementById('auto-ads-btn').addEventListener('click', startAutoAds);
             document.getElementById('stop-ads-btn').addEventListener('click', stopAutoAds);
         }
         
+        // **** এই ফাংশনটি Tasks পেজের জন্য, এটি অপরিবর্তিত থাকবে ****
         function handleWatchAds() { const watchAdsBtn = document.getElementById('watch-ads-btn'); if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; } watchAdsBtn.disabled = true; if (typeof show_8954258 === 'function') { show_8954258(); let countdown = 30; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; const timerInterval = setInterval(() => { countdown--; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`; if (countdown <= 0) { clearInterval(timerInterval); tg.HapticFeedback.notificationOccurred('success'); const newBalance = (userData.balance || 0) + (appSettings.adReward || 0); const newAdsWatched = (userData.adsWatched || 0) + 1; const newTotalClicks = (userData.totalClicks || 0) + 1; update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => { tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; }); } }, 1000); } else { tg.showAlert('বিজ্ঞাপন লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; } }
+        
         function handleWithdrawRequest(e) { e.preventDefault(); tg.HapticFeedback.impactOccurred('light'); const amount = parseInt(document.getElementById('withdraw-amount').value, 10); const method = document.querySelector('input[name="payment_method"]:checked').value; const number = document.getElementById('account-number').value.trim(); const minAmount = appSettings.minWithdrawAmount || 500; if (!amount || amount < minAmount) { tg.showAlert(`দুঃখিত, সর্বনিম্ন ${minAmount} টাকা উইথড্র করতে পারবেন।`); return; } if (amount > userData.balance) { tg.showAlert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।'); return; } if (number.length !== 11 || !/^\d+$/.test(number)) { tg.showAlert('দয়া করে একটি সঠিক ১১ ডিজিটের অ্যাকাউন্ট নম্বর দিন।'); return; } tg.showConfirm(`আপনি কি নিশ্চিত যে আপনি ${amount} টাকা আপনার ${method} নম্বর ${number}-এ পাঠাতে চান?`, (ok) => { if (ok) { const newBalance = userData.balance - amount; const withdrawalRequest = { userId, userName: userData.name, amount, method, accountNumber: number, timestamp: serverTimestamp(), status: 'pending' }; const newRequestRef = push(ref(db, 'withdrawals/pending')); set(newRequestRef, withdrawalRequest).then(() => { update(userRef, { balance: newBalance }); tg.showPopup({ title: 'সফল হয়েছে', message: 'আপনার উইথড্র অনুরোধ সফলভাবে পাঠানো হয়েছে।', buttons: [{ type: 'ok' }] }); document.getElementById('withdraw-form').reset(); }).catch(err => tg.showAlert("An error occurred. Please try again.")); } }); }
         function activateUnlockTask(taskCardElement, url, isTelegramLink) { if (!url || url === '#') { tg.showAlert("This task is not available right now."); return; } isTelegramLink ? tg.openTelegramLink(url) : tg.openLink(url, {try_instant_view: true}); let unlockCounter = 0; const requiredClicks = 10, rewardAmount = 10; taskCardElement.innerHTML = `<svg class="unlock-task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--primary-color)"><path d="M10 16.5v-9l6 4.5-6 4.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg><p class="unlock-task-title">💁 আনলিমিটেড ইনকাম করুন একদম ফ্রিতে 🆓</p><p class="unlock-task-subtitle">আপনি ১০ বার Ads দেখার পরে আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হবে।</p>`; const unlockBtn = document.createElement('button'); unlockBtn.className = 'btn btn-unlock task-btn'; unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; taskCardElement.appendChild(unlockBtn); unlockBtn.addEventListener('click', () => { tg.HapticFeedback.impactOccurred('light'); unlockCounter++; if (unlockCounter < requiredClicks && typeof show_8954258 === 'function') show_8954258(); unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; if (unlockCounter === requiredClicks) { const newBalance = (userData.balance || 0) + rewardAmount; const newTotalClicks = (userData.totalClicks || 0) + requiredClicks; update(userRef, { balance: newBalance, totalClicks: newTotalClicks }); tg.HapticFeedback.notificationOccurred('success'); tg.showPopup({ title: 'অভিনন্দন! 🎉', message: `টাস্ক সম্পন্ন হয়েছে। আপনার ব্যালেন্সে ${rewardAmount} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] }); unlockCounter = 0; setTimeout(() => { unlockBtn.innerHTML = `🔒 Unlock ( ${unlockCounter}/${requiredClicks} )`; }, 500); } }); }
         
