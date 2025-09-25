@@ -9,7 +9,8 @@
     <!-- Monetag SDK Code -->
     <script src='//libtl.com/sdk.js' data-zone='8954258' data-sdk='show_8954258'></script>
     <!-- Giga pub SDK (নতুন যোগ করা হয়েছে) -->
-    <script src="https://ad.gigapub.tech/script?id=3247"></script> 
+    
+<script src="https://ad.gigapub.tech/script?id=3247"></script> 
 
     <style>
         /* আপনার সকল CSS কোড এখানে অপরিবর্তিত থাকবে */
@@ -454,12 +455,14 @@
         // =========================================================
 
         // --- Giga Pub বিজ্ঞাপন দেখানোর ফাংশন ---
-        function showGigaPubAd() {
-            console.log("Attempting to show Giga Pub Ad...");
-            // Giga Pub SDK কোনো নির্দিষ্ট ফাংশন দিলে সেটি এখানে লিখতে হবে।
-            // উদাহরণস্বরূপ: if (typeof gigapub.show === 'function') { gigapub.show(); }
-            // আপাতত, আমরা ধরে নিচ্ছি SDK নিজে থেকেই কাজ করবে।
-        }
+        
+window.showGiga()
+  .then(() => {
+    // Your reward logic here
+  })
+  .catch(e => {
+    // Handle errors here
+  });
 
         // --- Daily Bonus বাটনের অবস্থা আপডেট করার ফাংশন ---
         function updateDailyBonusButtonState() {
