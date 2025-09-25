@@ -444,34 +444,9 @@
         }
 
         // =========================================================
-        // === নতুন এবং পরিবর্তিত হোম পেজের ফাংশনসমূহ ===
+        // === নতুন এবং পরিবর্তিত হোম পেজের ফাংশনসমূহ (আপনার চাহিদা অনুযায়ী) ===
         // =========================================================
-
-        // --- Giga Pub বিজ্ঞাপন দেখানোর ফাংশন (পরিবর্তিত) ---
-        function showGigaPubAd() {
-            // SDK লোড হয়েছে কিনা তা পরীক্ষা করা
-            if (typeof window.showGiga === 'function') {
-                tg.HapticFeedback.impactOccurred('light');
-                
-                window.showGiga()
-                    .then(() => {
-                        // বিজ্ঞাপন সফলভাবে দেখানো হলে এই কোড চলবে
-                        console.log("Giga Pub ad shown successfully.");
-                        tg.HapticFeedback.notificationOccurred('success');
-                        // এখানে বিজ্ঞাপন দেখার জন্য কোনো রিওয়ার্ড যোগ করা হয়নি, কারণ এটি "আনলিমিটেড"
-                    })
-                    .catch(e => {
-                        // বিজ্ঞাপন দেখাতে কোনো সমস্যা হলে এই কোড চলবে
-                        console.error("Giga Pub ad error:", e);
-                        tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না। অনুগ্রহ করে একটু পর আবার চেষ্টা করুন।");
-                    });
-            } else {
-                // SDK ফাংশন খুঁজে পাওয়া না গেলে
-                console.error("Giga Pub SDK function 'showGiga' not found.");
-                tg.showAlert("বিজ্ঞাপন পরিষেবা উপলব্ধ নয়। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।");
-            }
-        }
-
+        
         // --- Daily Bonus বাটনের অবস্থা আপডেট করার ফাংশন ---
         function updateDailyBonusButtonState() {
             const bonusBtn = document.getElementById('daily-bonus-btn');
@@ -498,22 +473,103 @@
                 return;
             }
 
+            // Monetag বিজ্ঞাপন দেখানো হচ্ছে
+            if (typeof show_8954258 === 'function') {
+                show_8954258();
+            } else {
+                console.error("Monetag ad function not found.");
+            }
+
+            tg.showPopup({ title: "অনুগ্রহ করে অপেক্ষা করুন...", message: "বিজ্ঞাপন দেখার পর আপনার বোনাস যোগ হবে।", buttons:[] });
+
+            // বিজ্ঞাপন দেখার জন্য ১০ সেকেন্ড পর রিওয়ার্ড দেওয়া হবে
+            setTimeout(async () => {
+                try {
+                    const newBalance = (userData.balance || 0) + 1;
+                    const newTotalClicks = (userData.totalClicks || 0) + 1;
+                    await update(userRef, {
+                        balance: newBalance,
+                        totalClicks: newTotalClicks,
+                        lastBonusClaimed: today
+                    });
+                    tg.closeScanQrPopup(); // انتظار পপ-আপ বন্ধ করা
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showPopup({
+                        title: 'অভিনন্দন! 🎉',
+                        message: 'আপনার অ্যাকাউন্টে ১ টাকা বোনাস যোগ হয়েছে।',
+                        buttons: [{ type: 'ok' }]
+                    });
+                } catch (error) {
+                    console.error("Daily bonus update failed:", error);
+                    tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                    bonusBtn.disabled = false; // কোনো সমস্যা হলে বাটন আবার চালু হবে
+                }
+            }, 10000); // ১০ সেকেন্ড অপেক্ষা
+        }
+        
+        // --- Watch Ads/Video/Start Earn বাটনের জন্য ফাংশন ---
+        async function handleGigaAdReward(event) {
+            const button = event.currentTarget;
+            button.disabled = true; // ডাবল ক্লিক এড়ানোর জন্য বাটন নিষ্ক্রিয় করা
+
+            if (typeof window.showGiga === 'function') {
+                try {
+                    await window.showGiga(); // Giga Pub বিজ্ঞাপন দেখানো হচ্ছে
+                    
+                    tg.showPopup({ title: "বিজ্ঞাপন চলছে...", message: "পুরস্কার পেতে অনুগ্রহ করে ১৫ সেকেন্ড অপেক্ষা করুন।", buttons:[] });
+
+                    // ১৫ সেকেন্ড পর রিওয়ার্ড দেওয়া হবে
+                    setTimeout(async () => {
+                        try {
+                            const newBalance = (userData.balance || 0) + 1;
+                            const newTotalClicks = (userData.totalClicks || 0) + 1;
+                            await update(userRef, {
+                                balance: newBalance,
+                                totalClicks: newTotalClicks
+                            });
+                            
+                            tg.closeScanQrPopup(); // انتظار পপ-আপ বন্ধ করা
+                            tg.HapticFeedback.notificationOccurred('success');
+                            tg.showAlert('সফল! আপনার অ্যাকাউন্টে ১ টাকা যোগ হয়েছে।');
+                        } catch (dbError) {
+                            console.error("Error updating balance:", dbError);
+                            tg.showAlert('ব্যালেন্স যোগ করতে একটি সমস্যা হয়েছে।');
+                        } finally {
+                           button.disabled = false; // কাজ শেষে বাটন আবার চালু করা
+                        }
+                    }, 15000); // ১৫ সেকেন্ড অপেক্ষা
+
+                } catch (adError) {
+                    console.error("Giga Pub ad error:", adError);
+                    tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না।");
+                    button.disabled = false;
+                }
+            } else {
+                tg.showAlert("বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।");
+                button.disabled = false;
+            }
+        }
+        
+        // --- Auto Ads এর জন্য বিজ্ঞাপন ও রিওয়ার্ড দেওয়ার ফাংশন ---
+        async function showGigaAndRewardAuto() {
+            if (typeof window.showGiga !== 'function') {
+                console.log("Auto Ads stopped: Giga function not available.");
+                stopAutoAds(); 
+                tg.showAlert("Auto Ads পরিষেবাটি একটি সমস্যার কারণে বন্ধ হয়ে গেছে।");
+                return;
+            }
+
             try {
-                const newBalance = (userData.balance || 0) + 1;
+                await window.showGiga(); // বিজ্ঞাপন দেখানো
+                const newBalance = (userData.balance || 0) + 0.5;
+                const newTotalClicks = (userData.totalClicks || 0) + 1;
                 await update(userRef, {
                     balance: newBalance,
-                    lastBonusClaimed: today
+                    totalClicks: newTotalClicks
                 });
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showPopup({
-                    title: 'অভিনন্দন! 🎉',
-                    message: 'আপনার অ্যাকাউন্টে ১ টাকা বোনাস যোগ হয়েছে।',
-                    buttons: [{ type: 'ok' }]
-                });
-            } catch (error) {
-                console.error("Daily bonus update failed:", error);
-                tg.showAlert('একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
-                bonusBtn.disabled = false;
+                console.log("Auto Ad Reward: +0.5 Taka added.");
+            } catch(e) {
+                console.error("Auto Ad Error, will try again:", e);
             }
         }
 
@@ -524,8 +580,8 @@
             const autoBtn = document.getElementById('auto-ads-btn');
             const stopBtn = document.getElementById('stop-ads-btn');
             
-            showGigaPubAd(); 
-            autoAdsInterval = setInterval(showGigaPubAd, 15000); 
+            showGigaAndRewardAuto(); // চালু করার সাথে সাথে প্রথমবার রিওয়ার্ড
+            autoAdsInterval = setInterval(showGigaAndRewardAuto, 16000); // প্রতি ১৬ সেকেন্ড পর পর
 
             autoBtn.disabled = true;
             stopBtn.disabled = false;
@@ -546,6 +602,7 @@
             stopBtn.disabled = true;
             tg.HapticFeedback.impactOccurred('light');
         }
+
 
         // --- আপনার বাকি সকল ফাংশন অপরিবর্তিত থাকবে ---
         function setupBroadcastListener() {
@@ -583,10 +640,10 @@
             document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds); document.getElementById('join-telegram-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.telegramChannelLink, true); }, { once: true }); document.getElementById('subscribe-youtube-btn').addEventListener('click', function() { activateUnlockTask(this.closest('.task-card'), appSettings.youtubeChannelLink, false); }, { once: true }); 
             document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest); 
 
-            // --- নতুন হোম পেজের ইভেন্ট লিসেনার ---
+            // --- নতুন হোম পেজের ইভেন্ট লিসেনার (আপডেট করা হয়েছে) ---
             document.getElementById('daily-bonus-btn').addEventListener('click', handleDailyBonus);
             document.querySelectorAll('.giga-ad-trigger').forEach(btn => {
-                btn.addEventListener('click', showGigaPubAd);
+                btn.addEventListener('click', handleGigaAdReward); // পরিবর্তিত ফাংশন যোগ করা হয়েছে
             });
             document.getElementById('auto-ads-btn').addEventListener('click', startAutoAds);
             document.getElementById('stop-ads-btn').addEventListener('click', stopAutoAds);
