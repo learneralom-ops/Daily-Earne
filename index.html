@@ -535,7 +535,7 @@ function updateTaskButtonUI(button) {
         button.classList.add('unlock-btn');
         
         // লেখা পরিবর্তন করা হচ্ছে
-        textElement.innerHTML = 'আপনি নিতে চাইলে আপনাকে ১০ টি Ads<br>দেখতে হবে।';
+        textElement.innerHTML = 'আপনি যদি ১০ টাকা পেতে চান তাহলে আপনাকে ১০ টি Ads<br>দেখতে হবে এবং দুইবার Ads এর উপরে ক্লিক করতে হবে।';
 
     }
     // যদি উপরের কোনো শর্তই পূরণ না হয়, তাহলে HTML এর মূল লেখাটিই প্রদর্শিত হবে।
@@ -639,52 +639,72 @@ async function handleTaskButtonClick(event) {
         }
         
         async function createNewUser(user) {
-            const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-            const telegramUser = tg.initDataUnsafe?.user || {};
-            const mobileNumber = document.getElementById('signup-mobile')?.value || '';
-            const newUser = {
-                name: user.displayName || telegramUser.first_name || 'New User', email: user.email, mobile: mobileNumber, photoUrl: user.photoURL || telegramUser.photo_url || null, balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(), referredBy: referrerId || null, lastBonusClaimed: null
-            };
-            await set(userRef, newUser);
-            userData = newUser;
+    const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+    const telegramUser = tg.initDataUnsafe?.user || {};
+    const mobileNumber = document.getElementById('signup-mobile')?.value || '';
+    
+    // নতুন ব্যবহারকারীর তথ্য, সাথে টেলিগ্রাম আইডি যোগ করা হয়েছে
+    const newUser = {
+        name: user.displayName || telegramUser.first_name || 'New User',
+        email: user.email,
+        mobile: mobileNumber,
+        photoUrl: user.photoURL || telegramUser.photo_url || null,
+        balance: 0,
+        referrals: 0,
+        totalClicks: 0,
+        adsWatched: 0,
+        joinDate: new Date().toISOString(),
+        referredBy: referrerId || null,
+        lastBonusClaimed: null,
+        telegramId: telegramUser.id || null // <-- এই নতুন লাইনটি যোগ করা হয়েছে
+    };
 
-            if (referrerId && referrerId !== String(userId)) {
-                 const referrerRef = ref(db, 'users/' + referrerId);
-                try {
-                    const snapshot = await get(referrerRef);
-                    if (snapshot.exists()) {
-                        const referrerData = snapshot.val();
-                        const newReferralCount = (referrerData.referrals || 0) + 1;
-                        const referralBonus = appSettings.referralReward || 0;
-                        const updates = { referrals: newReferralCount };
-                        if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
-                        await update(referrerRef, updates);
-                    }
-                } catch (error) { console.error("Referrer update failed:", error); }
+    await set(userRef, newUser);
+    userData = newUser;
+
+    if (referrerId && referrerId !== String(userId)) {
+         const referrerRef = ref(db, 'users/' + referrerId);
+        try {
+            const snapshot = await get(referrerRef);
+            if (snapshot.exists()) {
+                const referrerData = snapshot.val();
+                const newReferralCount = (referrerData.referrals || 0) + 1;
+                const referralBonus = appSettings.referralReward || 0;
+                const updates = { referrals: newReferralCount };
+                if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
+                await update(referrerRef, updates);
             }
-        }
-        
+        } catch (error) { console.error("Referrer update failed:", error); }
+    }
+}
+
+
         function updateAllUI() {
-            if (!userData || !firebaseUser) return;
-            document.getElementById('user-name').innerHTML = `${userData.name || firebaseUser.displayName || 'User'} <span class="verified-tick">✔</span>`;
-            document.getElementById('user-photo').src = userData.photoUrl || firebaseUser.photoURL || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
-            document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
-            document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
-            document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
-            document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
-            document.getElementById('total-referrals').innerText = userData.referrals || 0; 
-            document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
-            const watchAdsBtn = document.getElementById('watch-ads-btn');
-            if ((userData.adsWatched || 0) >= 15) {
-                watchAdsBtn.textContent = 'Daily Limit Reached';
-                watchAdsBtn.disabled = true;
-            } else {
-                if (!watchAdsBtn.textContent.includes('Watch Ads')) { watchAdsBtn.textContent = 'Watch Ads'; }
-                watchAdsBtn.disabled = false;
-            }
-            checkWithdrawEligibility();
-        }
+    if (!userData || !firebaseUser) return;
+    document.getElementById('user-name').innerHTML = `${userData.name || firebaseUser.displayName || 'User'} <span class="verified-tick">✔</span>`;
+    document.getElementById('user-photo').src = userData.photoUrl || firebaseUser.photoURL || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
+    document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
+    document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
+    document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
+    document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
+    document.getElementById('total-referrals').innerText = userData.referrals || 0; 
+    
+    // --- রেফারেল লিঙ্ক তৈরির কোড পরিবর্তন করা হয়েছে ---
+    // যদি টেলিগ্রাম আইডি পাওয়া যায়, সেটি ব্যবহার করবে, নাহলে আগের মতো userId ব্যবহার করবে।
+    const referralId = userData.telegramId || userId; 
+    document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${referralId}`;
 
+    const watchAdsBtn = document.getElementById('watch-ads-btn');
+    if ((userData.adsWatched || 0) >= 15) {
+        watchAdsBtn.textContent = 'Daily Limit Reached';
+        watchAdsBtn.disabled = true;
+    } else {
+        if (!watchAdsBtn.textContent.includes('Watch Ads')) { watchAdsBtn.textContent = 'Watch Ads'; }
+        watchAdsBtn.disabled = false;
+    }
+    checkWithdrawEligibility();
+}
+        
         // =================================================================
         // === নতুন হোম পেজের ফাংশন (আপনার চাহিদা অনুযায়ী পরিবর্তিত) ===
         // =================================================================
