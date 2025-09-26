@@ -511,18 +511,35 @@ function updateTaskButtonUI(button) {
     const taskId = button.dataset.taskId;
     if (!taskId) return;
 
+    // প্রতিটি টাস্ক আইটেমের সংশ্লিষ্ট টেক্সট এলিমেন্ট খুঁজে বের করা হচ্ছে
+    const taskItem = button.closest('.task-item');
+    if (!taskItem) return;
+    const textElement = taskItem.querySelector('.task-item-text');
+    if (!textElement) return;
+
     const taskState = taskProgressManager.getTask(taskId);
 
     if (taskState.completed) {
+        // --- টাস্ক সম্পন্ন হলে ---
         button.textContent = '✅ Completed';
         button.classList.remove('join-now-btn', 'unlock-btn');
         button.classList.add('completed-btn');
         button.style.pointerEvents = 'none';
+        
+        // লেখা পরিবর্তন করা হচ্ছে
+        textElement.innerHTML = 'আপনি সফলভাবে ১০ টাকা পেয়েছেন।<br>আপনার ব্যালেন্স চেক করুন।';
+
     } else if (taskState.joined) {
+        // --- বাটনটি Unlock অবস্থায় থাকলে ---
         button.textContent = `🔓 Unlock (${taskState.clicks}/10)`;
         button.classList.remove('join-now-btn');
         button.classList.add('unlock-btn');
+        
+        // লেখা পরিবর্তন করা হচ্ছে
+        textElement.innerHTML = 'আপনি নিতে চাইলে আপনাকে ১০ টি Ads<br>দেখতে হবে।';
+
     }
+    // যদি উপরের কোনো শর্তই পূরণ না হয়, তাহলে HTML এর মূল লেখাটিই প্রদর্শিত হবে।
 }
 
 async function handleTaskButtonClick(event) {
