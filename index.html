@@ -426,47 +426,49 @@
 
         // === মূল অ্যাপ চালু করার ফাংশন ===
 document.addEventListener("DOMContentLoaded", () => {
-    tg.ready();
-    tg.expand();
-    
-    const app = initializeApp(firebaseConfig);
-    db = getDatabase(app);
-    auth = getAuth(app);
+        tg.ready();
+        tg.expand();
+        
+        const app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        auth = getAuth(app);
 
-    // ১. লগইন সেশন মনে না রাখার জন্য কোড
-    // অ্যাপ বন্ধ করলে বা নতুন সেশন শুরু হলে আবার লগইন করতে হবে।
-    setPersistence(auth, browserSessionPersistence)
-        .then(() => {
-            // এই কোড সফলভাবে চলার পর বাকি কাজগুলো হবে
-            setupAuthEventListeners(); 
-            onAuthStateChanged(auth, async (user) => {
+        // লগইন সেশন মনে না রাখার জন্য কোড
+        setPersistence(auth, browserSessionPersistence)
+            .then(() => {
+                setupAuthEventListeners(); 
+                onAuthStateChanged(auth, async (user) => {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    const authContainer = document.getElementById('auth-container');
+                    const mainContainer = document.querySelector('.container');
+                    const bottomNav = document.querySelector('.bottom-nav');
+
+                    if (user) {
+                        firebaseUser = user;
+                        userId = user.uid;
+                        userRef = ref(db, 'users/' + userId);
+                        authContainer.style.display = 'none';
+                        loadingOverlay.style.display = 'flex';
+                        await initializeAppLogic();
+                        mainContainer.style.display = 'block';
+                        bottomNav.style.display = 'flex';
+                        loadingOverlay.style.display = 'none';
+                    } else {
+                        loadingOverlay.style.display = 'none';
+                        mainContainer.style.display = 'none';
+                        bottomNav.style.display = 'none';
+                        authContainer.style.display = 'flex';
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Auth persistence error:", error);
+                // যদি কোনো কারণে persistence সেট না হয়, অ্যাপটি তবুও চালু করার চেষ্টা করবে
+                // (যদিও এই ধরনের সমস্যা হওয়ার সম্ভাবনা খুব কম)
                 const loadingOverlay = document.getElementById('loading-overlay');
-                const authContainer = document.getElementById('auth-container');
-                const mainContainer = document.querySelector('.container');
-                const bottomNav = document.querySelector('.bottom-nav');
-
-                if (user) {
-                    firebaseUser = user;
-                    userId = user.uid;
-                    userRef = ref(db, 'users/' + userId);
-                    authContainer.style.display = 'none';
-                    loadingOverlay.style.display = 'flex';
-                    await initializeAppLogic();
-                    mainContainer.style.display = 'block';
-                    bottomNav.style.display = 'flex';
-                    loadingOverlay.style.display = 'none';
-                } else {
-                    loadingOverlay.style.display = 'none';
-                    mainContainer.style.display = 'none';
-                    bottomNav.style.display = 'none';
-                    authContainer.style.display = 'flex';
-                }
+                loadingOverlay.innerText = "Error loading app. Please refresh.";
             });
-        })
-        .catch((error) => {
-            console.error("Auth persistence error:", error);
-        });
-});
+    });
 
         // === অ্যাপের মূল লজিক (ডেটা লোডিং ও UI সেটআপ) ===
         async function initializeAppLogic() {
