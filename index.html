@@ -481,29 +481,28 @@
             }
         }
         
-        // =================================================================
-// === নতুন টাস্ক পেজের জন্য ফাংশন (আপনার চাহিদা অনুযায়ী) ===
+        
 // =================================================================
+// === নতুন টাস্ক পেজের জন্য ফাংশন (আনলিমিটেড ইনকামের জন্য) ===
+// =================================================================
+
+// localStorage এর পরিবর্তে একটি অস্থায়ী ভ্যারিয়েবল ব্যবহার করা হচ্ছে।
+// পৃষ্ঠা রিফ্রেশ হলে এই ভ্যারিয়েবলের সব ডেটা মুছে যাবে।
+let sessionTaskProgress = {};
+
 const taskProgressManager = {
     get: function() {
-        try {
-            const key = `taskProgress_${userId}`;
-            return JSON.parse(localStorage.getItem(key)) || {};
-        } catch (e) {
-            return {};
-        }
-    },
-    set: function(progress) {
-        const key = `taskProgress_${userId}`;
-        localStorage.setItem(key, JSON.stringify(progress));
+        // localStorage থেকে না পড়ে, অস্থায়ী ভ্যারিয়েবল থেকে ডেটা নেওয়া হচ্ছে।
+        return sessionTaskProgress;
     },
     getTask: function(taskId) {
+        // অস্থায়ী ভ্যারিয়েবল থেকে নির্দিষ্ট টাস্কের অবস্থা নেওয়া হচ্ছে।
         return this.get()[taskId] || { joined: false, clicks: 0, completed: false };
     },
     updateTask: function(taskId, data) {
+        // অস্থায়ী ভ্যারিয়েবলে টাস্কের অবস্থা আপডেট করা হচ্ছে।
         const progress = this.get();
         progress[taskId] = { ...this.getTask(taskId), ...data };
-        this.set(progress);
     }
 };
 
