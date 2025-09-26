@@ -179,6 +179,13 @@
         <form id="login-form">
             <div class="form-group"><input type="tel" id="login-mobile" class="form-control" placeholder="Mobile Number" required></div>
             <div class="form-group"><input type="password" id="login-password" class="form-control" placeholder="Password" required></div>
+            
+            <!-- === নতুন Forgot Password লিঙ্ক === -->
+    <div style="text-align: right; margin-bottom: 15px; margin-top: -10px;">
+        <a href="#" id="forgot-password-link" style="color: var(--primary-color); font-size: 0.9rem;">Forgot Password?</a>
+    </div>
+    <!-- ================================== -->
+            
             <button type="submit" class="btn btn-primary">Login</button>
             <p class="form-switcher">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
         </form>
@@ -403,7 +410,7 @@
    <script type="module">
     // === Firebase SDK Imports (সঠিক ইম্পোর্ট সহ) ===
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
     import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     // === আপনার Firebase কনফিগারেশন ===
@@ -523,6 +530,51 @@
             alert("Sign up failed: " + error.message); 
         }
     });
+
+            // === নতুন Forgot Password ফাংশন ===
+
+    // প্রথমে "Forgot Password" লিঙ্কের এলিমেন্টটি সিলেক্ট করতে হবে
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+
+    forgotPasswordLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        // ব্যবহারকারীর কাছ থেকে মোবাইল নম্বর নেওয়ার জন্য একটি পপ-আপ দেখানো হবে
+        const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার মোবাইল নম্বরটি দিন:");
+
+        if (!mobile || mobile.trim() === "") {
+            return; // ব্যবহারকারী কিছু না দিলে বা ক্যান্সেল করলে কিছুই হবে না
+        }
+
+        // ডাটাবেসে মোবাইল নম্বরটি খোঁজা হবে
+        const usersRef = ref(db, 'users');
+        const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile.trim()));
+
+        try {
+            const snapshot = await get(userQuery);
+            if (snapshot.exists()) {
+                let userEmail = null;
+                // মোবাইল নম্বরের সাথে যুক্ত ইমেইলটি খুঁজে বের করা হবে
+                snapshot.forEach(childSnapshot => {
+                    userEmail = childSnapshot.val().email;
+                });
+
+                if (userEmail) {
+                    // Firebase কে পাসওয়ার্ড রিসেট ইমেইল পাঠানোর জন্য বলা হচ্ছে
+                    await sendPasswordResetEmail(auth, userEmail);
+                    alert("আপনার ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
+                } else {
+                    alert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
+                }
+            } else {
+                alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
+            }
+        } catch (error) {
+            console.error("Forgot Password Error:", error);
+            alert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+        }
+    });
+    // ===================================
 
     // === লগইন ফর্মের সাবমিট হ্যান্ডেল (নতুন মেসেজ সহ) ===
     loginForm.addEventListener('submit', async (e) => {
