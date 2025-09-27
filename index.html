@@ -392,7 +392,7 @@
    <script type="module">
        
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
     import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -421,50 +421,29 @@
         db = getDatabase(app);
         auth = getAuth(app);
 
-        setPersistence(auth, browserLocalPersistence)
+        setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 setupAuthEventListeners(); 
                 
                 // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
-                // আপনার onAuthStateChanged ফাংশনটি খুঁজে বের করে নিচের কোডটি দিয়ে প্রতিস্থাপন করুন
+                onAuthStateChanged(auth, async (user) => {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    const authContainer = document.getElementById('auth-container');
+                    const mainContainer = document.querySelector('.container');
+                    const bottomNav = document.querySelector('.bottom-nav');
 
-onAuthStateChanged(auth, async (user) => {
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const authContainer = document.getElementById('auth-container');
-    const mainContainer = document.querySelector('.container');
-    const bottomNav = document.querySelector('.bottom-nav');
+                    if (user) {
+                        // যদি এটি একটি নতুন ব্যবহারকারীর সাইন-আপ প্রক্রিয়া হয়,
+                        // তবে তারা অস্থায়ীভাবে লগইন থাকে। আমরা কিছুই করব না এবং
+                        // signOut কলের জন্য অপেক্ষা করব।
+                        if (isNewUserSignUp) {
+                            return; 
+                        }
 
-    if (user) {
-        // ব্যবহারকারী Firebase এ লগইন আছে। এখন আমাদের যাচাই করতে হবে তিনি সঠিক টেলিগ্রাম ব্যবহারকারী কিনা।
-        
-        const currentTgUser = tg.initDataUnsafe?.user;
-
-        // যদি টেলিগ্রাম ব্যবহারকারীর তথ্য না পাওয়া যায় (যেমন, ডেস্কটপ ব্রাউজারে পরীক্ষা করার সময়)
-        // নিরাপত্তার জন্য তাকে লগআউট করে দেওয়া উচিত।
-        if (!currentTgUser) {
-            console.warn("Telegram user data not found. Forcing logout for security.");
-            await signOut(auth);
-            // signOut আবার onAuthStateChanged ট্রিগার করবে, যা else ব্লকে যাবে।
-            return;
-        }
-
-        const firebaseUid = user.uid;
-        const userRefDb = ref(db, 'users/' + firebaseUid);
-        
-        try {
-            const userSnap = await get(userRefDb);
-
-            if (userSnap.exists()) {
-                const userDataFromDb = userSnap.val();
-                const storedTgId = userDataFromDb.telegramId;
-
-                // কেস ১: ব্যবহারকারীর প্রোফাইলে টেলিগ্রাম আইডি সেভ করা আছে।
-                if (storedTgId) {
-                    if (storedTgId === currentTgUser.id) {
-                        // আইডি মিলে গেছে! সঠিক ব্যবহারকারী। অ্যাপ লোড করুন।
+                        // অন্য সব ক্ষেত্রে লগইন থাকা ব্যবহারকারীর জন্য অ্যাপ দেখান।
                         firebaseUser = user;
                         userId = user.uid;
-                        userRef = userRefDb;
+                        userRef = ref(db, 'users/' + userId);
                         authContainer.style.display = 'none';
                         loadingOverlay.style.display = 'flex';
                         await initializeAppLogic();
@@ -472,54 +451,15 @@ onAuthStateChanged(auth, async (user) => {
                         bottomNav.style.display = 'flex';
                         loadingOverlay.style.display = 'none';
                     } else {
-                        // আইডি মিলেনি! ভুল ব্যবহারকারী। লগআউট করুন।
-                        console.warn(`User mismatch. Stored TG ID: ${storedTgId}, Current TG ID: ${currentTgUser.id}. Logging out.`);
-                        await signOut(auth);
+                        // ব্যবহারকারী সাইন আউট থাকলে, প্রমাণীকরণ স্ক্রিন দেখান।
+                        loadingOverlay.style.display = 'none';
+                        mainContainer.style.display = 'none';
+                        bottomNav.style.display = 'none';
+                        authContainer.style.display = 'flex';
                     }
-                } 
-                // কেস ২: প্রোফাইলে টেলিগ্রাম আইডি নেই (সম্ভবত পুরোনো ব্যবহারকারী বা প্রথমবার লগইন)।
-                else {
-                    // এই Firebase অ্যাকাউন্টটিকে বর্তমান টেলিগ্রাম ব্যবহারকারীর সাথে লিঙ্ক করুন।
-                    await update(userRefDb, { telegramId: currentTgUser.id });
-                    
-                    // লিঙ্ক করার পর অ্যাপ লোড করুন।
-                    firebaseUser = user;
-                    userId = user.uid;
-                    userRef = userRefDb;
-                    authContainer.style.display = 'none';
-                    loadingOverlay.style.display = 'flex';
-                    await initializeAppLogic();
-                    mainContainer.style.display = 'block';
-                    bottomNav.style.display = 'flex';
-                    loadingOverlay.style.display = 'none';
-                }
-            } else {
-                // Firebase Auth তে ব্যবহারকারী আছে কিন্তু ডাটাবেসে প্রোফাইল নেই।
-                // initializeAppLogic এটি তৈরি করে নেবে। এটি একটি স্বাভাবিক প্রক্রিয়া।
-                firebaseUser = user;
-                userId = user.uid;
-                userRef = userRefDb;
-                authContainer.style.display = 'none';
-                loadingOverlay.style.display = 'flex';
-                await initializeAppLogic(); // এখানে createNewUser কল হবে
-                mainContainer.style.display = 'block';
-                bottomNav.style.display = 'flex';
-                loadingOverlay.style.display = 'none';
-            }
-        } catch (error) {
-            console.error("Error during user verification:", error);
-            loadingOverlay.innerText = "Verification failed. Please refresh.";
-            await signOut(auth); // কোনো সমস্যা হলে লগআউট করে দিন
-        }
-
-    } else {
-        // ব্যবহারকারী লগইন নেই। প্রমাণীকরণ স্ক্রিন দেখান।
-        loadingOverlay.style.display = 'none';
-        mainContainer.style.display = 'none';
-        bottomNav.style.display = 'none';
-        authContainer.style.display = 'flex';
-    }
-});
+                });
+                
+                
                 
             })
             .catch((error) => {
