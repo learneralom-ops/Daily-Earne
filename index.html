@@ -410,7 +410,6 @@
    <script type="module">
     // === Firebase SDK Imports (সঠিক ইম্পোর্ট সহ) ===
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    // *** FIX: এখানে sendPasswordResetEmail একবার ইম্পোর্ট করা হয়েছে ***
     import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
     import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
@@ -440,7 +439,6 @@
         db = getDatabase(app);
         auth = getAuth(app);
 
-        // লগইন সেশন মনে না রাখার জন্য কোড
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 setupAuthEventListeners(); 
@@ -470,8 +468,6 @@
             })
             .catch((error) => {
                 console.error("Auth persistence error:", error);
-                // যদি কোনো কারণে persistence সেট না হয়, অ্যাপটি তবুও চালু করার চেষ্টা করবে
-                // (যদিও এই ধরনের সমস্যা হওয়ার সম্ভাবনা খুব কম)
                 const loadingOverlay = document.getElementById('loading-overlay');
                 loadingOverlay.innerText = "Error loading app. Please refresh.";
             });
@@ -492,13 +488,14 @@
             if (userSnapshot.exists()) {
                 userData = userSnapshot.val();
             } else {
+                // This will now only run for new Google Sign-in users, which is correct.
                 await createNewUser(firebaseUser);
             }
             updateAllUI();
             onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
 
             setupBroadcastListener();
-            setupUIEventListeners(); // এই ফাংশনটি এখন আর Auth এর ইভেন্ট সেট করবে না
+            setupUIEventListeners();
             
         } catch (error) {
             console.error("App Logic Error:", error);
@@ -508,128 +505,193 @@
     
     // === Auth Event Listeners (সঠিক কোড) ===
     function setupAuthEventListeners() {
-    const signupForm = document.getElementById('signup-form');
-    const loginForm = document.getElementById('login-form');
-    const googleBtn = document.getElementById('google-signin-btn');
-    const showLoginLink = document.getElementById('show-login');
-    const showSignupLink = document.getElementById('show-signup');
-    const authTitle = document.getElementById('auth-title');
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const googleBtn = document.getElementById('google-signin-btn');
+        const showLoginLink = document.getElementById('show-login');
+        const showSignupLink = document.getElementById('show-signup');
+        const authTitle = document.getElementById('auth-title');
 
-    // অ্যাপ খোলার সাথে সাথে লগইন ফরমের টাইটেল সেট করা
-    authTitle.innerText = 'Login Your Account';
+        authTitle.innerText = 'Login Your Account';
 
-    // সাইন-আপ ফর্মের সাবমিট হ্যান্ডেল
-    signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(userCredential.user, { displayName: name });
-        } catch (error) { 
-            alert("Sign up failed: " + error.message); 
-        }
-    });
-        
-    // === লগইন ফর্মের সাবমিট হ্যান্ডেল (নতুন মেসেজ সহ) ===
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const mobile = document.getElementById('login-mobile').value;
-        const password = document.getElementById('login-password').value;
+        // === সাইন-আপ ফর্মের সাবমিট হ্যান্ডেল ( *** সংশোধিত *** ) ===
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const mobile = document.getElementById('signup-mobile').value;
 
-        if (!mobile || !password) {
-            alert("Please enter mobile number and password.");
-            return;
-        }
+            if(!name || !email || !password || !mobile){
+                alert("Please fill all the fields.");
+                return;
+            }
 
-        const usersRef = ref(db, 'users');
-        const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile));
+            try {
+                // Step 1: Create user in Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-        try {
-            const snapshot = await get(userQuery);
-            if (snapshot.exists()) {
-                let userEmail = null;
-                snapshot.forEach(childSnapshot => {
-                    userEmail = childSnapshot.val().email;
-                });
+                // Step 2: **IMMEDIATELY** create the user record in the Realtime Database
+                const newUserRef = ref(db, 'users/' + user.uid);
+                const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+                const telegramUser = tg.initDataUnsafe?.user || {};
+                
+                const newUserProfile = {
+                    name: name,
+                    email: user.email,
+                    mobile: mobile, // *** মোবাইল নম্বরটি এখানে সেভ করা হচ্ছে ***
+                    photoUrl: user.photoURL || telegramUser.photo_url || null,
+                    balance: 0,
+                    referrals: 0,
+                    totalClicks: 0,
+                    adsWatched: 0,
+                    joinDate: new Date().toISOString(),
+                    referredBy: referrerId || null,
+                    lastBonusClaimed: null,
+                    telegramId: telegramUser.id || null
+                };
 
-                if (userEmail) {
-                    // এখানে ইমেইল পাওয়ার পর লগইন করার চেষ্টা করা হচ্ছে
-                    await signInWithEmailAndPassword(auth, userEmail, password);
-                } else {
-                    // এই সমস্যা হওয়ার কথা নয়, কিন্তু ডেটাবেসে ইমেইল না থাকলে দেখাবে
-                    alert("Login failed: User data is incomplete.");
+                await set(newUserRef, newUserProfile);
+                
+                // Handle referrer bonus if applicable
+                if (referrerId && referrerId !== String(user.uid)) {
+                    const referrerRef = ref(db, 'users/' + referrerId);
+                    const snapshot = await get(referrerRef);
+                    if (snapshot.exists()) {
+                        const referrerData = snapshot.val();
+                        const newReferralCount = (referrerData.referrals || 0) + 1;
+                        const referralBonus = appSettings.referralReward || 0;
+                        const updates = { referrals: newReferralCount };
+                        if (referralBonus > 0) {
+                            updates.balance = (referrerData.balance || 0) + referralBonus;
+                        }
+                        await update(referrerRef, updates);
+                    }
                 }
-            } else {
-                // --- মোবাইল নম্বর না পাওয়া গেলে এই মেসেজটি দেখানো হবে ---
+
+                // Step 3: Update the user's display name in Auth profile
+                await updateProfile(user, { displayName: name });
+                
+                // onAuthStateChanged will automatically handle the UI transition to the main app.
+            } catch (error) { 
+                alert("Sign up failed: " + error.message); 
+            }
+        });
+        
+        // === লগইন ফর্মের সাবমিট হ্যান্ডেল (অপরিবর্তিত) ===
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mobile = document.getElementById('login-mobile').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!mobile || !password) {
+                alert("Please enter mobile number and password.");
+                return;
+            }
+
+            const usersRef = ref(db, 'users');
+            const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile));
+
+            try {
+                const snapshot = await get(userQuery);
+                if (snapshot.exists()) {
+                    let userEmail = null;
+                    snapshot.forEach(childSnapshot => {
+                        userEmail = childSnapshot.val().email;
+                    });
+
+                    if (userEmail) {
+                        await signInWithEmailAndPassword(auth, userEmail, password);
+                    } else {
+                        alert("Login failed: User data is incomplete.");
+                    }
+                } else {
+                    alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
+                }
+            } catch (error) {
+                console.error("Login Error:", error.code);
                 alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
             }
-        } catch (error) {
-            // --- পাসওয়ার্ড ভুল হলে বা অন্য কোনো সমস্যা হলে এই মেসেজটি দেখানো হবে ---
-            console.error("Login Error:", error.code); // ডিবাগিং এর জন্য কনসোলে আসল এরর কোড দেখানো হলো
-            alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
-        }
-    });
+        });
 
-    // === নতুন Forgot Password ফাংশন ===
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-    forgotPasswordLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        
-        const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার রেজিস্টার্ড মোবাইল নম্বরটি দিন:");
-        if (!mobile || mobile.trim() === "") {
-            return; 
-        }
+        // === Forgot Password ফাংশন (অপরিবর্তিত) ===
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার রেজিস্টার্ড মোবাইল নম্বরটি দিন:");
+            if (!mobile || mobile.trim() === "") return;
 
-        const usersRef = ref(db, 'users');
-        const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile.trim()));
+            const usersRef = ref(db, 'users');
+            const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile.trim()));
 
-        try {
-            const snapshot = await get(userQuery);
-            if (snapshot.exists()) {
-                let userEmail = null;
-                snapshot.forEach(childSnapshot => {
-                    userEmail = childSnapshot.val().email;
-                });
-
-                if (userEmail) {
-                    await sendPasswordResetEmail(auth, userEmail);
-                    alert("আপনার রেজিস্টার্ড ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
+            try {
+                const snapshot = await get(userQuery);
+                if (snapshot.exists()) {
+                    let userEmail = null;
+                    snapshot.forEach(childSnapshot => { userEmail = childSnapshot.val().email; });
+                    if (userEmail) {
+                        await sendPasswordResetEmail(auth, userEmail);
+                        alert("আপনার রেজিস্টার্ড ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
+                    } else {
+                        alert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
+                    }
                 } else {
-                    alert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
+                    alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
                 }
-            } else {
-                alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
+            } catch (error) {
+                console.error("Forgot Password Error:", error);
+                alert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
             }
-        } catch (error) {
-            console.error("Forgot Password Error:", error);
-            alert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+        });
+
+        // গুগল সাইন-ইন
+        googleBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try { await signInWithPopup(auth, provider); }
+            catch (error) { alert("Google sign-in failed: " + error.message); }
+        });
+
+        // ফর্ম পরিবর্তন
+        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.style.display = 'none'; loginForm.style.display = 'block'; authTitle.innerText = 'Login Your Account'; });
+        showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; signupForm.style.display = 'block'; authTitle.innerText = 'Create your account'; });
+    }
+
+    // This function will now correctly handle only new Google Sign-in users
+    async function createNewUser(user) {
+        const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+        const telegramUser = tg.initDataUnsafe?.user || {};
+        const newUser = { 
+            name: user.displayName || telegramUser.first_name || 'New User', 
+            email: user.email, 
+            mobile: '', // Google sign in does not provide a mobile number
+            photoUrl: user.photoURL || telegramUser.photo_url || null, 
+            balance: 0, 
+            referrals: 0, 
+            totalClicks: 0, 
+            adsWatched: 0, 
+            joinDate: new Date().toISOString(), 
+            referredBy: referrerId || null, 
+            lastBonusClaimed: null, 
+            telegramId: telegramUser.id || null 
+        };
+        await set(userRef, newUser);
+        userData = newUser;
+        if (referrerId && referrerId !== String(userId)) {
+            const referrerRef = ref(db, 'users/' + referrerId);
+            try {
+                const snapshot = await get(referrerRef);
+                if (snapshot.exists()) {
+                    const referrerData = snapshot.val();
+                    const newReferralCount = (referrerData.referrals || 0) + 1;
+                    const referralBonus = appSettings.referralReward || 0;
+                    const updates = { referrals: newReferralCount };
+                    if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
+                    await update(referrerRef, updates);
+                }
+            } catch (error) { console.error("Referrer update failed:", error); }
         }
-    });
-    // ===================================
-
-    // গুগল সাইন-ইন
-    googleBtn.addEventListener('click', async () => {
-        const provider = new GoogleAuthProvider();
-        try { await signInWithPopup(auth, provider); }
-        catch (error) { alert("Google sign-in failed: " + error.message); }
-    });
-
-    // ফর্ম পরিবর্তনের সময় টাইটেল পরিবর্তন
-    showLoginLink.addEventListener('click', (e) => { 
-        e.preventDefault(); 
-        signupForm.style.display = 'none'; 
-        loginForm.style.display = 'block';
-        authTitle.innerText = 'Login Your Account';
-    });
-    showSignupLink.addEventListener('click', (e) => { 
-        e.preventDefault(); 
-        loginForm.style.display = 'none'; 
-        signupForm.style.display = 'block';
-        authTitle.innerText = 'Create your account';
-    });
-}
+    }
 
     // === বাকি সকল ফাংশন অপরিবর্তিত ===
     let sessionTaskProgress = {};
@@ -679,29 +741,6 @@
 
     async function handleLogout() {
         try { await signOut(auth); } catch (error) { console.error("Sign out error:", error); tg.showAlert("Log out failed."); }
-    }
-
-    async function createNewUser(user) {
-        const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-        const telegramUser = tg.initDataUnsafe?.user || {};
-        const mobileNumber = document.getElementById('signup-mobile')?.value || '';
-        const newUser = { name: user.displayName || telegramUser.first_name || 'New User', email: user.email, mobile: mobileNumber, photoUrl: user.photoURL || telegramUser.photo_url || null, balance: 0, referrals: 0, totalClicks: 0, adsWatched: 0, joinDate: new Date().toISOString(), referredBy: referrerId || null, lastBonusClaimed: null, telegramId: telegramUser.id || null };
-        await set(userRef, newUser);
-        userData = newUser;
-        if (referrerId && referrerId !== String(userId)) {
-            const referrerRef = ref(db, 'users/' + referrerId);
-            try {
-                const snapshot = await get(referrerRef);
-                if (snapshot.exists()) {
-                    const referrerData = snapshot.val();
-                    const newReferralCount = (referrerData.referrals || 0) + 1;
-                    const referralBonus = appSettings.referralReward || 0;
-                    const updates = { referrals: newReferralCount };
-                    if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
-                    await update(referrerRef, updates);
-                }
-            } catch (error) { console.error("Referrer update failed:", error); }
-        }
     }
 
     function updateAllUI() {
