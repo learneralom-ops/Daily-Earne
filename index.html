@@ -489,9 +489,47 @@
             if (userSnapshot.exists()) {
                 userData = userSnapshot.val();
             } else {
-                // This will now only run for new Google Sign-in users, which is correct.
                 await createNewUser(firebaseUser);
             }
+            
+            // === [আপডেট করা কোড] প্রতিবার লোড করার সময় টেলিগ্রামের তথ্য সিঙ্ক করুন ===
+            const telegramUser = tg.initDataUnsafe?.user;
+            if (telegramUser) {
+                const updates = {};
+                let needsUpdate = false;
+
+                // 1. যদি ডাটাবেসে টেলিগ্রাম আইডি না থাকে, তবে যুক্ত করুন
+                if (!userData.telegramId && telegramUser.id) {
+                    updates.telegramId = telegramUser.id;
+                    needsUpdate = true;
+                }
+
+                // 2. যদি ডাটাবেসে কোনো নাম না থাকে বা জেনেরিক নাম থাকে, তবে টেলিগ্রামের নাম ব্যবহার করুন
+                const isGenericName = !userData.name || userData.name === 'New User';
+                if (isGenericName && telegramUser.first_name) {
+                    updates.name = telegramUser.first_name;
+                    needsUpdate = true;
+                }
+
+                // 3. যদি ডাটাবেসে প্রোফাইল ছবি না থাকে, তবে টেলিগ্রামের ছবি ব্যবহার করুন
+                if (!userData.photoUrl && telegramUser.photo_url) {
+                    updates.photoUrl = telegramUser.photo_url;
+                    needsUpdate = true;
+                }
+                
+                // যদি কোনো আপডেটের প্রয়োজন হয়, তবে ডাটাবেসে পাঠান
+                if (needsUpdate) {
+                    try {
+                        await update(userRef, updates);
+                        // স্থানীয় ডেটাও আপডেট করুন যাতে UI সাথে সাথে পরিবর্তন হয়
+                        userData = { ...userData, ...updates }; 
+                    } catch (error) {
+                        console.error("Failed to sync Telegram user info:", error);
+                    }
+                }
+            }
+            // === [আপডেট শেষ] ===
+
             updateAllUI();
             onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
 
@@ -592,7 +630,7 @@
         const forgotPasswordLink = document.getElementById('forgot-password-link');
         forgotPasswordLink.addEventListener('click', async (e) => {
             e.preventDefault();
-            const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার রেজিস্টার্ড মোবাইল নম্বরটি দিন:");
+            const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার মোবাইল নম্বরটি দিন:");
             if (!mobile || mobile.trim() === "") return;
 
             const usersRef = ref(db, 'users');
@@ -605,7 +643,7 @@
                     snapshot.forEach(childSnapshot => { userEmail = childSnapshot.val().email; });
                     if (userEmail) {
                         await sendPasswordResetEmail(auth, userEmail);
-                        alert("আপনার রেজিস্টার্ড ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
+                        alert("আপনার ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
                     } else {
                         alert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
                     }
