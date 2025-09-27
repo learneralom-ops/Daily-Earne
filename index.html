@@ -409,6 +409,9 @@
     let firebaseUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
     let autoAdsInterval = null;
     const tg = window.Telegram.WebApp;
+    
+    // === [নতুন] সাইন-আপ প্রবাহ নিয়ন্ত্রণের জন্য ফ্ল্যাগ ===
+    let isNewUserSignUp = false;
 
     document.addEventListener("DOMContentLoaded", () => {
         tg.ready();
@@ -418,10 +421,11 @@
         db = getDatabase(app);
         auth = getAuth(app);
 
-        // === এই ফাংশনটি ব্যবহারকারীকে লগইন অবস্থায় রাখে ===
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 setupAuthEventListeners(); 
+                
+                // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
                 onAuthStateChanged(auth, async (user) => {
                     const loadingOverlay = document.getElementById('loading-overlay');
                     const authContainer = document.getElementById('auth-container');
@@ -429,6 +433,14 @@
                     const bottomNav = document.querySelector('.bottom-nav');
 
                     if (user) {
+                        // যদি এটি একটি নতুন ব্যবহারকারীর সাইন-আপ প্রক্রিয়া হয়,
+                        // তবে তারা অস্থায়ীভাবে লগইন থাকে। আমরা কিছুই করব না এবং
+                        // signOut কলের জন্য অপেক্ষা করব।
+                        if (isNewUserSignUp) {
+                            return; 
+                        }
+
+                        // অন্য সব ক্ষেত্রে লগইন থাকা ব্যবহারকারীর জন্য অ্যাপ দেখান।
                         firebaseUser = user;
                         userId = user.uid;
                         userRef = ref(db, 'users/' + userId);
@@ -439,6 +451,7 @@
                         bottomNav.style.display = 'flex';
                         loadingOverlay.style.display = 'none';
                     } else {
+                        // ব্যবহারকারী সাইন আউট থাকলে, প্রমাণীকরণ স্ক্রিন দেখান।
                         loadingOverlay.style.display = 'none';
                         mainContainer.style.display = 'none';
                         bottomNav.style.display = 'none';
@@ -519,7 +532,7 @@
 
         authTitle.innerText = 'Login Your Account';
 
-        // === [নতুন পরিবর্তন] সাইন-আপের পর ইউজারকে লগ আউট করে লগইন ফর্ম দেখানো হবে ===
+        // === [পরিবর্তিত সাইন-আপ ফর্ম হ্যান্ডেল] ===
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('signup-name').value.trim();
@@ -531,6 +544,8 @@
                 alert("সব ঘর পূরণ করুন");
                 return;
             }
+            
+            isNewUserSignUp = true; // ফ্ল্যাগ সেট করুন
 
             try {
                 // 1. Auth তৈরি করুন (এটি ইউজারকে লগইন করে ফেলবে)
@@ -551,7 +566,7 @@
                 await updateProfile(user, { displayName: name });
 
                 // 4. ইউজারকে সঙ্গে সঙ্গে সাইন আউট করে দিন
-                await signOut(auth);
+                await signOut(auth); // এটি onAuthStateChanged(null) ট্রিগার করবে
 
                 // 5. ইউজারকে জানান এবং লগইন ফর্ম দেখান
                 alert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
@@ -562,6 +577,8 @@
 
             } catch (err) {
                 alert("Sign up failed: " + err.message);
+            } finally {
+                isNewUserSignUp = false; // অবশেষে ফ্ল্যাগ রিসেট করুন
             }
         });
 
