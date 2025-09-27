@@ -82,7 +82,7 @@
         .home-card-title { font-size: 16px; font-weight: 500; margin: 0; color: var(--text-color);}
         .auto-ads-container { display: flex; gap: 15px; margin-bottom: 25px; }
         .auto-ads-container .btn { flex: 1; }
-        .developer-btn { background-color: #007bff; border: 1px solid #fff; color: #fff; text-align: center; text-decoration: none; display: block; align-items:center;}
+        .developer-btn { background-color: #007bff; border: 1px solid #fff; color: #fff; text-align: center; text-decoration: none; display: block; align-items:center; width: fit-content; margin-left: auto; margin-right: auto; padding-left: 25px; padding-right: 25px;}
 
         /* ========== নতুন Tasks পেজের জন্য CSS ========== */
         #page-tasks { background-color: #1a0f35; padding: 10px 0px; }
@@ -840,7 +840,7 @@
     function updateUIWithSettings() {
         document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`;
         document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>';
-        document.getElementById('referral-title').innerText = `Refer & Earn ${appSettings.referralReward || 0} Taka!`;
+        document.getElementById('referral-title').innerText = 'Refer & Earning';
         document.getElementById('referral-desc').innerText = `প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`;
         document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`;
         document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`;
