@@ -530,8 +530,48 @@
             alert("Sign up failed: " + error.message); 
         }
     });
+        
+    // === লগইন ফর্মের সাবমিট হ্যান্ডেল (নতুন মেসেজ সহ) ===
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const mobile = document.getElementById('login-mobile').value;
+        const password = document.getElementById('login-password').value;
 
-            // === নতুন Forgot Password ফাংশন ===
+        if (!mobile || !password) {
+            alert("Please enter mobile number and password.");
+            return;
+        }
+
+        const usersRef = ref(db, 'users');
+        const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile));
+
+        try {
+            const snapshot = await get(userQuery);
+            if (snapshot.exists()) {
+                let userEmail = null;
+                snapshot.forEach(childSnapshot => {
+                    userEmail = childSnapshot.val().email;
+                });
+
+                if (userEmail) {
+                    // এখানে ইমেইল পাওয়ার পর লগইন করার চেষ্টা করা হচ্ছে
+                    await signInWithEmailAndPassword(auth, userEmail, password);
+                } else {
+                    // এই সমস্যা হওয়ার কথা নয়, কিন্তু ডেটাবেসে ইমেইল না থাকলে দেখাবে
+                    alert("Login failed: User data is incomplete.");
+                }
+            } else {
+                // --- মোবাইল নম্বর না পাওয়া গেলে এই মেসেজটি দেখানো হবে ---
+                alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
+            }
+        } catch (error) {
+            // --- পাসওয়ার্ড ভুল হলে বা অন্য কোনো সমস্যা হলে এই মেসেজটি দেখানো হবে ---
+            console.error("Login Error:", error.code); // ডিবাগিং এর জন্য কনসোলে আসল এরর কোড দেখানো হলো
+            alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
+        }
+    });
+
+        // === নতুন Forgot Password ফাংশন ===
 
     // প্রথমে "Forgot Password" লিঙ্কের এলিমেন্টটি সিলেক্ট করতে হবে
     const forgotPasswordLink = document.getElementById('forgot-password-link');
@@ -575,46 +615,6 @@
         }
     });
     // ===================================
-
-    // === লগইন ফর্মের সাবমিট হ্যান্ডেল (নতুন মেসেজ সহ) ===
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const mobile = document.getElementById('login-mobile').value;
-        const password = document.getElementById('login-password').value;
-
-        if (!mobile || !password) {
-            alert("Please enter mobile number and password.");
-            return;
-        }
-
-        const usersRef = ref(db, 'users');
-        const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile));
-
-        try {
-            const snapshot = await get(userQuery);
-            if (snapshot.exists()) {
-                let userEmail = null;
-                snapshot.forEach(childSnapshot => {
-                    userEmail = childSnapshot.val().email;
-                });
-
-                if (userEmail) {
-                    // এখানে ইমেইল পাওয়ার পর লগইন করার চেষ্টা করা হচ্ছে
-                    await signInWithEmailAndPassword(auth, userEmail, password);
-                } else {
-                    // এই সমস্যা হওয়ার কথা নয়, কিন্তু ডেটাবেসে ইমেইল না থাকলে দেখাবে
-                    alert("Login failed: User data is incomplete.");
-                }
-            } else {
-                // --- মোবাইল নম্বর না পাওয়া গেলে এই মেসেজটি দেখানো হবে ---
-                alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
-            }
-        } catch (error) {
-            // --- পাসওয়ার্ড ভুল হলে বা অন্য কোনো সমস্যা হলে এই মেসেজটি দেখানো হবে ---
-            console.error("Login Error:", error.code); // ডিবাগিং এর জন্য কনসোলে আসল এরর কোড দেখানো হলো
-            alert("ভুল মোবাইল নম্বর ও পাসওয়ার্ড। অনুগ্রহ করে সঠিক মোবাইল নাম্বার ও পাসওয়ার্ড দিন");
-        }
-    });
 
     // গুগল সাইন-ইন
     googleBtn.addEventListener('click', async () => {
