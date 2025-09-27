@@ -392,7 +392,7 @@
    <script type="module">
        
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserSessionPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
     import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -421,7 +421,7 @@
         db = getDatabase(app);
         auth = getAuth(app);
 
-        setPersistence(auth, browserLocalPersistence)
+        setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 setupAuthEventListeners(); 
                 
