@@ -141,57 +141,57 @@
             color: #4f46e5;
         }
         /* নতুন Unlock এবং Completed বাটনের জন্য স্টাইল */
-        .task-item-button .task-btn.unlock-btn {
-            background-color: #facc15; /* Yellow */
-            color: #121212;
-        }
-        .task-item-button .task-btn.completed-btn {
-            background-color: #28a745; /* Green */
-            color: white;
-            cursor: not-allowed;
-        }
+.task-item-button .task-btn.unlock-btn {
+    background-color: #facc15; /* Yellow */
+    color: #121212;
+}
+.task-item-button .task-btn.completed-btn {
+    background-color: #28a745; /* Green */
+    color: white;
+    cursor: not-allowed;
+}
     </style>
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 9999; display: flex; justify-content: center; align-items: center; color: #facc15; font-size: 2.2rem;">Daily Earning...</div>
 
     <!-- ========== লগইন/সাইন-আপ সেকশন ========== -->
-    <div id="auth-container" style="display: none;">
-        <div class="auth-card">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEivd_hFnbg4_wSHwqtFj0r1zvEuni5JIEDQsRRwOxXwXT_QoqNXNbQxHo5uwU9JGgEfI2OZ95Mz9yUMCLcq0VjL0bY_D1xbsvxFWSC33p7Z4kO5Xa96JhvkjOSL42iR0b_6f2PGffb23aQuYM8-UpsWgFjoW4H3nVDtiqp8ctekjDtQcdfdkMbDASG61Js/s640/Telegram%20Earning%20Bot%20Script%20Code_20250926_135526_0000.png" alt="App Logo" class="auth-logo">
+<div id="auth-container" style="display: none;">
+    <div class="auth-card">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEivd_hFnbg4_wSHwqtFj0r1zvEuni5JIEDQsRRwOxXwXT_QoqNXNbQxHo5uwU9JGgEfI2OZ95Mz9yUMCLcq0VjL0bY_D1xbsvxFWSC33p7Z4kO5Xa96JhvkjOSL42iR0b_6f2PGffb23aQuYM8-UpsWgFjoW4H3nVDtiqp8ctekjDtQcdfdkMbDASG61Js/s640/Telegram%20Earning%20Bot%20Script%20Code_20250926_135526_0000.png" alt="App Logo" class="auth-logo">
+        
+        <h2 class="auth-title" id="auth-title">Create your account</h2> 
+
+        <!-- সাইন-আপ ফরম -->
+        <form id="signup-form" style="display: none;">
+            <div class="form-group"><input type="text" id="signup-name" class="form-control" placeholder="Full Name" required></div>
+            <div class="form-group"><input type="tel" id="signup-mobile" class="form-control" placeholder="Mobile Number" required></div>
+            <div class="form-group"><input type="email" id="signup-email" class="form-control" placeholder="Email" required></div>
+            <div class="form-group"><input type="password" id="signup-password" class="form-control" placeholder="Password" required></div>
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+             <p class="form-switcher">Already have an account? <a href="#" id="show-login">Login</a></p>
+        </form>
+
+        <!-- লগইন ফরম -->
+        <form id="login-form">
+            <div class="form-group"><input type="tel" id="login-mobile" class="form-control" placeholder="Mobile Number" required></div>
+            <div class="form-group"><input type="password" id="login-password" class="form-control" placeholder="Password" required></div>
             
-            <h2 class="auth-title" id="auth-title">Create your account</h2> 
+            <div style="text-align: right; margin-bottom: 15px; margin-top: -10px;">
+                <a href="#" id="forgot-password-link" style="color: var(--text-color); font-size: 0.9rem;">Forgot Password?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Login</button>
+            <p class="form-switcher">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+        </form>
 
-            <!-- সাইন-আপ ফরম -->
-            <form id="signup-form" style="display: none;">
-                <div class="form-group"><input type="text" id="signup-name" class="form-control" placeholder="Full Name" required></div>
-                <div class="form-group"><input type="tel" id="signup-mobile" class="form-control" placeholder="Mobile Number" required></div>
-                <div class="form-group"><input type="email" id="signup-email" class="form-control" placeholder="Email" required></div>
-                <div class="form-group"><input type="password" id="signup-password" class="form-control" placeholder="Password" required></div>
-                <button type="submit" class="btn btn-primary">Sign Up</button>
-                 <p class="form-switcher">Already have an account? <a href="#" id="show-login">Login</a></p>
-            </form>
-
-            <!-- লগইন ফরম -->
-            <form id="login-form">
-                <div class="form-group"><input type="tel" id="login-mobile" class="form-control" placeholder="Mobile Number" required></div>
-                <div class="form-group"><input type="password" id="login-password" class="form-control" placeholder="Password" required></div>
-                
-                <div style="text-align: right; margin-bottom: 15px; margin-top: -10px;">
-                    <a href="#" id="forgot-password-link" style="color: var(--text-color); font-size: 0.9rem;">Forgot Password?</a>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Login</button>
-                <p class="form-switcher">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
-            </form>
-
-            <div class="divider">OR</div>
-            <button type="button" id="google-signin-btn" class="btn btn-google">
-                <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
-                <span>Sign in with Google</span>
-            </button>
-        </div>
+        <div class="divider">OR</div>
+        <button type="button" id="google-signin-btn" class="btn btn-google">
+            <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+            <span>Sign in with Google</span>
+        </button>
     </div>
+</div>
     <!-- ========== লগইন/সাইন-আপ সেকশন শেষ ========== -->
 
 
@@ -216,16 +216,23 @@
             <!-- ===== নতুন হোম পেজ ===== -->
             <div id="page-home" class="page-content active">
                 <div class="marquee-container"><p class="marquee-text" id="offer-text"></p></div>
-
-                <!-- পরিবর্তিত হোম পেজ কন্টেন্ট -->
-                <div class="task-card" style="margin-bottom: 25px;">
-                    <span class="home-card-icon" style="font-size: 2.5rem;">🎦</span>
-                    <h3 style="font-size: 1.3rem; margin-top: 0; margin-bottom: 10px;">Daily Ads Task</h3>
-                    <p class="task-description" style="margin-bottom: 15px;">প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন এবং আয় করুন।</p>
-                    <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 20px;">
-                        Completed: <span id="home-ads-watched-text" style="color: var(--primary-color);">0 / 15</span>
-                    </p>
-                    <button class="btn btn-primary" id="home-watch-ads-btn" style="width: 80%; max-width: 300px;">Watch Ad</button>
+                <div class="home-grid">
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Daily Bonus">
+                        <span class="home-card-icon">🎁</span>
+                        <h4 class="home-card-title">Daily Bonus</h4>
+                    </button>
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Watch Ads">
+                        <span class="home-card-icon">🎦</span>
+                        <h4 class="home-card-title">Watch Ads</h4>
+                    </button>
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Watch Video">
+                        <span class="home-card-icon">🎬</span>
+                        <h4 class="home-card-title">Watch Video</h4>
+                    </button>
+                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Start Earn">
+                        <span class="home-card-icon">💰</span>
+                        <h4 class="home-card-title">Start Earn</h4>
+                    </button>
                 </div>
 
                 <div class="auto-ads-container">
@@ -419,86 +426,106 @@
                 setupAuthEventListeners(); 
                 
                 // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
-                onAuthStateChanged(auth, async (user) => {
-                    const loadingOverlay = document.getElementById('loading-overlay');
-                    const authContainer = document.getElementById('auth-container');
-                    const mainContainer = document.querySelector('.container');
-                    const bottomNav = document.querySelector('.bottom-nav');
+                // আপনার onAuthStateChanged ফাংশনটি খুঁজে বের করে নিচের কোডটি দিয়ে প্রতিস্থাপন করুন
 
-                    if (user) {
-                        if (isNewUserSignUp) {
-                            return; 
-                        }
-                        
-                        const currentTgUser = tg.initDataUnsafe?.user;
-                        if (!currentTgUser) {
-                            console.warn("Telegram user data not found. Forcing logout for security.");
-                            await signOut(auth);
-                            return;
-                        }
+onAuthStateChanged(auth, async (user) => {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const authContainer = document.getElementById('auth-container');
+    const mainContainer = document.querySelector('.container');
+    const bottomNav = document.querySelector('.bottom-nav');
 
-                        const firebaseUid = user.uid;
-                        const userRefDb = ref(db, 'users/' + firebaseUid);
-                        
-                        try {
-                            const userSnap = await get(userRefDb);
+    if (user) {
+        // ব্যবহারকারী Firebase এ লগইন আছে। এখন আমাদের যাচাই করতে হবে তিনি সঠিক টেলিগ্রাম ব্যবহারকারী কিনা।
+        if (isNewUserSignUp) {
+            return; 
+        }
+        
+        const currentTgUser = tg.initDataUnsafe?.user;
 
-                            if (userSnap.exists()) {
-                                const userDataFromDb = userSnap.val();
-                                const storedTgId = userDataFromDb.telegramId;
+        // যদি টেলিগ্রাম ব্যবহারকারীর তথ্য না পাওয়া যায় (যেমন, ডেস্কটপ ব্রাউজারে পরীক্ষা করার সময়)
+        // নিরাপত্তার জন্য তাকে লগআউট করে দেওয়া উচিত।
+        if (!currentTgUser) {
+            console.warn("Telegram user data not found. Forcing logout for security.");
+            await signOut(auth);
+            // signOut আবার onAuthStateChanged ট্রিগার করবে, যা else ব্লকে যাবে।
+            return;
+        }
 
-                                if (storedTgId) {
-                                    if (storedTgId === currentTgUser.id) {
-                                        firebaseUser = user;
-                                        userId = user.uid;
-                                        userRef = userRefDb;
-                                        authContainer.style.display = 'none';
-                                        loadingOverlay.style.display = 'flex';
-                                        await initializeAppLogic();
-                                        mainContainer.style.display = 'block';
-                                        bottomNav.style.display = 'flex';
-                                        loadingOverlay.style.display = 'none';
-                                    } else {
-                                        console.warn(`User mismatch. Stored TG ID: ${storedTgId}, Current TG ID: ${currentTgUser.id}. Logging out.`);
-                                        await signOut(auth);
-                                    }
-                                } 
-                                else {
-                                    await update(userRefDb, { telegramId: currentTgUser.id });
-                                    firebaseUser = user;
-                                    userId = user.uid;
-                                    userRef = userRefDb;
-                                    authContainer.style.display = 'none';
-                                    loadingOverlay.style.display = 'flex';
-                                    await initializeAppLogic();
-                                    mainContainer.style.display = 'block';
-                                    bottomNav.style.display = 'flex';
-                                    loadingOverlay.style.display = 'none';
-                                }
-                            } else {
-                                firebaseUser = user;
-                                userId = user.uid;
-                                userRef = userRefDb;
-                                authContainer.style.display = 'none';
-                                loadingOverlay.style.display = 'flex';
-                                await initializeAppLogic(); // createNewUser is called here
-                                mainContainer.style.display = 'block';
-                                bottomNav.style.display = 'flex';
-                                loadingOverlay.style.display = 'none';
-                            }
-                        } catch (error) {
-                            console.error("Error during user verification:", error);
-                            loadingOverlay.innerText = "Verification failed. Please refresh.";
-                            await signOut(auth);
-                        }
+        const firebaseUid = user.uid;
+        const userRefDb = ref(db, 'users/' + firebaseUid);
+        
+        try {
+            const userSnap = await get(userRefDb);
 
-                    } else {
+            if (userSnap.exists()) {
+                const userDataFromDb = userSnap.val();
+                const storedTgId = userDataFromDb.telegramId;
+
+                // কেস ১: ব্যবহারকারীর প্রোফাইলে টেলিগ্রাম আইডি সেভ করা আছে।
+                if (storedTgId) {
+                    if (storedTgId === currentTgUser.id) {
+                        // আইডি মিলে গেছে! সঠিক ব্যবহারকারী। অ্যাপ লোড করুন।
+                        firebaseUser = user;
+                        userId = user.uid;
+                        userRef = userRefDb;
+                        authContainer.style.display = 'none';
+                        loadingOverlay.style.display = 'flex';
+                        await initializeAppLogic();
+                        mainContainer.style.display = 'block';
+                        bottomNav.style.display = 'flex';
                         loadingOverlay.style.display = 'none';
-                        mainContainer.style.display = 'none';
-                        bottomNav.style.display = 'none';
-                        authContainer.style.display = 'flex';
+                    } else {
+                        // আইডি মিলেনি! ভুল ব্যবহারকারী। লগআউট করুন।
+                        console.warn(`User mismatch. Stored TG ID: ${storedTgId}, Current TG ID: ${currentTgUser.id}. Logging out.`);
+                        await signOut(auth);
                     }
-                });
+                } 
+                // কেস ২: প্রোফাইলে টেলিগ্রাম আইডি নেই (সম্ভবত পুরোনো ব্যবহারকারী বা প্রথমবার লগইন)।
+                else {
+                    // এই Firebase অ্যাকাউন্টটিকে বর্তমান টেলিগ্রাম ব্যবহারকারীর সাথে লিঙ্ক করুন।
+                    await update(userRefDb, { telegramId: currentTgUser.id });
+                    
+                    // লিঙ্ক করার পর অ্যাপ লোড করুন।
+                    firebaseUser = user;
+                    userId = user.uid;
+                    userRef = userRefDb;
+                    authContainer.style.display = 'none';
+                    loadingOverlay.style.display = 'flex';
+                    await initializeAppLogic();
+                    mainContainer.style.display = 'block';
+                    bottomNav.style.display = 'flex';
+                    loadingOverlay.style.display = 'none';
+                }
+            } else {
+                // Firebase Auth তে ব্যবহারকারী আছে কিন্তু ডাটাবেসে প্রোফাইল নেই।
+                // initializeAppLogic এটি তৈরি করে নেবে। এটি একটি স্বাভাবিক প্রক্রিয়া।
+                firebaseUser = user;
+                userId = user.uid;
+                userRef = userRefDb;
+                authContainer.style.display = 'none';
+                loadingOverlay.style.display = 'flex';
+                await initializeAppLogic(); // এখানে createNewUser কল হবে
+                mainContainer.style.display = 'block';
+                bottomNav.style.display = 'flex';
+                loadingOverlay.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error during user verification:", error);
+            loadingOverlay.innerText = "Verification failed. Please refresh.";
+            await signOut(auth); // কোনো সমস্যা হলে লগআউট করে দিন
+        }
+
+    } else {
+        // ব্যবহারকারী লগইন নেই। প্রমাণীকরণ স্ক্রিন দেখান।
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'none';
+        bottomNav.style.display = 'none';
+        authContainer.style.display = 'flex';
+    }
+});
+                
+                
+                
             })
             .catch((error) => {
                 console.error("Auth persistence error:", error);
@@ -572,7 +599,8 @@
         const authTitle = document.getElementById('auth-title');
 
         authTitle.innerText = 'Login Your Account';
-        
+
+        // === [পরিবর্তিত সাইন-আপ ফর্ম হ্যান্ডেল] ===
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('signup-name').value.trim();
@@ -585,24 +613,40 @@
                 return;
             }
             
-            isNewUserSignUp = true;
+            isNewUserSignUp = true; // ফ্ল্যাগ সেট করুন
 
             try {
+                // 1. Auth তৈরি করুন (এটি ইউজারকে লগইন করে ফেলবে)
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                await set(ref(db, 'users/' + user.uid), { name, email, mobile, balance: 0, referrals: 0, joinDate: new Date().toISOString() });
+
+                // 2. ডাটাবেজে ইউজার সেভ করুন
+                await set(ref(db, 'users/' + user.uid), {
+                    name,
+                    email,
+                    mobile,
+                    balance: 0,
+                    referrals: 0,
+                    joinDate: new Date().toISOString()
+                });
+
+                // 3. প্রোফাইল আপডেট করুন
                 await updateProfile(user, { displayName: name });
-                await signOut(auth);
+
+                // 4. ইউজারকে সঙ্গে সঙ্গে সাইন আউট করে দিন
+                await signOut(auth); // এটি onAuthStateChanged(null) ট্রিগার করবে
+
+                // 5. ইউজারকে জানান এবং লগইন ফর্ম দেখান
                 alert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
                 document.getElementById('signup-form').style.display = 'none';
                 document.getElementById('login-form').style.display = 'block';
                 document.getElementById('auth-title').innerText = 'Login Your Account';
-                signupForm.reset();
+                signupForm.reset(); // ফর্মটি রিসেট করুন
 
             } catch (err) {
                 alert("Sign up failed: " + err.message);
             } finally {
-                isNewUserSignUp = false;
+                isNewUserSignUp = false; // অবশেষে ফ্ল্যাগ রিসেট করুন
             }
         });
 
@@ -622,16 +666,18 @@
                 const snapshot = await get(q);
 
                 if (!snapshot.exists()) {
-                    alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট নেই");
-                    return;
+                alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট নেই");
+                return;
                 }
 
                 let userEmail = null;
-                snapshot.forEach(child => { userEmail = child.val().email; });
+                snapshot.forEach(child => {
+                userEmail = child.val().email;
+                });
 
                 if (!userEmail) {
-                    alert("এই অ্যাকাউন্টে ইমেইল সেট করা নেই");
-                    return;
+                alert("এই অ্যাকাউন্টে ইমেইল সেট করা নেই");
+                return;
                 }
 
                 await signInWithEmailAndPassword(auth, userEmail, password);
@@ -715,6 +761,7 @@
         }
     }
 
+    // === এখানে থেকে বাকি সকল ফাংশন অপরিবর্তিত থাকবে ===
     let sessionTaskProgress = {};
     const taskProgressManager = {
         get: function() { return sessionTaskProgress; },
@@ -770,96 +817,39 @@
         document.getElementById('user-photo').src = userData.photoUrl || firebaseUser.photoURL || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
         document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
         document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
+        document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
         document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
         document.getElementById('total-referrals').innerText = userData.referrals || 0; 
         const referralId = userData.telegramId || userId; 
         document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${referralId}`;
-
-        // === নতুন এবং পরিবর্তিত UI আপডেট কোড ===
-        const adsWatchedCount = userData.adsWatched || 0;
-        document.getElementById('ads-watched').innerText = `${adsWatchedCount} / 15`;
-        if (document.getElementById('home-ads-watched-text')) {
-            document.getElementById('home-ads-watched-text').innerText = `${adsWatchedCount} / 15`;
+        const watchAdsBtn = document.getElementById('watch-ads-btn');
+        if ((userData.adsWatched || 0) >= 15) {
+            watchAdsBtn.textContent = 'Daily Limit Reached'; watchAdsBtn.disabled = true;
+        } else {
+            if (!watchAdsBtn.textContent.includes('Watch Ads')) { watchAdsBtn.textContent = 'Watch Ads'; }
+            watchAdsBtn.disabled = false;
         }
-
-        const homeWatchAdsBtn = document.getElementById('home-watch-ads-btn');
-        const taskWatchAdsBtn = document.getElementById('watch-ads-btn');
-        const isLimitReached = adsWatchedCount >= 15;
-
-        if (homeWatchAdsBtn) {
-            homeWatchAdsBtn.disabled = isLimitReached;
-            if (isLimitReached) {
-                homeWatchAdsBtn.textContent = 'Daily Limit Reached';
-            } else if (!homeWatchAdsBtn.textContent.includes('wait')) {
-                homeWatchAdsBtn.textContent = 'Watch Ad';
-            }
-        }
-        if (taskWatchAdsBtn) {
-            taskWatchAdsBtn.disabled = isLimitReached;
-            if (isLimitReached) {
-                taskWatchAdsBtn.textContent = 'Daily Limit Reached';
-            } else if (!taskWatchAdsBtn.textContent.includes('wait')) {
-                taskWatchAdsBtn.textContent = 'Watch Ads';
-            }
-        }
-        
         checkWithdrawEligibility();
     }
-    
-    // === নতুন সমন্বিত বিজ্ঞাপন দেখার ফাংশন ===
-    async function handleDailyAdView(event) {
-        const button = event.currentTarget;
-        const originalText = button.textContent;
 
-        if ((userData.adsWatched || 0) >= 15) {
-            tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।');
-            return;
-        }
-
+    async function handleGigaAdWithCountdown(event) {
+        const button = event.currentTarget; const titleElement = button.querySelector('.home-card-title'); const originalTitle = button.dataset.originalTitle;
         button.disabled = true;
-
-        if (typeof window.showGiga !== 'function') {
-            tg.showAlert("বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।");
-            button.disabled = false;
-            return;
-        }
-
-        try {
-            await window.showGiga();
-        } catch (adError) {
-            console.error("Giga Pub ad error:", adError);
-            tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না।");
-            button.disabled = false;
-            return;
-        }
-        
-        let countdown = 10;
-        button.textContent = `অপেক্ষা করুন... ${countdown}s`;
-
+        if (typeof window.showGiga === 'function') {
+            try { await window.showGiga(); } catch (adError) { console.error("Giga Pub ad error:", adError); tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না।"); button.disabled = false; return; }
+        } else { tg.showAlert("বিজ্ঞাপন পরিষেবা উপলব্ধ নয়।"); button.disabled = false; return; }
+        let countdown = 10; titleElement.textContent = `${countdown}s`;
         const timerInterval = setInterval(() => {
-            countdown--;
-            button.textContent = `অপেক্ষা করুন... ${countdown}s`;
+            countdown--; titleElement.textContent = `${countdown}s`;
             if (countdown <= 0) {
                 clearInterval(timerInterval);
-                tg.HapticFeedback.notificationOccurred('success');
-                
                 const rewardAmount = appSettings.adReward || 1;
                 const newBalance = (userData.balance || 0) + rewardAmount;
-                const newAdsWatched = (userData.adsWatched || 0) + 1;
                 const newTotalClicks = (userData.totalClicks || 0) + 1;
-
-                update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => {
-                    tg.showPopup({ 
-                        title: 'সফল!', 
-                        message: `আপনার ব্যালেন্সে ${rewardAmount.toFixed(2)} টাকা যোগ হয়েছে।`, 
-                        buttons: [{ type: 'ok' }] 
-                    });
-                }).catch(error => {
-                    console.error("Firebase update failed:", error);
-                    tg.showAlert('একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।');
-                    button.textContent = originalText;
-                    button.disabled = false;
-                });
+                update(userRef, { balance: newBalance, totalClicks: newTotalClicks }).then(() => {
+                    tg.HapticFeedback.notificationOccurred('success'); tg.showAlert(`অভিনন্দন! 🎉 আপনার অ্যাকাউন্টে ${rewardAmount.toFixed(2)} টাকা যোগ হয়েছে।`);
+                    titleElement.textContent = originalTitle; button.disabled = false;
+                }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে।'); titleElement.textContent = originalTitle; button.disabled = false; });
             }
         }, 1000);
     }
@@ -958,19 +948,36 @@
         document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink(appSettings.tutorialLink || '#', {try_instant_view: true}));
         document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink(appSettings.adminChatLink || '#'));
         document.getElementById('admin-call-btn').addEventListener('click', () => { if(appSettings.adminCallLink) window.location.href = appSettings.adminCallLink; }); 
-
-        // === পরিবর্তিত ইভেন্ট লিসেনার ===
-        document.getElementById('home-watch-ads-btn').addEventListener('click', handleDailyAdView);
-        document.getElementById('watch-ads-btn').addEventListener('click', handleDailyAdView);
-        
+        document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds);
         document.querySelectorAll('.task-btn[data-task-id]').forEach(button => {
             updateTaskButtonUI(button);
             button.addEventListener('click', handleTaskButtonClick);
         });
         document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest); 
-        
+        document.querySelectorAll('.giga-ad-countdown-trigger').forEach(btn => btn.addEventListener('click', handleGigaAdWithCountdown));
         document.getElementById('auto-ads-btn').addEventListener('click', startAutoAds);
         document.getElementById('stop-ads-btn').addEventListener('click', stopAutoAds);
+    }
+
+    function handleWatchAds() {
+        const watchAdsBtn = document.getElementById('watch-ads-btn'); if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; }
+        watchAdsBtn.disabled = true;
+        if (typeof show_8954258 === 'function') {
+            show_8954258();
+            let countdown = 30; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
+            const timerInterval = setInterval(() => {
+                countdown--; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
+                if (countdown <= 0) {
+                    clearInterval(timerInterval); tg.HapticFeedback.notificationOccurred('success');
+                    const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
+                    const newAdsWatched = (userData.adsWatched || 0) + 1;
+                    const newTotalClicks = (userData.totalClicks || 0) + 1;
+                    update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => {
+                        tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] });
+                    }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; });
+                }
+            }, 1000);
+        } else { tg.showAlert('বিজ্ঞাপন লোড করা যায়নি।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; }
     }
 
     function handleWithdrawRequest(e) {
