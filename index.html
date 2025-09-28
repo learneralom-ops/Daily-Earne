@@ -436,6 +436,9 @@ onAuthStateChanged(auth, async (user) => {
 
     if (user) {
         // ব্যবহারকারী Firebase এ লগইন আছে। এখন আমাদের যাচাই করতে হবে তিনি সঠিক টেলিগ্রাম ব্যবহারকারী কিনা।
+        if (isNewUserSignUp) {
+            return; 
+        }
         
         const currentTgUser = tg.initDataUnsafe?.user;
 
