@@ -426,187 +426,39 @@
                 setupAuthEventListeners(); 
                 
                 // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
-               onAuthStateChanged(auth, async (user) => {
-  loadingOverlay.style.display = 'flex';
-  console.log('Auth state changed. Firebase user:', user);
+                onAuthStateChanged(auth, async (user) => {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    const authContainer = document.getElementById('auth-container');
+                    const mainContainer = document.querySelector('.container');
+                    const bottomNav = document.querySelector('.bottom-nav');
 
-  try {
-    const tgUser = tg.initDataUnsafe?.user;
-    console.log('Detected Telegram user:', tgUser);
+                    if (user) {
+                        // যদি এটি একটি নতুন ব্যবহারকারীর সাইন-আপ প্রক্রিয়া হয়,
+                        // তবে তারা অস্থায়ীভাবে লগইন থাকে। আমরা কিছুই করব না এবং
+                        // signOut কলের জন্য অপেক্ষা করব।
+                        if (isNewUserSignUp) {
+                            return; 
+                        }
 
-    if (user) {
-      firebaseUser = user;
-      userId = user.uid;
-      userRef = ref(db, 'users/' + userId);
-      console.log('Using Firebase userRef:', userRef.toString());
-
-      await initializeAppLogic();
-      console.log('initializeAppLogic finished');
-
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'block';
-      bottomNav.style.display = 'flex';
-      authContainer.style.display = 'none';
-
-    } else if (tgUser && tgUser.id) {
-      firebaseUser = null;
-      userId = `tg_${tgUser.id}`;
-      userRef = ref(db, 'users/' + userId);
-      console.log('Using Telegram userRef:', userRef.toString());
-
-      const snap = await get(userRef);
-      console.log('Snap exists:', snap.exists());
-
-      if (!snap.exists()) {
-        console.log('Creating new user for Telegram...');
-        await createNewUser(null, tgUser);
-        console.log('User created.');
-      }
-
-      await initializeAppLogic();
-      console.log('initializeAppLogic finished');
-
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'block';
-      bottomNav.style.display = 'flex';
-      authContainer.style.display = 'none';
-
-    } else {
-      console.log('No auth and no Telegram user.');
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'none';
-      bottomNav.style.display = 'none';
-      authContainer.style.display = 'flex';
-    }
-  } catch (err) {
-    console.error('Auth init error:', err);
-    loadingOverlay.style.display = 'none';
-    mainContainer.style.display = 'none';
-    bottomNav.style.display = 'none';
-    authContainer.style.display = 'flex';
-  }
-});
-
-
-    } else if (tgUser && tgUser.id) {
-      firebaseUser = null;
-      userId = `tg_${tgUser.id}`;
-      userRef = ref(db, 'users/' + userId);
-      console.log('Using Telegram userRef:', userRef.toString());
-
-      const snap = await get(userRef);
-      console.log('Snap exists:', snap.exists());
-
-      if (!snap.exists()) {
-        console.log('Creating new user for Telegram...');
-        await createNewUser(null, tgUser);
-        console.log('User created.');
-      }
-
-      await initializeAppLogic();
-      console.log('initializeAppLogic finished');
-
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'block';
-      bottomNav.style.display = 'flex';
-      authContainer.style.display = 'none';
-
-    } else {
-      console.log('No auth and no Telegram user.');
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'none';
-      bottomNav.style.display = 'none';
-      authContainer.style.display = 'flex';
-    }
-  } catch (err) {
-    console.error('Auth init error:', err);
-    loadingOverlay.style.display = 'none';
-    mainContainer.style.display = 'none';
-    bottomNav.style.display = 'none';
-    authContainer.style.display = 'flex';
-  }
-});
-
-
-    } else if (tgUser && tgUser.id) {
-      firebaseUser = null;
-      userId = `tg_${tgUser.id}`;
-      userRef = ref(db, 'users/' + userId);
-      console.log('Using Telegram userRef:', userRef.toString());
-
-      const snap = await get(userRef);
-      console.log('Snap exists:', snap.exists());
-
-      if (!snap.exists()) {
-        console.log('Creating new user for Telegram...');
-        await createNewUser(null, tgUser);
-        console.log('User created.');
-      }
-
-      await initializeAppLogic();
-      console.log('initializeAppLogic finished');
-
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'block';
-      bottomNav.style.display = 'flex';
-      authContainer.style.display = 'none';
-
-    } else {
-      console.log('No auth and no Telegram user.');
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'none';
-      bottomNav.style.display = 'none';
-      authContainer.style.display = 'flex';
-    }
-  } catch (err) {
-    console.error('Auth init error:', err);
-    loadingOverlay.style.display = 'none';
-    mainContainer.style.display = 'none';
-    bottomNav.style.display = 'none';
-    authContainer.style.display = 'flex';
-  }
-});
-
-
-    } else if (tgUser && tgUser.id) {
-      firebaseUser = null;
-      userId = `tg_${tgUser.id}`;
-      userRef = ref(db, 'users/' + userId);
-      console.log('Using Telegram userRef:', userRef.toString());
-
-      const snap = await get(userRef);
-      console.log('Snap exists:', snap.exists());
-
-      if (!snap.exists()) {
-        console.log('Creating new user for Telegram...');
-        await createNewUser(null, tgUser);
-        console.log('User created.');
-      }
-
-      await initializeAppLogic();
-      console.log('initializeAppLogic finished');
-
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'block';
-      bottomNav.style.display = 'flex';
-      authContainer.style.display = 'none';
-
-    } else {
-      console.log('No auth and no Telegram user.');
-      loadingOverlay.style.display = 'none';
-      mainContainer.style.display = 'none';
-      bottomNav.style.display = 'none';
-      authContainer.style.display = 'flex';
-    }
-  } catch (err) {
-    console.error('Auth init error:', err);
-    loadingOverlay.style.display = 'none';
-    mainContainer.style.display = 'none';
-    bottomNav.style.display = 'none';
-    authContainer.style.display = 'flex';
-  }
-});
-
+                        // অন্য সব ক্ষেত্রে লগইন থাকা ব্যবহারকারীর জন্য অ্যাপ দেখান।
+                        firebaseUser = user;
+                        userId = user.uid;
+                        userRef = ref(db, 'users/' + userId);
+                        authContainer.style.display = 'none';
+                        loadingOverlay.style.display = 'flex';
+                        await initializeAppLogic();
+                        mainContainer.style.display = 'block';
+                        bottomNav.style.display = 'flex';
+                        loadingOverlay.style.display = 'none';
+                    } else {
+                        // ব্যবহারকারী সাইন আউট থাকলে, প্রমাণীকরণ স্ক্রিন দেখান।
+                        loadingOverlay.style.display = 'none';
+                        mainContainer.style.display = 'none';
+                        bottomNav.style.display = 'none';
+                        authContainer.style.display = 'flex';
+                    }
+                });
+                
                 
                 
             })
@@ -809,40 +661,40 @@
         showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; signupForm.style.display = 'block'; authTitle.innerText = 'Create your account'; });
     }
 
-    async function createNewUser(user, telegramUser = null) {
-    const updates = {};
-    let uid, displayName, email, photoURL;
-
-    if (user) {
-        // Firebase user
-        uid = user.uid;
-        displayName = user.displayName || 'User';
-        email = user.email || '';
-        photoURL = user.photoURL || '';
-    } else if (telegramUser) {
-        // Telegram fallback
-        uid = `tg_${telegramUser.id}`;
-        displayName = telegramUser.first_name || 'User';
-        email = '';
-        photoURL = telegramUser.photo_url || '';
-    } else {
-        throw new Error('No user information available');
+    async function createNewUser(user) {
+        const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+        const telegramUser = tg.initDataUnsafe?.user || {};
+        const newUser = { 
+            name: user.displayName || telegramUser.first_name || 'New User', 
+            email: user.email, 
+            mobile: '', 
+            photoUrl: user.photoURL || telegramUser.photo_url || null, 
+            balance: 0, 
+            referrals: 0, 
+            totalClicks: 0, 
+            adsWatched: 0, 
+            joinDate: new Date().toISOString(), 
+            referredBy: referrerId || null, 
+            lastBonusClaimed: null, 
+            telegramId: telegramUser.id || null 
+        };
+        await set(userRef, newUser);
+        userData = newUser;
+        if (referrerId && referrerId !== String(userId)) {
+            const referrerRef = ref(db, 'users/' + referrerId);
+            try {
+                const snapshot = await get(referrerRef);
+                if (snapshot.exists()) {
+                    const referrerData = snapshot.val();
+                    const newReferralCount = (referrerData.referrals || 0) + 1;
+                    const referralBonus = appSettings.referralReward || 0;
+                    const updates = { referrals: newReferralCount };
+                    if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
+                    await update(referrerRef, updates);
+                }
+            } catch (error) { console.error("Referrer update failed:", error); }
+        }
     }
-
-    updates[`/users/${uid}`] = {
-        username: displayName,
-        email: email,
-        photoURL: photoURL,
-        telegramId: telegramUser ? telegramUser.id : null,
-        balance: 0,
-        referralCount: 0,
-        referredBy: null,
-        createdAt: Date.now()
-    };
-
-    await update(ref(db), updates);
-}
-
 
     // === এখানে থেকে বাকি সকল ফাংশন অপরিবর্তিত থাকবে ===
     let sessionTaskProgress = {};
