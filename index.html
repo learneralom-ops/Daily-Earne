@@ -487,6 +487,126 @@
   }
 });
 
+
+    } else if (tgUser && tgUser.id) {
+      firebaseUser = null;
+      userId = `tg_${tgUser.id}`;
+      userRef = ref(db, 'users/' + userId);
+      console.log('Using Telegram userRef:', userRef.toString());
+
+      const snap = await get(userRef);
+      console.log('Snap exists:', snap.exists());
+
+      if (!snap.exists()) {
+        console.log('Creating new user for Telegram...');
+        await createNewUser(null, tgUser);
+        console.log('User created.');
+      }
+
+      await initializeAppLogic();
+      console.log('initializeAppLogic finished');
+
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'block';
+      bottomNav.style.display = 'flex';
+      authContainer.style.display = 'none';
+
+    } else {
+      console.log('No auth and no Telegram user.');
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'none';
+      bottomNav.style.display = 'none';
+      authContainer.style.display = 'flex';
+    }
+  } catch (err) {
+    console.error('Auth init error:', err);
+    loadingOverlay.style.display = 'none';
+    mainContainer.style.display = 'none';
+    bottomNav.style.display = 'none';
+    authContainer.style.display = 'flex';
+  }
+});
+
+
+    } else if (tgUser && tgUser.id) {
+      firebaseUser = null;
+      userId = `tg_${tgUser.id}`;
+      userRef = ref(db, 'users/' + userId);
+      console.log('Using Telegram userRef:', userRef.toString());
+
+      const snap = await get(userRef);
+      console.log('Snap exists:', snap.exists());
+
+      if (!snap.exists()) {
+        console.log('Creating new user for Telegram...');
+        await createNewUser(null, tgUser);
+        console.log('User created.');
+      }
+
+      await initializeAppLogic();
+      console.log('initializeAppLogic finished');
+
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'block';
+      bottomNav.style.display = 'flex';
+      authContainer.style.display = 'none';
+
+    } else {
+      console.log('No auth and no Telegram user.');
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'none';
+      bottomNav.style.display = 'none';
+      authContainer.style.display = 'flex';
+    }
+  } catch (err) {
+    console.error('Auth init error:', err);
+    loadingOverlay.style.display = 'none';
+    mainContainer.style.display = 'none';
+    bottomNav.style.display = 'none';
+    authContainer.style.display = 'flex';
+  }
+});
+
+
+    } else if (tgUser && tgUser.id) {
+      firebaseUser = null;
+      userId = `tg_${tgUser.id}`;
+      userRef = ref(db, 'users/' + userId);
+      console.log('Using Telegram userRef:', userRef.toString());
+
+      const snap = await get(userRef);
+      console.log('Snap exists:', snap.exists());
+
+      if (!snap.exists()) {
+        console.log('Creating new user for Telegram...');
+        await createNewUser(null, tgUser);
+        console.log('User created.');
+      }
+
+      await initializeAppLogic();
+      console.log('initializeAppLogic finished');
+
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'block';
+      bottomNav.style.display = 'flex';
+      authContainer.style.display = 'none';
+
+    } else {
+      console.log('No auth and no Telegram user.');
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'none';
+      bottomNav.style.display = 'none';
+      authContainer.style.display = 'flex';
+    }
+  } catch (err) {
+    console.error('Auth init error:', err);
+    loadingOverlay.style.display = 'none';
+    mainContainer.style.display = 'none';
+    bottomNav.style.display = 'none';
+    authContainer.style.display = 'flex';
+  }
+});
+
                 
                 
             })
