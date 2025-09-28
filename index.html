@@ -392,218 +392,323 @@
    <script type="module">
        
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
-  authDomain: "daily-earne-aea89.firebaseapp.com",
-  databaseURL: "https://daily-earne-aea89-default-rtdb.firebaseio.com",
-  projectId: "daily-earne-aea89",
-  storageBucket: "daily-earne-aea89.firebasestorage.app",
-  messagingSenderId: "444567470638",
-  appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
-};
-
-let db, auth;
-let firebaseUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
-let autoAdsInterval = null;
-const tg = window.Telegram.WebApp;
-
-// === [নতুন] সাইন-আপ প্রবাহ নিয়ন্ত্রণের জন্য ফ্ল্যাগ ===
-let isNewUserSignUp = false;
-
-document.addEventListener("DOMContentLoaded", () => {
-    tg.ready();
-    tg.expand();
-    
-    const app = initializeApp(firebaseConfig);
-    db = getDatabase(app);
-    auth = getAuth(app);
-
-    setPersistence(auth, browserLocalPersistence)
-        .then(() => {
-            setupAuthEventListeners(); 
-            
-            // === [পরিবর্তিত onAuthStateChanged] ===
-            onAuthStateChanged(auth, async (user) => {
-                const loadingOverlay = document.getElementById('loading-overlay');
-                const authContainer = document.getElementById('auth-container');
-                const mainContainer = document.querySelector('.container');
-                const bottomNav = document.querySelector('.bottom-nav');
-
-                if (user) {
-                    // নতুন ইউজার সাইন-আপ হলে লগআউট করান
-                    if (isNewUserSignUp) {
-                        await signOut(auth);
-                        alert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
-                        return;
-                    }
-
-                    // এক্সিস্টিং ইউজার লগইন করলে
-                    firebaseUser = user;
-                    userId = user.uid;
-                    userRef = ref(db, 'users/' + userId);
-                    
-                    authContainer.style.display = 'none';
-                    loadingOverlay.style.display = 'flex';
-                    
-                    await initializeAppLogic();
-                    
-                    mainContainer.style.display = 'block';
-                    bottomNav.style.display = 'flex';
-                    loadingOverlay.style.display = 'none';
-                } else {
-                    // ইউজার লগআউট অবস্থায়
-                    loadingOverlay.style.display = 'none';
-                    mainContainer.style.display = 'none';
-                    bottomNav.style.display = 'none';
-                    authContainer.style.display = 'flex';
-                }
-            });
-        })
-        .catch((error) => {
-            console.error("Auth persistence error:", error);
-            const loadingOverlay = document.getElementById('loading-overlay');
-            loadingOverlay.innerText = "Error loading app. Please refresh.";
-        });
-});
-
-async function initializeAppLogic() {
-    try {
-        // অ্যাপ সেটিংস লোড করুন
-        const settingsRef = ref(db, 'settings');
-        const settingsSnapshot = await get(settingsRef);
-        appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
-        if (!appSettings.welcomeMessageTitle) applyDefaultSettings();
-        updateUIWithSettings();
-        handleWelcomePopup();
-        
-        // সেটিংস রিয়েল-টাইম আপডেট শুনুন
-        onValue(settingsRef, (snap) => { 
-            if (snap.exists()) { 
-                appSettings = snap.val(); 
-                updateUIWithSettings(); 
-            }
-        });
-
-        // ইউজার ডেটা লোড করুন বা নতুন ইউজার ক্রিয়েট করুন
-        const userSnapshot = await get(userRef);
-        if (userSnapshot.exists()) {
-            userData = userSnapshot.val();
-            console.log("User data loaded:", userData);
-        } else {
-            await createNewUser(firebaseUser);
-        }
-        
-        // টেলিগ্রাম ইউজার ইনফো সিঙ্ক করুন
-        await syncTelegramUserInfo();
-        
-        // UI আপডেট করুন
-        updateAllUI();
-        
-        // রিয়েল-টাইম ইউজার ডেটা শুনুন
-        onValue(userRef, (snap) => { 
-            if (snap.exists()) { 
-                userData = snap.val(); 
-                updateAllUI(); 
-            }
-        });
-
-        // ব্রডকাস্ট এবং ইভেন্ট লিসেনার সেটআপ করুন
-        setupBroadcastListener();
-        setupUIEventListeners();
-        
-    } catch (error) {
-        console.error("App Logic Error:", error);
-        document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
-    }
-}
-
-async function syncTelegramUserInfo() {
-    const telegramUser = tg.initDataUnsafe?.user;
-    if (telegramUser) {
-        const updates = {};
-        let needsUpdate = false;
-        
-        if (!userData.telegramId && telegramUser.id) {
-            updates.telegramId = telegramUser.id;
-            needsUpdate = true;
-        }
-        
-        const isGenericName = !userData.name || userData.name === 'New User';
-        if (isGenericName && telegramUser.first_name) {
-            updates.name = telegramUser.first_name;
-            needsUpdate = true;
-        }
-        
-        if (!userData.photoUrl && telegramUser.photo_url) {
-            updates.photoUrl = telegramUser.photo_url;
-            needsUpdate = true;
-        }
-        
-        if (needsUpdate) {
-            try {
-                await update(userRef, updates);
-                userData = { ...userData, ...updates };
-            } catch (error) {
-                console.error("Failed to sync Telegram user info:", error);
-            }
-        }
-    }
-}
-
-async function createNewUser(user) {
-    const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-    const telegramUser = tg.initDataUnsafe?.user || {};
-    
-    const newUser = { 
-        name: user.displayName || telegramUser.first_name || 'New User', 
-        email: user.email, 
-        mobile: '', 
-        photoUrl: user.photoURL || telegramUser.photo_url || null, 
-        balance: 0, 
-        referrals: 0, 
-        totalClicks: 0, 
-        adsWatched: 0, 
-        joinDate: new Date().toISOString(), 
-        referredBy: referrerId || null, 
-        lastBonusClaimed: null, 
-        telegramId: telegramUser.id || null,
-        userId: user.uid // ইউজার আইডি স্পষ্টভাবে স্টোর করুন
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
+      authDomain: "daily-earne-aea89.firebaseapp.com",
+      databaseURL: "https://daily-earne-aea89-default-rtdb.firebaseio.com",
+      projectId: "daily-earne-aea89",
+      storageBucket: "daily-earne-aea89.firebasestorage.app",
+      messagingSenderId: "444567470638",
+      appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
     };
     
-    await set(userRef, newUser);
-    userData = newUser;
+    let db, auth;
+    let firebaseUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
+    let autoAdsInterval = null;
+    const tg = window.Telegram.WebApp;
     
-    // রেফারেল বোনাস হ্যান্ডেল করুন
-    if (referrerId && referrerId !== String(user.uid)) {
-        await handleReferralBonus(referrerId);
-    }
-}
+    // === [নতুন] সাইন-আপ প্রবাহ নিয়ন্ত্রণের জন্য ফ্ল্যাগ ===
+    let isNewUserSignUp = false;
 
-async function handleReferralBonus(referrerId) {
-    const referrerRef = ref(db, 'users/' + referrerId);
-    try {
-        const snapshot = await get(referrerRef);
-        if (snapshot.exists()) {
-            const referrerData = snapshot.val();
-            const newReferralCount = (referrerData.referrals || 0) + 1;
-            const referralBonus = appSettings.referralReward || 0;
-            const updates = { referrals: newReferralCount };
-            
-            if (referralBonus > 0) { 
-                updates.balance = (referrerData.balance || 0) + referralBonus; 
+    document.addEventListener("DOMContentLoaded", () => {
+        tg.ready();
+        tg.expand();
+        
+        const app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        auth = getAuth(app);
+
+        setPersistence(auth, browserLocalPersistence)
+            .then(() => {
+                setupAuthEventListeners(); 
+                
+                // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
+               onAuthStateChanged(auth, async (user) => {
+    // লোডিং শুরু
+    loadingOverlay.style.display = 'flex';
+
+    const tgUser = tg.initDataUnsafe?.user;
+
+    if (user) {
+        // ✅ Firebase authenticated user
+        firebaseUser = user;
+        userId = user.uid;
+        userRef = ref(db, 'users/' + userId);
+
+        await initializeAppLogic();
+
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'block';
+        bottomNav.style.display = 'flex';
+        authContainer.style.display = 'none';
+
+    } else if (tgUser && tgUser.id) {
+        // ✅ Telegram WebApp user fallback
+        firebaseUser = null;
+        userId = `tg_${tgUser.id}`;
+        userRef = ref(db, 'users/' + userId);
+
+        // যদি ইউজার না থাকে তাহলে createNewUser() (telegram fallback)
+        const snap = await get(userRef);
+        if (!snap.exists()) {
+            await createNewUser(null, tgUser); // user=null, telegramUser pass
+        }
+
+        await initializeAppLogic();
+
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'block';
+        bottomNav.style.display = 'flex';
+        authContainer.style.display = 'none';
+
+    } else {
+        // ❌ কেউ লগইন করেনি
+        loadingOverlay.style.display = 'none';
+        mainContainer.style.display = 'none';
+        bottomNav.style.display = 'none';
+        authContainer.style.display = 'flex';
+    }
+});
+
+                
+                
+            })
+            .catch((error) => {
+                console.error("Auth persistence error:", error);
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.innerText = "Error loading app. Please refresh.";
+            });
+    });
+
+    async function initializeAppLogic() {
+        try {
+            const settingsRef = ref(db, 'settings');
+            const settingsSnapshot = await get(settingsRef);
+            appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
+            if (!appSettings.welcomeMessageTitle) applyDefaultSettings();
+            updateUIWithSettings();
+            handleWelcomePopup();
+            onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
+
+            const userSnapshot = await get(userRef);
+            if (userSnapshot.exists()) {
+                userData = userSnapshot.val();
+            } else {
+                await createNewUser(firebaseUser);
             }
             
-            await update(referrerRef, updates);
+            const telegramUser = tg.initDataUnsafe?.user;
+            if (telegramUser) {
+                const updates = {};
+                let needsUpdate = false;
+                if (!userData.telegramId && telegramUser.id) {
+                    updates.telegramId = telegramUser.id;
+                    needsUpdate = true;
+                }
+                const isGenericName = !userData.name || userData.name === 'New User';
+                if (isGenericName && telegramUser.first_name) {
+                    updates.name = telegramUser.first_name;
+                    needsUpdate = true;
+                }
+                if (!userData.photoUrl && telegramUser.photo_url) {
+                    updates.photoUrl = telegramUser.photo_url;
+                    needsUpdate = true;
+                }
+                if (needsUpdate) {
+                    try {
+                        await update(userRef, updates);
+                        userData = { ...userData, ...updates }; 
+                    } catch (error) {
+                        console.error("Failed to sync Telegram user info:", error);
+                    }
+                }
+            }
+
+            updateAllUI();
+            onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
+
+            setupBroadcastListener();
+            setupUIEventListeners();
+            
+        } catch (error) {
+            console.error("App Logic Error:", error);
+            document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
         }
-    } catch (error) { 
-        console.error("Referrer update failed:", error); 
     }
+    
+    function setupAuthEventListeners() {
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const googleBtn = document.getElementById('google-signin-btn');
+        const showLoginLink = document.getElementById('show-login');
+        const showSignupLink = document.getElementById('show-signup');
+        const authTitle = document.getElementById('auth-title');
+
+        authTitle.innerText = 'Login Your Account';
+
+        // === [পরিবর্তিত সাইন-আপ ফর্ম হ্যান্ডেল] ===
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const mobile = document.getElementById('signup-mobile').value.trim();
+
+            if (!name || !email || !password || !mobile) {
+                alert("সব ঘর পূরণ করুন");
+                return;
+            }
+            
+            isNewUserSignUp = true; // ফ্ল্যাগ সেট করুন
+
+            try {
+                // 1. Auth তৈরি করুন (এটি ইউজারকে লগইন করে ফেলবে)
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. ডাটাবেজে ইউজার সেভ করুন
+                await set(ref(db, 'users/' + user.uid), {
+                    name,
+                    email,
+                    mobile,
+                    balance: 0,
+                    referrals: 0,
+                    joinDate: new Date().toISOString()
+                });
+
+                // 3. প্রোফাইল আপডেট করুন
+                await updateProfile(user, { displayName: name });
+
+                // 4. ইউজারকে সঙ্গে সঙ্গে সাইন আউট করে দিন
+                await signOut(auth); // এটি onAuthStateChanged(null) ট্রিগার করবে
+
+                // 5. ইউজারকে জানান এবং লগইন ফর্ম দেখান
+                alert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('auth-title').innerText = 'Login Your Account';
+                signupForm.reset(); // ফর্মটি রিসেট করুন
+
+            } catch (err) {
+                alert("Sign up failed: " + err.message);
+            } finally {
+                isNewUserSignUp = false; // অবশেষে ফ্ল্যাগ রিসেট করুন
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mobile = document.getElementById('login-mobile').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!mobile || !password) {
+                alert("মোবাইল ও পাসওয়ার্ড দিন");
+                return;
+            }
+
+            try {
+                const usersRef = ref(db, 'users');
+                const q = query(usersRef, orderByChild('mobile'), equalTo(mobile));
+                const snapshot = await get(q);
+
+                if (!snapshot.exists()) {
+                alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট নেই");
+                return;
+                }
+
+                let userEmail = null;
+                snapshot.forEach(child => {
+                userEmail = child.val().email;
+                });
+
+                if (!userEmail) {
+                alert("এই অ্যাকাউন্টে ইমেইল সেট করা নেই");
+                return;
+                }
+
+                await signInWithEmailAndPassword(auth, userEmail, password);
+
+            } catch (err) {
+                alert("Login failed: " + err.message);
+            }
+        });
+
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার মোবাইল নম্বরটি দিন:");
+            if (!mobile || mobile.trim() === "") return;
+
+            const usersRef = ref(db, 'users');
+            const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile.trim()));
+
+            try {
+                const snapshot = await get(userQuery);
+                if (snapshot.exists()) {
+                    let userEmail = null;
+                    snapshot.forEach(childSnapshot => { userEmail = childSnapshot.val().email; });
+                    if (userEmail) {
+                        await sendPasswordResetEmail(auth, userEmail);
+                        alert("আপনার ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
+                    } else {
+                        alert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
+                    }
+                } else {
+                    alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
+                }
+            } catch (error) {
+                console.error("Forgot Password Error:", error);
+                alert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+            }
+        });
+
+        googleBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try { await signInWithPopup(auth, provider); }
+            catch (error) { alert("Google sign-in failed: " + error.message); }
+        });
+
+        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.style.display = 'none'; loginForm.style.display = 'block'; authTitle.innerText = 'Login Your Account'; });
+        showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; signupForm.style.display = 'block'; authTitle.innerText = 'Create your account'; });
+    }
+
+    async function createNewUser(user, telegramUser = null) {
+    const updates = {};
+    let uid, displayName, email, photoURL;
+
+    if (user) {
+        // Firebase user
+        uid = user.uid;
+        displayName = user.displayName || 'User';
+        email = user.email || '';
+        photoURL = user.photoURL || '';
+    } else if (telegramUser) {
+        // Telegram fallback
+        uid = `tg_${telegramUser.id}`;
+        displayName = telegramUser.first_name || 'User';
+        email = '';
+        photoURL = telegramUser.photo_url || '';
+    } else {
+        throw new Error('No user information available');
+    }
+
+    updates[`/users/${uid}`] = {
+        username: displayName,
+        email: email,
+        photoURL: photoURL,
+        telegramId: telegramUser ? telegramUser.id : null,
+        balance: 0,
+        referralCount: 0,
+        referredBy: null,
+        createdAt: Date.now()
+    };
+
+    await update(ref(db), updates);
 }
 
-// বাকি ফাংশনগুলো একই থাকবে...
 
     // === এখানে থেকে বাকি সকল ফাংশন অপরিবর্তিত থাকবে ===
     let sessionTaskProgress = {};
