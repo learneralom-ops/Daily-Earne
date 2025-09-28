@@ -427,50 +427,64 @@
                 
                 // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
                onAuthStateChanged(auth, async (user) => {
-    // লোডিং শুরু
-    loadingOverlay.style.display = 'flex';
+  loadingOverlay.style.display = 'flex';
+  console.log('Auth state changed. Firebase user:', user);
 
+  try {
     const tgUser = tg.initDataUnsafe?.user;
+    console.log('Detected Telegram user:', tgUser);
 
     if (user) {
-        // ✅ Firebase authenticated user
-        firebaseUser = user;
-        userId = user.uid;
-        userRef = ref(db, 'users/' + userId);
+      firebaseUser = user;
+      userId = user.uid;
+      userRef = ref(db, 'users/' + userId);
+      console.log('Using Firebase userRef:', userRef.toString());
 
-        await initializeAppLogic();
+      await initializeAppLogic();
+      console.log('initializeAppLogic finished');
 
-        loadingOverlay.style.display = 'none';
-        mainContainer.style.display = 'block';
-        bottomNav.style.display = 'flex';
-        authContainer.style.display = 'none';
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'block';
+      bottomNav.style.display = 'flex';
+      authContainer.style.display = 'none';
 
     } else if (tgUser && tgUser.id) {
-        // ✅ Telegram WebApp user fallback
-        firebaseUser = null;
-        userId = `tg_${tgUser.id}`;
-        userRef = ref(db, 'users/' + userId);
+      firebaseUser = null;
+      userId = `tg_${tgUser.id}`;
+      userRef = ref(db, 'users/' + userId);
+      console.log('Using Telegram userRef:', userRef.toString());
 
-        // যদি ইউজার না থাকে তাহলে createNewUser() (telegram fallback)
-        const snap = await get(userRef);
-        if (!snap.exists()) {
-            await createNewUser(null, tgUser); // user=null, telegramUser pass
-        }
+      const snap = await get(userRef);
+      console.log('Snap exists:', snap.exists());
 
-        await initializeAppLogic();
+      if (!snap.exists()) {
+        console.log('Creating new user for Telegram...');
+        await createNewUser(null, tgUser);
+        console.log('User created.');
+      }
 
-        loadingOverlay.style.display = 'none';
-        mainContainer.style.display = 'block';
-        bottomNav.style.display = 'flex';
-        authContainer.style.display = 'none';
+      await initializeAppLogic();
+      console.log('initializeAppLogic finished');
+
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'block';
+      bottomNav.style.display = 'flex';
+      authContainer.style.display = 'none';
 
     } else {
-        // ❌ কেউ লগইন করেনি
-        loadingOverlay.style.display = 'none';
-        mainContainer.style.display = 'none';
-        bottomNav.style.display = 'none';
-        authContainer.style.display = 'flex';
+      console.log('No auth and no Telegram user.');
+      loadingOverlay.style.display = 'none';
+      mainContainer.style.display = 'none';
+      bottomNav.style.display = 'none';
+      authContainer.style.display = 'flex';
     }
+  } catch (err) {
+    console.error('Auth init error:', err);
+    loadingOverlay.style.display = 'none';
+    mainContainer.style.display = 'none';
+    bottomNav.style.display = 'none';
+    authContainer.style.display = 'flex';
+  }
 });
 
                 
