@@ -882,7 +882,7 @@ onAuthStateChanged(auth, async (user) => {
         const autoBtn = document.getElementById('auto-ads-btn'); const stopBtn = document.getElementById('stop-ads-btn');
         showGigaAndRewardAuto();
         // [আপডেট ২] Auto Ads এর সময় ৩০ সেকেন্ড করা হলো
-        autoAdsInterval = setInterval(showGigaAndRewardAuto, 5000); // 30 seconds
+        autoAdsInterval = setInterval(showGigaAndRewardAuto, 15000); // 30 seconds
         autoBtn.disabled = true; stopBtn.disabled = false;
         tg.HapticFeedback.impactOccurred('light');
     }
