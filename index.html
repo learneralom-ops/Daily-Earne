@@ -386,7 +386,7 @@
         <button class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></button>
         <button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button>
         <button class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></button>
-        <button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09.73-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button>
+        <button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09. seventy three-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button>
         <button class="nav-item" data-page="account"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Account</span></button>
     </nav>
    <script type="module">
@@ -410,7 +410,6 @@
     let autoAdsInterval = null;
     const tg = window.Telegram.WebApp;
     
-    // === [নতুন] সাইন-আপ প্রবাহ নিয়ন্ত্রণের জন্য ফ্ল্যাগ ===
     let isNewUserSignUp = false;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -424,9 +423,6 @@
         setPersistence(auth, browserLocalPersistence)
             .then(() => {
                 setupAuthEventListeners(); 
-                
-                // === [পরিবর্তিত onAuthStateChanged] সাইন-আপের সময় ড্যাশবোর্ড দেখানো বন্ধ করবে ===
-                // আপনার onAuthStateChanged ফাংশনটি খুঁজে বের করে নিচের কোডটি দিয়ে প্রতিস্থাপন করুন
 
 onAuthStateChanged(auth, async (user) => {
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -435,19 +431,14 @@ onAuthStateChanged(auth, async (user) => {
     const bottomNav = document.querySelector('.bottom-nav');
 
     if (user) {
-        // ব্যবহারকারী Firebase এ লগইন আছে। এখন আমাদের যাচাই করতে হবে তিনি সঠিক টেলিগ্রাম ব্যবহারকারী কিনা।
         if (isNewUserSignUp) {
             return; 
         }
         
         const currentTgUser = tg.initDataUnsafe?.user;
-
-        // যদি টেলিগ্রাম ব্যবহারকারীর তথ্য না পাওয়া যায় (যেমন, ডেস্কটপ ব্রাউজারে পরীক্ষা করার সময়)
-        // নিরাপত্তার জন্য তাকে লগআউট করে দেওয়া উচিত।
         if (!currentTgUser) {
             console.warn("Telegram user data not found. Forcing logout for security.");
             await signOut(auth);
-            // signOut আবার onAuthStateChanged ট্রিগার করবে, যা else ব্লকে যাবে।
             return;
         }
 
@@ -456,15 +447,12 @@ onAuthStateChanged(auth, async (user) => {
         
         try {
             const userSnap = await get(userRefDb);
-
             if (userSnap.exists()) {
                 const userDataFromDb = userSnap.val();
                 const storedTgId = userDataFromDb.telegramId;
 
-                // কেস ১: ব্যবহারকারীর প্রোফাইলে টেলিগ্রাম আইডি সেভ করা আছে।
                 if (storedTgId) {
                     if (storedTgId === currentTgUser.id) {
-                        // আইডি মিলে গেছে! সঠিক ব্যবহারকারী। অ্যাপ লোড করুন।
                         firebaseUser = user;
                         userId = user.uid;
                         userRef = userRefDb;
@@ -475,17 +463,13 @@ onAuthStateChanged(auth, async (user) => {
                         bottomNav.style.display = 'flex';
                         loadingOverlay.style.display = 'none';
                     } else {
-                        // আইডি মিলেনি! ভুল ব্যবহারকারী। লগআউট করুন।
                         console.warn(`User mismatch. Stored TG ID: ${storedTgId}, Current TG ID: ${currentTgUser.id}. Logging out.`);
+                        tg.showAlert("এই টেলিগ্রাম অ্যাকাউন্টটি অন্য ব্যবহারকারীর সাথে লিঙ্ক করা আছে। লগ আউট করা হচ্ছে।");
                         await signOut(auth);
                     }
                 } 
-                // কেস ২: প্রোফাইলে টেলিগ্রাম আইডি নেই (সম্ভবত পুরোনো ব্যবহারকারী বা প্রথমবার লগইন)।
                 else {
-                    // এই Firebase অ্যাকাউন্টটিকে বর্তমান টেলিগ্রাম ব্যবহারকারীর সাথে লিঙ্ক করুন।
                     await update(userRefDb, { telegramId: currentTgUser.id });
-                    
-                    // লিঙ্ক করার পর অ্যাপ লোড করুন।
                     firebaseUser = user;
                     userId = user.uid;
                     userRef = userRefDb;
@@ -497,14 +481,12 @@ onAuthStateChanged(auth, async (user) => {
                     loadingOverlay.style.display = 'none';
                 }
             } else {
-                // Firebase Auth তে ব্যবহারকারী আছে কিন্তু ডাটাবেসে প্রোফাইল নেই।
-                // initializeAppLogic এটি তৈরি করে নেবে। এটি একটি স্বাভাবিক প্রক্রিয়া।
                 firebaseUser = user;
                 userId = user.uid;
                 userRef = userRefDb;
                 authContainer.style.display = 'none';
                 loadingOverlay.style.display = 'flex';
-                await initializeAppLogic(); // এখানে createNewUser কল হবে
+                await initializeAppLogic(); 
                 mainContainer.style.display = 'block';
                 bottomNav.style.display = 'flex';
                 loadingOverlay.style.display = 'none';
@@ -512,20 +494,15 @@ onAuthStateChanged(auth, async (user) => {
         } catch (error) {
             console.error("Error during user verification:", error);
             loadingOverlay.innerText = "Verification failed. Please refresh.";
-            await signOut(auth); // কোনো সমস্যা হলে লগআউট করে দিন
+            await signOut(auth); 
         }
-
     } else {
-        // ব্যবহারকারী লগইন নেই। প্রমাণীকরণ স্ক্রিন দেখান।
         loadingOverlay.style.display = 'none';
         mainContainer.style.display = 'none';
         bottomNav.style.display = 'none';
         authContainer.style.display = 'flex';
     }
 });
-                
-                
-                
             })
             .catch((error) => {
                 console.error("Auth persistence error:", error);
@@ -600,7 +577,6 @@ onAuthStateChanged(auth, async (user) => {
 
         authTitle.innerText = 'Login Your Account';
 
-        // === [পরিবর্তিত সাইন-আপ ফর্ম হ্যান্ডেল] ===
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('signup-name').value.trim();
@@ -609,54 +585,47 @@ onAuthStateChanged(auth, async (user) => {
             const mobile = document.getElementById('signup-mobile').value.trim();
 
             if (!name || !email || !password || !mobile) {
-                alert("সব ঘর পূরণ করুন");
+                tg.showAlert("সব ঘর পূরণ করুন।");
                 return;
             }
             
-            isNewUserSignUp = true; // ফ্ল্যাগ সেট করুন
+            isNewUserSignUp = true; 
 
             try {
-                // 1. Auth তৈরি করুন (এটি ইউজারকে লগইন করে ফেলবে)
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. ডাটাবেজে ইউজার সেভ করুন
                 await set(ref(db, 'users/' + user.uid), {
-                    name,
-                    email,
-                    mobile,
-                    balance: 0,
-                    referrals: 0,
-                    joinDate: new Date().toISOString()
+                    name, email, mobile, balance: 0, referrals: 0, joinDate: new Date().toISOString()
                 });
 
-                // 3. প্রোফাইল আপডেট করুন
                 await updateProfile(user, { displayName: name });
+                await signOut(auth); 
 
-                // 4. ইউজারকে সঙ্গে সঙ্গে সাইন আউট করে দিন
-                await signOut(auth); // এটি onAuthStateChanged(null) ট্রিগার করবে
-
-                // 5. ইউজারকে জানান এবং লগইন ফর্ম দেখান
-                alert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
+                tg.showAlert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
                 document.getElementById('signup-form').style.display = 'none';
                 document.getElementById('login-form').style.display = 'block';
                 document.getElementById('auth-title').innerText = 'Login Your Account';
-                signupForm.reset(); // ফর্মটি রিসেট করুন
+                signupForm.reset(); 
 
             } catch (err) {
-                alert("Sign up failed: " + err.message);
+                console.error("Signup Error:", err);
+                tg.showAlert("সাইন আপ করার সময় একটি সমস্যা হয়েছে: " + err.message);
             } finally {
-                isNewUserSignUp = false; // অবশেষে ফ্ল্যাগ রিসেট করুন
+                isNewUserSignUp = false; 
             }
         });
 
+        // ===============================================
+        // === [আপডেট] উন্নত লগইন এরর হ্যান্ডলিং সিস্টেম ===
+        // ===============================================
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const mobile = document.getElementById('login-mobile').value.trim();
             const password = document.getElementById('login-password').value;
 
             if (!mobile || !password) {
-                alert("মোবাইল ও পাসওয়ার্ড দিন");
+                tg.showAlert("মোবাইল নম্বর ও পাসওয়ার্ড দিন।");
                 return;
             }
 
@@ -666,7 +635,7 @@ onAuthStateChanged(auth, async (user) => {
                 const snapshot = await get(q);
 
                 if (!snapshot.exists()) {
-                    alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট নেই।");
+                    tg.showAlert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
                     return;
                 }
 
@@ -676,20 +645,39 @@ onAuthStateChanged(auth, async (user) => {
                 });
 
                 if (!userEmail) {
-                    alert("এই অ্যাকাউন্টে ইমেইল সেট করা নেই।");
+                    tg.showAlert("লগইন করা সম্ভব নয়। এই অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
                     return;
                 }
 
                 await signInWithEmailAndPassword(auth, userEmail, password);
+                // onAuthStateChanged বাকিটা পরিচালনা করবে
 
             } catch (err) {
-                // [আপডেট ১] ভুল পাসওয়ার্ডের জন্য কাস্টম বার্তা
-                if (err.code === 'auth/wrong-password') {
-                    alert("আপনার দেওয়া পাসওয়ার্ডটি ভুল। অনুগ্রহ করে সঠিক পাসওয়ার্ড দিন।");
-                } else {
-                    console.error("Login Error:", err);
-                    alert("লগইন করার সময় একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+                // ডিব্যাগিং এর জন্য কনসোলে সম্পূর্ণ এররটি লগ করা হচ্ছে
+                console.error("Login Error Details:", err);
+                
+                let errorMessage = "লগইন করার সময় একটি অপ্রত্যাশিত সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।";
+                
+                // বিভিন্ন ধরনের এররের জন্য নির্দিষ্ট বার্তা সেট করা হচ্ছে
+                switch (err.code) {
+                    case 'auth/wrong-password':
+                        errorMessage = "আপনার দেওয়া পাসওয়ার্ডটি ভুল। অনুগ্রহ করে সঠিক পাসওয়ার্ড দিন।";
+                        break;
+                    case 'auth/user-not-found':
+                        errorMessage = "এই অ্যাকাউন্টের তথ্য খুঁজে পাওয়া যায়নি।";
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = "ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।";
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = "অনেকবার ভুল চেষ্টার কারণে আপনার অ্যাকাউন্ট সাময়িকভাবে লক করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = "আপনার অ্যাকাউন্টটি নিষ্ক্রিয় করা হয়েছে। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।";
+                        break;
                 }
+                
+                tg.showAlert(errorMessage);
             }
         });
 
@@ -709,23 +697,23 @@ onAuthStateChanged(auth, async (user) => {
                     snapshot.forEach(childSnapshot => { userEmail = childSnapshot.val().email; });
                     if (userEmail) {
                         await sendPasswordResetEmail(auth, userEmail);
-                        alert("আপনার ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
+                        tg.showAlert("আপনার ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
                     } else {
-                        alert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
+                        tg.showAlert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
                     }
                 } else {
-                    alert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
+                    tg.showAlert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
                 }
             } catch (error) {
                 console.error("Forgot Password Error:", error);
-                alert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+                tg.showAlert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
             }
         });
 
         googleBtn.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try { await signInWithPopup(auth, provider); }
-            catch (error) { alert("Google sign-in failed: " + error.message); }
+            catch (error) { tg.showAlert("Google সাইন-ইন ব্যর্থ হয়েছে: " + error.message); }
         });
 
         showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.style.display = 'none'; loginForm.style.display = 'block'; authTitle.innerText = 'Login Your Account'; });
@@ -767,7 +755,6 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
 
-    // === এখানে থেকে বাকি সকল ফাংশন অপরিবর্তিত থাকবে ===
     let sessionTaskProgress = {};
     const taskProgressManager = {
         get: function() { return sessionTaskProgress; },
@@ -798,7 +785,6 @@ onAuthStateChanged(auth, async (user) => {
         } else {
             event.preventDefault(); 
             
-            // [আপডেট ৩] Monetag অ্যাড দেখানোর আগে বিশেষ ক্লিকের জন্য বার্তা দেখানো
             if (taskState.clicks === 4 || taskState.clicks === 8) {
                 tg.showAlert("এখন আপনি ৫ নাম্বারে ক্লিক করলে যে অ্যাড শো করবে সেই অ্যাড এর উপরে ক্লিক করুন");
             }
@@ -821,7 +807,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     async function handleLogout() {
-        try { await signOut(auth); } catch (error) { console.error("Sign out error:", error); tg.showAlert("Log out failed."); }
+        try { await signOut(auth); } catch (error) { console.error("Sign out error:", error); tg.showAlert("লগ আউট ব্যর্থ হয়েছে।"); }
     }
 
     function updateAllUI() {
@@ -881,8 +867,7 @@ onAuthStateChanged(auth, async (user) => {
         if (autoAdsInterval) return;
         const autoBtn = document.getElementById('auto-ads-btn'); const stopBtn = document.getElementById('stop-ads-btn');
         showGigaAndRewardAuto();
-        // [আপডেট ২] Auto Ads এর সময় ৩০ সেকেন্ড করা হলো
-        autoAdsInterval = setInterval(showGigaAndRewardAuto, 15000); // 30 seconds
+        autoAdsInterval = setInterval(showGigaAndRewardAuto, 30000); // 30 seconds
         autoBtn.disabled = true; stopBtn.disabled = false;
         tg.HapticFeedback.impactOccurred('light');
     }
@@ -1012,7 +997,7 @@ onAuthStateChanged(auth, async (user) => {
                     update(userRef, { balance: newBalance });
                     tg.showPopup({ title: 'সফল হয়েছে', message: 'আপনার উইথড্র অনুরোধ সফলভাবে পাঠানো হয়েছে।', buttons: [{ type: 'ok' }] });
                     document.getElementById('withdraw-form').reset();
-                }).catch(err => tg.showAlert("An error occurred."));
+                }).catch(err => tg.showAlert("একটি ত্রুটি ঘটেছে।"));
             }
         });
     }
