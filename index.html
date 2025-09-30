@@ -60,20 +60,6 @@
         .marquee-text::after { content: attr(data-text); position: absolute; top: 0; left: 100%; padding-left: 50px; width: 100%; }
         @keyframes marquee-animation { 0% { transform: translateX(0%); } 100% { transform: translateX(-200%); } }
 
-        /* ========== নতুন অথেন্টিকেশন সেকশনের CSS ========== */
-        #auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; box-sizing: border-box; }
-        .auth-card { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; text-align: center; }
-        .auth-logo { width: 100%; height: 100%; margin-bottom: 10px; border-radius: 10px; object-fit: cover; }
-        .auth-title { font-size: 1.8rem; margin-bottom: 25px; color: var(--text-color); }
-        .divider { display: flex; align-items: center; text-align: center; color: var(--secondary-text-color); margin: 20px 0; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
-        .btn-google { background-color: #ffffff; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid #ddd; }
-        .btn-google svg { width: 20px; height: 20px; }
-        .form-switcher { margin-top: 25px; font-size: 0.9rem; color: var(--secondary-text-color); }
-        .form-switcher a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
-
         /* ========== নতুন হোম পেজের জন্য CSS ========== */
         .home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
         .home-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: transform 0.2s, background-color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px;}
@@ -85,7 +71,6 @@
         .developer-btn { background-color: #007bff; border: 1px solid #fff; color: #fff; text-align: center; text-decoration: none; display: block; align-items:center; width: fit-content; margin-left: auto; margin-right: auto; padding-left: 25px; padding-right: 25px;}
 
         /* ========== নতুন Tasks পেজের জন্য CSS ========== */
-        
         .task-item {
             background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color);
             border-radius: 20px;
@@ -141,65 +126,27 @@
             color: #4f46e5;
         }
         /* নতুন Unlock এবং Completed বাটনের জন্য স্টাইল */
-.task-item-button .task-btn.unlock-btn {
-    background-color: #facc15; /* Yellow */
-    color: #121212;
-}
-.task-item-button .task-btn.completed-btn {
-    background-color: #28a745; /* Green */
-    color: white;
-    cursor: not-allowed;
-}
+        .task-item-button .task-btn.unlock-btn {
+            background-color: #facc15; /* Yellow */
+            color: #121212;
+        }
+        .task-item-button .task-btn.completed-btn {
+            background-color: #28a745; /* Green */
+            color: white;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 9999; display: flex; justify-content: center; align-items: center; color: #facc15; font-size: 2.2rem;">Daily Earning...</div>
 
-    <!-- ========== লগইন/সাইন-আপ সেকশন ========== -->
-<div id="auth-container" style="display: none;">
-    <div class="auth-card">
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEivd_hFnbg4_wSHwqtFj0r1zvEuni5JIEDQsRRwOxXwXT_QoqNXNbQxHo5uwU9JGgEfI2OZ95Mz9yUMCLcq0VjL0bY_D1xbsvxFWSC33p7Z4kO5Xa96JhvkjOSL42iR0b_6f2PGffb23aQuYM8-UpsWgFjoW4H3nVDtiqp8ctekjDtQcdfdkMbDASG61Js/s640/Telegram%20Earning%20Bot%20Script%20Code_20250926_135526_0000.png" alt="App Logo" class="auth-logo">
-        
-        <h2 class="auth-title" id="auth-title">Create your account</h2> 
-
-        <!-- সাইন-আপ ফরম -->
-        <form id="signup-form" style="display: none;">
-            <div class="form-group"><input type="text" id="signup-name" class="form-control" placeholder="Full Name" required></div>
-            <div class="form-group"><input type="tel" id="signup-mobile" class="form-control" placeholder="Mobile Number" required></div>
-            <div class="form-group"><input type="email" id="signup-email" class="form-control" placeholder="Email" required></div>
-            <div class="form-group"><input type="password" id="signup-password" class="form-control" placeholder="Password" required></div>
-            <button type="submit" class="btn btn-primary">Sign Up</button>
-             <p class="form-switcher">Already have an account? <a href="#" id="show-login">Login</a></p>
-        </form>
-
-        <!-- লগইন ফরম -->
-        <form id="login-form">
-            <div class="form-group"><input type="tel" id="login-mobile" class="form-control" placeholder="Mobile Number" required></div>
-            <div class="form-group"><input type="password" id="login-password" class="form-control" placeholder="Password" required></div>
-            
-            <div style="text-align: right; margin-bottom: 15px; margin-top: -10px;">
-                <a href="#" id="forgot-password-link" style="color: var(--text-color); font-size: 0.9rem;">Forgot Password?</a>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Login</button>
-            <p class="form-switcher">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
-        </form>
-
-        <div class="divider">OR</div>
-        <button type="button" id="google-signin-btn" class="btn btn-google">
-            <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
-            <span>Sign in with Google</span>
-        </button>
-    </div>
-</div>
-    <!-- ========== লগইন/সাইন-আপ সেকশন শেষ ========== -->
-
+    <!-- লগইন/সাইন-আপ সেকশন সম্পূর্ণভাবে মুছে ফেলা হয়েছে -->
 
     <div class="popup-overlay" id="welcome-popup"><div class="popup-content"><button class="popup-close-btn" id="popup-close">&times;</button><div class="popup-body" id="welcome-content-wrapper"></div><button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button></div></div>
     <div class="popup-overlay" id="notice-popup"><div class="popup-content"><button class="popup-close-btn" id="notice-close-btn">&times;</button><div class="popup-body" id="notice-body"></div></div></div>
     <div class="popup-overlay" id="broadcast-popup"><div class="popup-content"><button class="popup-close-btn" id="broadcast-close-btn">&times;</button><div class="popup-body"><h2>📢 Message from Admin</h2><img id="broadcast-image" src="" alt="Broadcast Image"><div id="broadcast-body" style="white-space: pre-wrap; word-wrap: break-word;"></div></div></div></div>
 
-    <!-- এটি মূল অ্যাপ কন্টেইনার, যা লগইন করার পর দেখানো হবে -->
+    <!-- এটি মূল অ্যাপ কন্টেইনার, যা এখন সরাসরি দেখানো হবে -->
     <div class="container" style="display: none;">
         <div class="header-container">
             <header class="profile-section">
@@ -262,7 +209,7 @@
                         <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
                         <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
                     </div>
-                    <button id="logout-btn" class="btn" style="background-color: var(--error-color); color: white; margin-top: 25px;">Log Out</button>
+                    <!-- লগ আউট বাটন মুছে ফেলা হয়েছে -->
                 </main>
             </div>
             
@@ -392,8 +339,7 @@
    <script type="module">
        
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
@@ -405,110 +351,30 @@
       appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
     };
     
-    let db, auth;
-    let firebaseUser = null, userId = null, userData = {}, appSettings = {}, userRef = null;
+    let db;
+    let userId = null, userData = {}, appSettings = {}, userRef = null;
     let autoAdsInterval = null;
     const tg = window.Telegram.WebApp;
     
-    let isNewUserSignUp = false;
-
     document.addEventListener("DOMContentLoaded", () => {
         tg.ready();
         tg.expand();
         
         const app = initializeApp(firebaseConfig);
         db = getDatabase(app);
-        auth = getAuth(app);
 
-        setPersistence(auth, browserLocalPersistence)
-            .then(() => {
-                setupAuthEventListeners(); 
+        const tgUser = tg.initDataUnsafe?.user;
 
-onAuthStateChanged(auth, async (user) => {
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const authContainer = document.getElementById('auth-container');
-    const mainContainer = document.querySelector('.container');
-    const bottomNav = document.querySelector('.bottom-nav');
-
-    if (user) {
-        if (isNewUserSignUp) {
-            return; 
-        }
-        
-        const currentTgUser = tg.initDataUnsafe?.user;
-        if (!currentTgUser) {
-            console.warn("Telegram user data not found. Forcing logout for security.");
-            await signOut(auth);
-            return;
+        if (!tgUser || !tgUser.id) {
+            document.getElementById('loading-overlay').innerText = 'Error: Could not identify Telegram user. Please open this app through Telegram.';
+            return; // Stop execution if no Telegram user
         }
 
-        const firebaseUid = user.uid;
-        const userRefDb = ref(db, 'users/' + firebaseUid);
-        
-        try {
-            const userSnap = await get(userRefDb);
-            if (userSnap.exists()) {
-                const userDataFromDb = userSnap.val();
-                const storedTgId = userDataFromDb.telegramId;
+        // Use Telegram user ID as the unique identifier
+        userId = tgUser.id;
+        userRef = ref(db, 'users/' + userId);
 
-                if (storedTgId) {
-                    if (storedTgId === currentTgUser.id) {
-                        firebaseUser = user;
-                        userId = user.uid;
-                        userRef = userRefDb;
-                        authContainer.style.display = 'none';
-                        loadingOverlay.style.display = 'flex';
-                        await initializeAppLogic();
-                        mainContainer.style.display = 'block';
-                        bottomNav.style.display = 'flex';
-                        loadingOverlay.style.display = 'none';
-                    } else {
-                        console.warn(`User mismatch. Stored TG ID: ${storedTgId}, Current TG ID: ${currentTgUser.id}. Logging out.`);
-                        tg.showAlert("এই টেলিগ্রাম অ্যাকাউন্টটি অন্য ব্যবহারকারীর সাথে লিঙ্ক করা আছে। লগ আউট করা হচ্ছে।");
-                        await signOut(auth);
-                    }
-                } 
-                else {
-                    await update(userRefDb, { telegramId: currentTgUser.id });
-                    firebaseUser = user;
-                    userId = user.uid;
-                    userRef = userRefDb;
-                    authContainer.style.display = 'none';
-                    loadingOverlay.style.display = 'flex';
-                    await initializeAppLogic();
-                    mainContainer.style.display = 'block';
-                    bottomNav.style.display = 'flex';
-                    loadingOverlay.style.display = 'none';
-                }
-            } else {
-                firebaseUser = user;
-                userId = user.uid;
-                userRef = userRefDb;
-                authContainer.style.display = 'none';
-                loadingOverlay.style.display = 'flex';
-                await initializeAppLogic(); 
-                mainContainer.style.display = 'block';
-                bottomNav.style.display = 'flex';
-                loadingOverlay.style.display = 'none';
-            }
-        } catch (error) {
-            console.error("Error during user verification:", error);
-            loadingOverlay.innerText = "Verification failed. Please refresh.";
-            await signOut(auth); 
-        }
-    } else {
-        loadingOverlay.style.display = 'none';
-        mainContainer.style.display = 'none';
-        bottomNav.style.display = 'none';
-        authContainer.style.display = 'flex';
-    }
-});
-            })
-            .catch((error) => {
-                console.error("Auth persistence error:", error);
-                const loadingOverlay = document.getElementById('loading-overlay');
-                loadingOverlay.innerText = "Error loading app. Please refresh.";
-            });
+        initializeAppLogic();
     });
 
     async function initializeAppLogic() {
@@ -517,6 +383,7 @@ onAuthStateChanged(auth, async (user) => {
             const settingsSnapshot = await get(settingsRef);
             appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
             if (!appSettings.welcomeMessageTitle) applyDefaultSettings();
+            
             updateUIWithSettings();
             handleWelcomePopup();
             onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
@@ -525,209 +392,33 @@ onAuthStateChanged(auth, async (user) => {
             if (userSnapshot.exists()) {
                 userData = userSnapshot.val();
             } else {
-                await createNewUser(firebaseUser);
+                // If user does not exist in DB, create a new entry
+                await createNewUser(tg.initDataUnsafe.user);
             }
             
-            const telegramUser = tg.initDataUnsafe?.user;
-            if (telegramUser) {
-                const updates = {};
-                let needsUpdate = false;
-                if (!userData.telegramId && telegramUser.id) {
-                    updates.telegramId = telegramUser.id;
-                    needsUpdate = true;
-                }
-                const isGenericName = !userData.name || userData.name === 'New User';
-                if (isGenericName && telegramUser.first_name) {
-                    updates.name = telegramUser.first_name;
-                    needsUpdate = true;
-                }
-                if (!userData.photoUrl && telegramUser.photo_url) {
-                    updates.photoUrl = telegramUser.photo_url;
-                    needsUpdate = true;
-                }
-                if (needsUpdate) {
-                    try {
-                        await update(userRef, updates);
-                        userData = { ...userData, ...updates }; 
-                    } catch (error) {
-                        console.error("Failed to sync Telegram user info:", error);
-                    }
-                }
-            }
-
             updateAllUI();
             onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
 
             setupBroadcastListener();
             setupUIEventListeners();
             
+            // Show the main app content
+            document.querySelector('.container').style.display = 'block';
+            document.querySelector('.bottom-nav').style.display = 'flex';
+            document.getElementById('loading-overlay').style.display = 'none';
+
         } catch (error) {
             console.error("App Logic Error:", error);
             document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
         }
     }
     
-    function setupAuthEventListeners() {
-        const signupForm = document.getElementById('signup-form');
-        const loginForm = document.getElementById('login-form');
-        const googleBtn = document.getElementById('google-signin-btn');
-        const showLoginLink = document.getElementById('show-login');
-        const showSignupLink = document.getElementById('show-signup');
-        const authTitle = document.getElementById('auth-title');
-
-        authTitle.innerText = 'Login Your Account';
-
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('signup-name').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const mobile = document.getElementById('signup-mobile').value.trim();
-
-            if (!name || !email || !password || !mobile) {
-                tg.showAlert("সব ঘর পূরণ করুন।");
-                return;
-            }
-            
-            isNewUserSignUp = true; 
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                await set(ref(db, 'users/' + user.uid), {
-                    name, email, mobile, balance: 0, referrals: 0, joinDate: new Date().toISOString()
-                });
-
-                await updateProfile(user, { displayName: name });
-                await signOut(auth); 
-
-                tg.showAlert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে এখন লগইন করুন।');
-                document.getElementById('signup-form').style.display = 'none';
-                document.getElementById('login-form').style.display = 'block';
-                document.getElementById('auth-title').innerText = 'Login Your Account';
-                signupForm.reset(); 
-
-            } catch (err) {
-                console.error("Signup Error:", err);
-                tg.showAlert("সাইন আপ করার সময় একটি সমস্যা হয়েছে: " + err.message);
-            } finally {
-                isNewUserSignUp = false; 
-            }
-        });
-
-        // ===============================================
-        // === [আপডেট] উন্নত লগইন এরর হ্যান্ডলিং সিস্টেম ===
-        // ===============================================
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const mobile = document.getElementById('login-mobile').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            if (!mobile || !password) {
-                tg.showAlert("মোবাইল নম্বর ও পাসওয়ার্ড দিন।");
-                return;
-            }
-
-            try {
-                const usersRef = ref(db, 'users');
-                const q = query(usersRef, orderByChild('mobile'), equalTo(mobile));
-                const snapshot = await get(q);
-
-                if (!snapshot.exists()) {
-                    tg.showAlert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
-                    return;
-                }
-
-                let userEmail = null;
-                snapshot.forEach(child => {
-                    userEmail = child.val().email;
-                });
-
-                if (!userEmail) {
-                    tg.showAlert("লগইন করা সম্ভব নয়। এই অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
-                    return;
-                }
-
-                await signInWithEmailAndPassword(auth, userEmail, password);
-                // onAuthStateChanged বাকিটা পরিচালনা করবে
-
-            } catch (err) {
-                // ডিব্যাগিং এর জন্য কনসোলে সম্পূর্ণ এররটি লগ করা হচ্ছে
-                console.error("Login Error Details:", err);
-                
-                let errorMessage = "লগইন করার সময় একটি অপ্রত্যাশিত সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।";
-                
-                // বিভিন্ন ধরনের এররের জন্য নির্দিষ্ট বার্তা সেট করা হচ্ছে
-                switch (err.code) {
-                    case 'auth/wrong-password':
-                        errorMessage = "আপনার দেওয়া পাসওয়ার্ডটি ভুল। অনুগ্রহ করে সঠিক পাসওয়ার্ড দিন।";
-                        break;
-                    case 'auth/user-not-found':
-                        errorMessage = "এই অ্যাকাউন্টের তথ্য খুঁজে পাওয়া যায়নি।";
-                        break;
-                    case 'auth/network-request-failed':
-                        errorMessage = "ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।";
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = "অনেকবার ভুল চেষ্টার কারণে আপনার অ্যাকাউন্ট সাময়িকভাবে লক করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
-                        break;
-                    case 'auth/user-disabled':
-                        errorMessage = "আপনার অ্যাকাউন্টটি নিষ্ক্রিয় করা হয়েছে। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।";
-                        break;
-                }
-                
-                tg.showAlert(errorMessage);
-            }
-        });
-
-        const forgotPasswordLink = document.getElementById('forgot-password-link');
-        forgotPasswordLink.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const mobile = prompt("পাসওয়ার্ড রিসেট করার জন্য আপনার মোবাইল নম্বরটি দিন:");
-            if (!mobile || mobile.trim() === "") return;
-
-            const usersRef = ref(db, 'users');
-            const userQuery = query(usersRef, orderByChild('mobile'), equalTo(mobile.trim()));
-
-            try {
-                const snapshot = await get(userQuery);
-                if (snapshot.exists()) {
-                    let userEmail = null;
-                    snapshot.forEach(childSnapshot => { userEmail = childSnapshot.val().email; });
-                    if (userEmail) {
-                        await sendPasswordResetEmail(auth, userEmail);
-                        tg.showAlert("আপনার ইমেইলে একটি পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইলের ইনবক্স চেক করুন।");
-                    } else {
-                        tg.showAlert("দুঃখিত, আপনার অ্যাকাউন্টের সাথে কোনো ইমেইল যুক্ত নেই।");
-                    }
-                } else {
-                    tg.showAlert("এই মোবাইল নম্বর দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।");
-                }
-            } catch (error) {
-                console.error("Forgot Password Error:", error);
-                tg.showAlert("একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
-            }
-        });
-
-        googleBtn.addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
-            try { await signInWithPopup(auth, provider); }
-            catch (error) { tg.showAlert("Google সাইন-ইন ব্যর্থ হয়েছে: " + error.message); }
-        });
-
-        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.style.display = 'none'; loginForm.style.display = 'block'; authTitle.innerText = 'Login Your Account'; });
-        showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; signupForm.style.display = 'block'; authTitle.innerText = 'Create your account'; });
-    }
-
-    async function createNewUser(user) {
+    async function createNewUser(telegramUser) {
         const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-        const telegramUser = tg.initDataUnsafe?.user || {};
         const newUser = { 
-            name: user.displayName || telegramUser.first_name || 'New User', 
-            email: user.email, 
-            mobile: '', 
-            photoUrl: user.photoURL || telegramUser.photo_url || null, 
+            name: telegramUser.first_name || 'New User', 
+            username: telegramUser.username || null,
+            photoUrl: telegramUser.photo_url || null, 
             balance: 0, 
             referrals: 0, 
             totalClicks: 0, 
@@ -735,7 +426,7 @@ onAuthStateChanged(auth, async (user) => {
             joinDate: new Date().toISOString(), 
             referredBy: referrerId || null, 
             lastBonusClaimed: null, 
-            telegramId: telegramUser.id || null 
+            telegramId: telegramUser.id
         };
         await set(userRef, newUser);
         userData = newUser;
@@ -806,21 +497,16 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
 
-    async function handleLogout() {
-        try { await signOut(auth); } catch (error) { console.error("Sign out error:", error); tg.showAlert("লগ আউট ব্যর্থ হয়েছে।"); }
-    }
-
     function updateAllUI() {
-        if (!userData || !firebaseUser) return;
-        document.getElementById('user-name').innerHTML = `${userData.name || firebaseUser.displayName || 'User'} <span class="verified-tick">✔</span>`;
-        document.getElementById('user-photo').src = userData.photoUrl || firebaseUser.photoURL || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
+        if (!userData) return;
+        document.getElementById('user-name').innerHTML = `${userData.name || 'User'} <span class="verified-tick">✔</span>`;
+        document.getElementById('user-photo').src = userData.photoUrl || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
         document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
         document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
         document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
         document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
         document.getElementById('total-referrals').innerText = userData.referrals || 0; 
-        const referralId = userData.telegramId || userId; 
-        document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${referralId}`;
+        document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
         const watchAdsBtn = document.getElementById('watch-ads-btn');
         if ((userData.adsWatched || 0) >= 15) {
             watchAdsBtn.textContent = 'Daily Limit Reached'; watchAdsBtn.disabled = true;
@@ -940,7 +626,6 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('notice-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.add('show'));
         document.getElementById('notice-close-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.remove('show'));
         document.getElementById('broadcast-close-btn').addEventListener('click', () => document.getElementById('broadcast-popup').classList.remove('show')); 
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', function(e) { e.preventDefault(); const pageId = this.dataset.page; document.querySelector('.nav-item.active').classList.remove('active'); this.classList.add('active'); document.querySelector('.page-content.active').classList.remove('active'); document.getElementById(`page-${pageId}`).classList.add('active'); if (pageId === 'withdraw') checkWithdrawEligibility(); }); });
         document.getElementById('copy-btn').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => { document.getElementById('copy-btn').textContent = 'Copied!'; tg.HapticFeedback.notificationOccurred('success'); setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000); }); }); 
         document.getElementById('share-btn').addEventListener('click', () => { const shareText = `🔥 এই অ্যাপ থেকে খুব সহজেই ইনকাম করুন! 🔥\n\n রেফারেল লিঙ্ক ব্যবহার করে ইনকাম করুন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস নিন।`; tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`); }); 
