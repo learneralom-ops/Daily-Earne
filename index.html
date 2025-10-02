@@ -398,74 +398,74 @@
 
        
 
-    async function initializeAppLogic() {
-        try {
-            const settingsRef = ref(db, 'settings');
-            const settingsSnapshot = await get(settingsRef);
-            appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
-            if (!appSettings.welcomeMessageTitle) applyDefaultSettings();
-            
-            updateUIWithSettings();
-            handleWelcomePopup();
-            onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
-
-            const userSnapshot = await get(userRef);
-            if (userSnapshot.exists()) {
-                userData = userSnapshot.val();
-            } else {
-                // If user does not exist in DB, create a new entry
-                await createNewUser(tg.initDataUnsafe.user);
-            }
-            
-            updateAllUI();
-            onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
-
-            setupBroadcastListener();
-            setupUIEventListeners();
-            
-            // Show the main app content
-            document.querySelector('.container').style.display = 'block';
-            document.querySelector('.bottom-nav').style.display = 'flex';
-            document.getElementById('loading-overlay').style.display = 'none';
-
-        } catch (error) {
-            console.error("App Logic Error:", error);
-            document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
-        }
-    }
-    
-    async function createNewUser(telegramUser) {
-        const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-        const newUser = { 
-            name: telegramUser.first_name || 'New User', 
-            username: telegramUser.username || null,
-            photoUrl: telegramUser.photo_url || null, 
-            balance: 0, 
-            referrals: 0, 
-            totalClicks: 0, 
-            adsWatched: 0, 
-            joinDate: new Date().toISOString(), 
-            referredBy: referrerId || null, 
-            lastBonusClaimed: null, 
-            telegramId: telegramUser.id
-        };
-        await set(userRef, newUser);
-        userData = newUser;
-        if (referrerId && referrerId !== String(userId)) {
-            const referrerRef = ref(db, 'users/' + referrerId);
+    async function initializeAppLogic(userId) {
             try {
-                const snapshot = await get(referrerRef);
-                if (snapshot.exists()) {
-                    const referrerData = snapshot.val();
-                    const newReferralCount = (referrerData.referrals || 0) + 1;
-                    const referralBonus = appSettings.referralReward || 0;
-                    const updates = { referrals: newReferralCount };
-                    if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
-                    await update(referrerRef, updates);
+                // আপনার অ্যাপ লজিক এখানে
+                const userRef = database.ref('users/' + userId);
+                
+                // ইউজার ডেটা লোড করুন
+                const userSnapshot = await userRef.once('value');
+                if (!userSnapshot.exists()) {
+                    // নতুন ইউজার তৈরি করুন
+                    await createNewUser(userId);
                 }
-            } catch (error) { console.error("Referrer update failed:", error); }
+                
+                // UI শো করুন
+                document.querySelector('.container').style.display = 'block';
+                document.querySelector('.bottom-nav').style.display = 'flex';
+                document.getElementById('loading-overlay').style.display = 'none';
+                
+            } catch (error) {
+                console.error("App initialization error:", error);
+                document.getElementById('loading-overlay').innerText = 'Error: ' + error.message;
+            }
         }
-    }
+
+        async function createNewUser(userId) {
+            const tgUser = tg.initDataUnsafe?.user;
+            const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+            
+            const newUser = { 
+                name: tgUser?.first_name || 'New User', 
+                username: tgUser?.username || null,
+                photoUrl: tgUser?.photo_url || null, 
+                balance: 0, 
+                referrals: 0, 
+                totalClicks: 0, 
+                adsWatched: 0, 
+                joinDate: new Date().toISOString(), 
+                referredBy: referrerId || null, 
+                lastBonusClaimed: null,
+                telegramId: tgUser?.id || null
+            };
+            
+            await database.ref('users/' + userId).set(newUser);
+            
+            // Referral bonus
+            if (referrerId && referrerId !== userId) {
+                await updateReferralBonus(referrerId);
+            }
+        }
+
+        async function updateReferralBonus(referrerId) {
+            const referrerRef = database.ref('users/' + referrerId);
+            const snapshot = await referrerRef.once('value');
+            
+            if (snapshot.exists()) {
+                const referrerData = snapshot.val();
+                const newReferralCount = (referrerData.referrals || 0) + 1;
+                const referralBonus = 20; // 20 টাকা বোনাস
+                
+                const updates = {
+                    referrals: newReferralCount,
+                    balance: (referrerData.balance || 0) + referralBonus
+                };
+                
+                await referrerRef.update(updates);
+            }
+        }
+
+    
 
     let sessionTaskProgress = {};
     const taskProgressManager = {
