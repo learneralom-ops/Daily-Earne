@@ -343,8 +343,11 @@
     </nav>
    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-       
+    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } 
+      from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } 
+      from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
       authDomain: "daily-earne-aea89.firebaseapp.com",
@@ -354,6 +357,25 @@
       messagingSenderId: "444567470638",
       appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
     };
+
+       // Firebase init
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Anonymous sign-in
+    signInAnonymously(auth)
+      .then(() => console.log("Signed in anonymously"))
+      .catch((error) => console.error("Anon sign-in error:", error));
+
+    // auth state change listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("Anonymous UID:", user.uid);
+        // এখন এখানে তোমার ডাটাবেস ফাংশন/initializeAppLogic কল করো
+        initializeAppLogic();   // ← তোমার বিদ্যমান ফাংশন কল
+      }
+    });
     
     let db;
     let userId = null, userData = {}, appSettings = {}, userRef = null;
