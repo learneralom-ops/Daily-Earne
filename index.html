@@ -442,37 +442,55 @@ onAuthStateChanged(auth, (user) => {
     }
     
     async function createNewUser(telegramUser) {
-        const referrerId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-        const newUser = { 
-            name: telegramUser.first_name || 'New User', 
-            username: telegramUser.username || null,
-            photoUrl: telegramUser.photo_url || null, 
-            balance: 0, 
-            referrals: 0, 
-            totalClicks: 0, 
-            adsWatched: 0, 
-            joinDate: new Date().toISOString(), 
-            referredBy: referrerId || null, 
-            lastBonusClaimed: null, 
-            telegramId: telegramUser.id
-        };
-        await set(userRef, newUser);
-        userData = newUser;
-        if (referrerId && referrerId !== String(userId)) {
-            const referrerRef = ref(db, 'users/' + referrerId);
-            try {
-                const snapshot = await get(referrerRef);
-                if (snapshot.exists()) {
-                    const referrerData = snapshot.val();
-                    const newReferralCount = (referrerData.referrals || 0) + 1;
-                    const referralBonus = appSettings.referralReward || 0;
-                    const updates = { referrals: newReferralCount };
-                    if (referralBonus > 0) { updates.balance = (referrerData.balance || 0) + referralBonus; }
-                    await update(referrerRef, updates);
+    // বর্তমানে লগইন করা ইউজারের Auth ID (userId) এখানে সরাসরি পাওয়া যায়
+    const referrerIdParam = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+    
+    const newUser = { 
+        name: telegramUser.first_name || 'New User', 
+        username: telegramUser.username || null,
+        photoUrl: telegramUser.photo_url || null, 
+        balance: 0, 
+        referrals: 0, 
+        totalClicks: 0, 
+        adsWatched: 0, 
+        joinDate: new Date().toISOString(), 
+        referredBy: referrerIdParam || null, 
+        lastBonusClaimed: null, 
+        telegramId: telegramUser.id
+    };
+
+    // নতুন ইউজারের ডেটা তার নিজের Auth ID দিয়ে সেভ করুন
+    await set(userRef, newUser);
+    userData = newUser;
+
+    // এখন রেফারারের তথ্য আপডেট করুন (যদি থাকে)
+    if (referrerIdParam && referrerIdParam !== userId) {
+        // referrerIdParam হলো রেফারারের Auth ID যা লিংকের সাথে এসেছে
+        const referrerRef = ref(db, 'users/' + referrerIdParam);
+        try {
+            const snapshot = await get(referrerRef);
+            if (snapshot.exists()) {
+                const referrerData = snapshot.val();
+                const newReferralCount = (referrerData.referrals || 0) + 1;
+                const referralBonus = appSettings.referralReward || 0;
+                
+                const updates = {};
+                updates.referrals = newReferralCount;
+                if (referralBonus > 0) {
+                    updates.balance = (referrerData.balance || 0) + referralBonus;
                 }
-            } catch (error) { console.error("Referrer update failed:", error); }
+                
+                // রেফারারের ডেটা আপডেট করুন
+                await update(referrerRef, updates);
+                console.log(`Referrer ${referrerIdParam} updated successfully.`);
+            } else {
+                console.log(`Referrer with ID ${referrerIdParam} not found.`);
+            }
+        } catch (error) { 
+            console.error("Referrer update failed:", error); 
         }
     }
+}
 
     // আপনার বাকি সব জাভাস্ক্রিপ্ট ফাংশন (sessionTaskProgress, updateTaskButtonUI, handleTaskButtonClick, ইত্যাদি) অপরিবর্তিত থাকবে...
     // ... ... ...
