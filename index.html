@@ -369,31 +369,24 @@
 
     // auth state পরিবর্তন হলে এই ফাংশনটি কাজ করবে
     // অ্যাপের মূল লজিক শুধুমাত্র ব্যবহারকারী সাইন-ইন হওয়ার পরেই শুরু হবে
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // ব্যবহারকারী সফলভাবে সাইন-ইন হয়েছে (anonymously)
-        console.log("Auth state confirmed. Anonymous UID:", user.uid);
-        
-        const tgUser = tg.initDataUnsafe?.user;
+    // ... onAuthStateChanged এর ভেতরের অংশ ...
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // ব্যবহারকারী সফলভাবে সাইন-ইন হয়েছে (anonymously)
+    console.log("Auth state confirmed. Firebase Anonymous UID:", user.uid);
+    
+    // এখন আমরা Firebase এর দেওয়া ইউনিক আইডি (user.uid) ব্যবহার করব
+    userId = user.uid; 
+    userRef = ref(db, 'users/' + userId);
 
-        if (!tgUser || !tgUser.id) {
-            document.getElementById('loading-overlay').innerText = 'Error: Could not identify Telegram user. Please open this app through Telegram.';
-            return;
-        }
-
-        // Telegram user ID ব্যবহার করে ডাটাবেস পাথ তৈরি করুন
-        userId = tgUser.id;
-        userRef = ref(db, 'users/' + userId);
-
-        // এখন অ্যাপের মূল লজিক শুরু করুন
-        // DOMContentLoaded থেকে initializeAppLogic() কলটি সরিয়ে এখানে আনা হয়েছে
-        initializeAppLogic();
-      } else {
-        // ব্যবহারকারী সাইন-ইন করা নেই
-        console.log("User is not signed in.");
-        // এখানে চাইলে একটি এরর মেসেজ দেখাতে পারেন
-      }
-    });
+    // এখন অ্যাপের মূল লজিক শুরু করুন
+    initializeAppLogic();
+  } else {
+    // ব্যবহারকারী সাইন-ইন করা নেই
+    console.log("User is not signed in.");
+    document.getElementById('loading-overlay').innerText = 'Authentication Failed. Please restart the app.';
+  }
+});
 
     document.addEventListener("DOMContentLoaded", () => {
         tg.ready();
