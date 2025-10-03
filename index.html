@@ -147,7 +147,7 @@
 
     <!-- লগইন/সাইন-আপ সেকশন সম্পূর্ণভাবে মুছে ফেলা হয়েছে -->
 
-    <div class="popup-overlay" id="welcome-popup"><div class="popup-content"><button class="popup-close-btn" id="popup-close">&times;</button><div class="popup-body" id="welcome-content-wrapper"></div><button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button></div></div>
+    <div class="popup-overlay" id="welcome-popup"><div class="popup-content"><button class="popup-close-btn" id="popup-close">&times;</button><img id="welcome-popup-image" src="" alt="Welcome" style="display: none; max-width: 100%; border-radius: 10px; margin-bottom: 15px; aspect-ratio: 640 / 360; object-fit: cover;"><div class="popup-body" id="welcome-content-wrapper"></div><button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button></div></div>
     <div class="popup-overlay" id="notice-popup"><div class="popup-content"><button class="popup-close-btn" id="notice-close-btn">&times;</button><div class="popup-body" id="notice-body"></div></div></div>
     <div class="popup-overlay" id="broadcast-popup"><div class="popup-content"><button class="popup-close-btn" id="broadcast-close-btn">&times;</button><div class="popup-body"><h2>📢 Message from Admin</h2><img id="broadcast-image" src="" alt="Broadcast Image"><div id="broadcast-body" style="white-space: pre-wrap; word-wrap: break-word;"></div></div></div></div>
 
@@ -640,6 +640,13 @@ onAuthStateChanged(auth, (user) => {
     function applyDefaultSettings() { appSettings = { welcomeMessageTitle: 'স্বাগতম!', welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>অ্যাপের নিয়মকানুন মেনে কাজ করুন।</p>', referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20, tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' }; }
 
     function updateUIWithSettings() {
+        const welcomeImage = document.getElementById('welcome-popup-image');
+        if (appSettings.welcomeImageUrl && appSettings.welcomeImageUrl.trim() !== '') {
+            welcomeImage.src = appSettings.welcomeImageUrl;
+            welcomeImage.style.display = 'block';
+        } else {
+            welcomeImage.style.display = 'none';
+        }
         document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`;
         document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>';
         document.getElementById('referral-title').innerText = 'Refer & Earning';
