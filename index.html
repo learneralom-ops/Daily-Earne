@@ -343,7 +343,7 @@
     </nav>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp } 
+    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } 
       from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
     import { getAuth, signInAnonymously, onAuthStateChanged, initializeAuth, browserSessionPersistence } 
       from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
@@ -442,8 +442,8 @@ onAuthStateChanged(auth, (user) => {
     }
     
     async function createNewUser(telegramUser) {
-    // বর্তমানে লগইন করা ইউজারের Auth ID (userId) এখানে সরাসরি পাওয়া যায়
-    const referrerIdParam = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
+    // start_param থেকে রেফারারের Telegram ID নিন
+    const referrerTelegramId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
     
     const newUser = { 
         name: telegramUser.first_name || 'New User', 
@@ -454,7 +454,8 @@ onAuthStateChanged(auth, (user) => {
         totalClicks: 0, 
         adsWatched: 0, 
         joinDate: new Date().toISOString(), 
-        referredBy: referrerIdParam || null, 
+        // referredBy ফিল্ডে রেফারারের Telegram ID সেভ করুন
+        referredBy: referrerTelegramId || null, 
         lastBonusClaimed: null, 
         telegramId: telegramUser.id
     };
@@ -463,14 +464,22 @@ onAuthStateChanged(auth, (user) => {
     await set(userRef, newUser);
     userData = newUser;
 
-    // এখন রেফারারের তথ্য আপডেট করুন (যদি থাকে)
-    if (referrerIdParam && referrerIdParam !== userId) {
-        // referrerIdParam হলো রেফারারের Auth ID যা লিংকের সাথে এসেছে
-        const referrerRef = ref(db, 'users/' + referrerIdParam);
+    // এখন রেফারারের তথ্য আপডেট করুন (যদি রেফারার থাকে)
+    if (referrerTelegramId && referrerTelegramId !== String(telegramUser.id)) {
+        
+        // এখানে আমরা রেফারারের Telegram ID দিয়ে তাকে ডাটাবেস থেকে খুঁজব
+        // এটি একটি Query ব্যবহার করে করতে হবে কারণ আমরা তার Firebase Auth ID জানি না
+        const usersRef = ref(db, 'users');
+        const referrerQuery = query(usersRef, orderByChild('telegramId'), equalTo(parseInt(referrerTelegramId)));
+
         try {
-            const snapshot = await get(referrerRef);
+            const snapshot = await get(referrerQuery);
             if (snapshot.exists()) {
-                const referrerData = snapshot.val();
+                // যেহেতু Query একটি লিস্ট রিটার্ন করে, আমাদের প্রথম রেজাল্টটি নিতে হবে
+                const referrerUid = Object.keys(snapshot.val())[0];
+                const referrerData = snapshot.val()[referrerUid];
+                const referrerDbRef = ref(db, 'users/' + referrerUid);
+
                 const newReferralCount = (referrerData.referrals || 0) + 1;
                 const referralBonus = appSettings.referralReward || 0;
                 
@@ -480,11 +489,11 @@ onAuthStateChanged(auth, (user) => {
                     updates.balance = (referrerData.balance || 0) + referralBonus;
                 }
                 
-                // রেফারারের ডেটা আপডেট করুন
-                await update(referrerRef, updates);
-                console.log(`Referrer ${referrerIdParam} updated successfully.`);
+                // রেফারারের ডেটা তার Auth ID দিয়ে আপডেট করুন
+                await update(referrerDbRef, updates);
+                console.log(`Referrer with Telegram ID ${referrerTelegramId} updated successfully.`);
             } else {
-                console.log(`Referrer with ID ${referrerIdParam} not found.`);
+                console.log(`Referrer with Telegram ID ${referrerTelegramId} not found.`);
             }
         } catch (error) { 
             console.error("Referrer update failed:", error); 
@@ -555,7 +564,10 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
         document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
         document.getElementById('total-referrals').innerText = userData.referrals || 0; 
-        document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userId}`;
+        // রেফারেল লিঙ্কে এখন ইউজারের Telegram ID দেখানো হবে
+if (userData && userData.telegramId) {
+    document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userData.telegramId}`;
+}
         const watchAdsBtn = document.getElementById('watch-ads-btn');
         if ((userData.adsWatched || 0) >= 15) {
             watchAdsBtn.textContent = 'Daily Limit Reached'; watchAdsBtn.disabled = true;
