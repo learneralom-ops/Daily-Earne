@@ -593,7 +593,7 @@ if (userData && userData.telegramId) {
                 const newBalance = (userData.balance || 0) + rewardAmount;
                 const newTotalClicks = (userData.totalClicks || 0) + 1;
                 update(userRef, { balance: newBalance, totalClicks: newTotalClicks }).then(() => {
-                    tg.HapticFeedback.notificationOccurred('success'); tg.showAlert(`অভিনন্দন! 🎉 আপনার অ্যাকাউন্টে ${rewardAmount.toFixed(2)} টাকা যোগ হয়েছে।`);
+                    tg.HapticFeedback.notificationOccurred('success'); tg.showAlert(`অভিনন্দন! 🎉 আপনার ব্যালেন্সে ${rewardAmount.toFixed(2)} পয়সা যোগ হয়েছে।`);
                     titleElement.textContent = originalTitle; button.disabled = false;
                 }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে।'); titleElement.textContent = originalTitle; button.disabled = false; });
             }
