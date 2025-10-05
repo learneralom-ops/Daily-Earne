@@ -244,7 +244,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M432 64H80C53.5 64 32 85.5 32 112v288c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48zM160 128h64v64h-64V128zm0 128h64v64h-64v-64zm0 128h64v64h-64v-64zm192-256h64v64h-64V128zm0 128h64v64h-64v-64zm0 128h64v64h-64v-64zM96 128h64v64H96V128zm0 128h64v64H96v-64zm0 128h64v64H96v-64zm192-256h64v64h-64V128zm0 128h64v64h-64v-64z"></path><path d="M256 64H80C53.5 64 32 85.5 32 112v288c0 26.5 21.5 48 48 48h176V64z"></path><polygon points="213.7 256 309.3 192 309.3 320 213.7 256"></polygon></svg>
         </div>
         <div class="task-item-text">
-            প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন<br>এবং ১ টাকা ইনকাম করুন।
+            প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন<br>এবং ১০ টাকা ইনকাম করুন।
         </div>
         <div class="task-item-button">
             <button class="task-btn watch-ads-btn" id="watch-ads-btn">Watch Ads</button>
@@ -725,7 +725,7 @@ if (userData && userData.telegramId) {
                     const newAdsWatched = (userData.adsWatched || 0) + 1;
                     const newTotalClicks = (userData.totalClicks || 0) + 1;
                     update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => {
-                        tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} টাকা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] });
+                        tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} পয়সা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] });
                     }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; });
                 }
             }, 1000);
