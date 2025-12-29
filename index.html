@@ -1,760 +1,1847 @@
+
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Daily Earning</title>
-    <!-- Telegram Web App Script -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Earning - Earn Money Online</title>
+    <meta name="description" content="Earn money daily by completing simple tasks, watching ads, and inviting friends. Start earning now!">
+    <meta name="keywords" content="earn money online, daily earning, watch ads earn money, make money online">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-   
-    <!-- Monetag SDK Code -->
-    <script src='//libtl.com/sdk.js' data-zone='8954258' data-sdk='show_8954258'></script>
-    <!-- Giga pub SDK -->
-    <script src="https://ad.gigapub.tech/script?id=3247"></script> 
-
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#3B82F6',
+                        'secondary': '#10B981',
+                        'accent': '#F59E0B',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'coin-spin': 'coinSpin 2s linear infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                    },
+                    keyframes: {
+                        coinSpin: {
+                            '0%': { transform: 'rotateY(0deg)' },
+                            '100%': { transform: 'rotateY(360deg)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: 0, transform: 'translateY(10px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: 0, transform: 'translateY(20px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* আপনার সকল CSS কোড এখানে অপরিবর্তিত থাকবে */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&display=swap');
-        :root { --bg-color: #121212; --card-color: #1e1e1e; --text-color: #ffffff; --secondary-text-color: #b0b0b0; --primary-color: #007bff; --secondary-color: #28a745; --border-color: #333; --error-color: #dc3545; --success-color: #28a745; }
-        body { font-family: 'Roboto', 'Noto Sans Bengali', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; padding-bottom: 90px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .page-content { display: none; }
-        .page-content.active { display: block; }
-        .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .profile-section { display: flex; align-items: center; margin-bottom: 0; flex-grow: 1; }
-        .notice-btn { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); color: var(--text-color); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; white-space: nowrap; margin-top: 5px; }
-        .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary-color); margin-right: 15px; object-fit: cover; background-color: #333; }
-        .profile-info h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
-        .verified-tick { color: var(--primary-color); font-size: 1rem; }
-        .profile-info p { margin: 5px 0 0; color: var(--secondary-text-color); font-size: 0.9rem; }
-        h2 { font-size: 1.5rem; margin-bottom: 15px; font-weight: 700; }
-        .card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; }
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card p { margin: 0; color: var(--secondary-text-color); font-size: 0.9rem; }
-        .card h3 { margin: 8px 0 0; font-size: 1.8rem; color: var(--primary-color); }
-        .referral-section { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); padding: 20px; border-radius: 12px; margin-top: 25px; text-align: center; }
-        #referral-link { width: 100%; padding: 10px; background-color: var(--bg-color); border: 1px dashed var(--primary-color); color: var(--text-color); border-radius: 8px; text-align: center; box-sizing: border-box; font-size: 0.9rem; }
-        .support-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 20px; }
-        .support-card .emoji-icons { font-size: 2.5rem; margin-bottom: 15px; }
-        .task-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 16px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center; }
-        .task-icon { width: 60px; height: 60px; margin-bottom: 10px; }
-        .task-description { font-size: 1.1rem; color: var(--text-color); line-height: 1.6; margin: 0 0 20px 0; font-weight: 500; }
-        .withdraw-notice { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); padding: 15px; border-radius: 12px; margin-bottom: 25px; }
-        .requirements li { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1rem; }
-        .requirements span.status { font-weight: bold; } .requirements span.success { color: var(--success-color); } .requirements span.error { color: var(--error-color); }
-        .form-group { margin-bottom: 20px; text-align: left; } .form-group label { display: block; margin-bottom: 8px; color: var(--secondary-text-color); font-weight: 500; }
-        .form-control { width: 100%; padding: 12px 15px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1rem; box-sizing: border-box; }
-        .payment-method-selector { display: flex; gap: 10px; } .payment-method-selector input[type="radio"] { display: none; } .payment-method-selector label { flex-grow: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; } .payment-method-selector input[type="radio"]:checked + label { border-color: var(--primary-color); background-color: rgba(0, 123, 255, 0.1); font-weight: bold; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 10px; } .btn:disabled { background-color: #555 !important; color: #aaa !important; cursor: not-allowed; opacity: 0.7; }
-        .btn-primary { background-color: var(--primary-color); color: white; } .btn-secondary { background-color: var(--secondary-color); color: white; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--card-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); max-width: 600px; margin: 0 auto; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text-color); text-decoration: none; font-size: 0.7rem; flex-grow: 1; background: none; border: none; } .nav-item.active { color: var(--primary-color); } .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor;}
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 10px; box-sizing: border-box; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; } .popup-overlay.show { opacity: 1; visibility: visible; display: flex;} .popup-content { background-color: rgba(0, 10, 255, 0.3); border: 1px solid var(--primary-color); padding: 25px; border-radius: 16px; width: 100%; max-width: 380px; position: relative; }
-        .popup-body { text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 10px; }
-        .popup-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .unlock-task-icon { width: 50px; height: 50px; margin-bottom: 15px; }
-        .btn-unlock { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 90%; max-width: 350px; padding: 14px; border-radius: 50px; }
-        #broadcast-image { max-width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; }
-        .marquee-container { width: 100%; background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 8px; padding: 2px 2; margin-bottom: 20px; overflow: hidden; white-space: nowrap; box-sizing: border-box; display: none; }
-        .marquee-text { display: inline-block; color: var(--text-color); font-weight: 500; padding-left: 100%; animation: marquee-animation 120s linear infinite; position: relative; width: fit-content; }
-        .marquee-text::after { content: attr(data-text); position: absolute; top: 0; left: 100%; padding-left: 50px; width: 100%; }
-        @keyframes marquee-animation { 0% { transform: translateX(0%); } 100% { transform: translateX(-200%); } }
-
-        /* ========== নতুন হোম পেজের জন্য CSS ========== */
-        .home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
-        .home-card { background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: transform 0.2s, background-color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px;}
-        .home-card:hover:not(:disabled) { transform: translateY(-5px); background-color: rgba(0, 123, 255, 0.2); }
-        .home-card-icon { font-size: 1.5rem; margin-bottom: 10px; }
-        .home-card-title { font-size: 16px; font-weight: 500; margin: 0; color: var(--text-color);}
-        .auto-ads-container { display: flex; gap: 15px; margin-bottom: 25px; }
-        .auto-ads-container .btn { flex: 1; }
-        .developer-btn { background-color: #007bff; border: 1px solid #fff; color: #fff; text-align: center; text-decoration: none; display: block; align-items:center; width: fit-content; margin-left: auto; margin-right: auto; padding-left: 25px; padding-right: 25px;}
-
-        /* ========== নতুন Tasks পেজের জন্য CSS ========== */
-        .task-item {
-            background-color: rgba(0, 123, 255, 0.1); border: 1px solid var(--primary-color);
-            border-radius: 20px;
-            padding: 12px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-        .task-item-icon {
-            flex-shrink: 0;
-            width: 50px;
-            height: 50px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .task-item-icon.ads-icon { background-color: white; padding: 5px; }
-        .task-item-icon.ads-icon svg { fill: #4f46e5; width: 30px; height: 30px; }
-
-        .task-item-icon.telegram-icon { background: none; }
-        .task-item-icon.telegram-icon svg { width: 30px; height: 30px; }
         
-        .task-item-icon.youtube-icon { background-color: #ff0000; }
-        .task-item-icon.youtube-icon svg { fill: white; width: 30px; height: 30px; }
-
-        .task-item-text {
-            flex-grow: 1;
-            color: #ffffff;
-            font-family: 'Noto Sans Bengali', sans-serif;
-            font-size: 10px;
-            line-height: 1.4;
+        body {
+            background: linear-gradient(135deg, #f6f8ff 0%, #f0f4ff 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .task-item-button .task-btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
+        
+        body.dark {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #e2e8f0;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+        
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-success {
+            background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+        }
+        
+        .gradient-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .gradient-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .coin-icon {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .tab-active {
+            position: relative;
+        }
+        
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #3B82F6;
+            border-radius: 50%;
+        }
+        
+        /* Page transition */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Notification animation */
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .notification-slide {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Progress bar animation */
+        @keyframes progressFill {
+            from { width: 0%; }
+            to { width: var(--progress); }
+        }
+        
+        .progress-animate {
+            animation: progressFill 1.5s ease-out forwards;
+        }
+        
+        /* Ad watch animation */
+        @keyframes countdown {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        
+        .countdown-bar {
+            animation: countdown 5s linear forwards;
+        }
+        
+        /* Taka symbol styling */
+        .taka-symbol {
+            font-family: Arial, sans-serif;
             font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
+        }
+        
+        /* Profile picture styling */
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+        
+        /* Loading spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* File input styling */
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
             display: inline-block;
-            font-size: 0.9rem;
-            white-space: nowrap;
         }
-        .task-item-button .watch-ads-btn {
-            background-color: #facc15;
-            color: #121212;
-        }
-        .task-item-button .join-now-btn {
-            background-color: #ffffff;
-            color: #4f46e5;
-        }
-        /* নতুন Unlock এবং Completed বাটনের জন্য স্টাইল */
-        .task-item-button .task-btn.unlock-btn {
-            background-color: #facc15; /* Yellow */
-            color: #121212;
-        }
-        .task-item-button .task-btn.completed-btn {
-            background-color: #28a745; /* Green */
-            color: white;
-            cursor: not-allowed;
+        
+        .file-input-container input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
         }
     </style>
 </head>
-<body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 9999; display: flex; justify-content: center; align-items: center; color: #facc15; font-size: 2.2rem;">Daily Earning...</div>
-
-    <!-- লগইন/সাইন-আপ সেকশন সম্পূর্ণভাবে মুছে ফেলা হয়েছে -->
-
-    <div class="popup-overlay" id="welcome-popup"><div class="popup-content"><button class="popup-close-btn" id="popup-close">&times;</button><img id="welcome-popup-image" src="" alt="Welcome" style="display: none; max-width: 100%; border-radius: 10px; margin-bottom: 5px; aspect-ratio: 640 / 360; object-fit: cover;"><div class="popup-body" id="welcome-content-wrapper"></div><button class="btn btn-primary" id="popup-understand-btn">বুঝেছি</button></div></div>
-    <div class="popup-overlay" id="notice-popup"><div class="popup-content"><button class="popup-close-btn" id="notice-close-btn">&times;</button><div class="popup-body" id="notice-body"></div></div></div>
-    <div class="popup-overlay" id="broadcast-popup"><div class="popup-content"><button class="popup-close-btn" id="broadcast-close-btn">&times;</button><div class="popup-body"><h2>📢 Message from Admin</h2><img id="broadcast-image" src="" alt="Broadcast Image"><div id="broadcast-body" style="white-space: pre-wrap; word-wrap: break-word;"></div></div></div></div>
-
-    <!-- এটি মূল অ্যাপ কন্টেইনার, যা এখন সরাসরি দেখানো হবে -->
-    <div class="container" style="display: none;">
-        <div class="header-container">
-            <header class="profile-section">
-                <img src="https://i.ibb.co/tZ0d4B4/profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="user-photo">
-                <div class="profile-info">
-                    <h1 id="user-name">একটু অপেক্ষা করুন... <span class="verified-tick">✔</span></h1>
-                    <p>ব্যালেন্স: <span id="user-balance">0.00</span> টাকা 💰</p>
-                </div>
-            </header>
-            <button class="notice-btn" id="notice-btn">🔔 Notice</button>
-        </div>
-        
-        <div id="page-wrapper">
-            <!-- ===== নতুন হোম পেজ ===== -->
-            <div id="page-home" class="page-content active">
-                <div class="marquee-container"><p class="marquee-text" id="offer-text"></p></div>
-                <div class="home-grid">
-                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Daily Bonus">
-                        <span class="home-card-icon">🎁</span>
-                        <h4 class="home-card-title">Daily Earning</h4>
-                    </button>
-                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Watch Ads">
-                        <span class="home-card-icon">🎦</span>
-                        <h4 class="home-card-title">Watch Ads</h4>
-                    </button>
-                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Watch Video">
-                        <span class="home-card-icon">🎬</span>
-                        <h4 class="home-card-title">Watch Video</h4>
-                    </button>
-                    <button class="home-card giga-ad-countdown-trigger" data-original-title="Start Earn">
-                        <span class="home-card-icon">💰</span>
-                        <h4 class="home-card-title">Start Earn</h4>
-                    </button>
-                </div>
-
-                <div class="auto-ads-container">
-                    <button class="btn btn-secondary" id="auto-ads-btn">▶️ Auto Ads</button>
-                    <button class="btn btn-primary" id="stop-ads-btn" disabled>⏹️ Stop Ads</button>
-                </div>
-
-                <a href="https://t.me/LearnerAlom" target="_blank" class="btn developer-btn">
-                   🚀 Developer By Learner Alom
-                </a>
-                
-                <div class="referral-section">
-                    <h3 id="referral-title">Refer & Earn More!</h3>
-                    <p class="referral-text" id="referral-desc">রেফার বোনাস পেতে লিঙ্কটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন।</p>
-                    <div><input type="text" id="referral-link" value="Loading..." readonly></div>
-                    <button class="btn btn-primary" id="copy-btn">Copy Referral Link</button>
-                    <button class="btn btn-secondary" id="share-btn">🔗 Share Now</button>
-                </div>
-            </div>
-
-            <div id="page-account" class="page-content">
-                <main>
-                    <h2>My Account ✅</h2>
-                    <div class="dashboard-grid">
-                        <div class="card"><p>Total Clicks</p><h3 id="total-clicks">0</h3></div>
-                        <div class="card"><p>Total Earning</p><h3 id="total-earning">0.00</h3></div>
-                        <div class="card"><p>Daily Ads Watched</p><h3 id="ads-watched">0 / 15</h3></div>
-                        <div class="card"><p>Total Referrals</p><h3 id="total-referrals">0</h3></div>
+<body class="bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
+    <div id="app" class="min-h-screen pb-20 max-w-md mx-auto">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 py-4 px-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
+                        <i class="fas fa-coins text-white"></i>
                     </div>
-                    <!-- লগ আউট বাটন মুছে ফেলা হয়েছে -->
-                </main>
-            </div>
-            
-            <div id="page-support" class="page-content">
-                 <h2>Support</h2>
-                <div class="support-card">
-                    <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="var(--primary-color)"><path d="M8 5v14l11-7z"></path></svg></div>
-                    <h3>Tutorial Video</h3>
-                    <p>কিভাবে অ্যাপটি ব্যবহার করবেন—টিউটোরিয়াল দেখে নিন।</p>
-                    <button class="btn btn-primary" id="open-tutorial-btn">Open Tutorial</button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800 dark:text-white">Daily Earning</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-300" id="pageTitle">Earn money online</p>
+                    </div>
                 </div>
-                <div class="support-card">
-                    <p class="emoji-icons">👨‍💼 💬</p>
-                    <p>সরাসরি Admin এর সাথে ম্যাসেজ করুন, প্রয়োজন ছাড়া ম্যাসেজ করবেন না।</p>
-                    <button class="btn btn-primary" id="admin-chat-btn">Admin Chat</button>
-                </div>
-                <div class="support-card">
-                    <p class="emoji-icons">👨‍💼 ☎️</p>
-                    <p>সরাসরি Admin এর সাথে কথা বলুন, প্রয়োজন ছাড়া ফোন করবেন না।</p>
-                    <button class="btn btn-primary" id="admin-call-btn">Admin Call</button>
+                <div class="flex items-center space-x-3">
+                    <button id="themeToggle" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-moon text-gray-600 dark:text-yellow-400"></i>
+                    </button>
+                    <button id="logoutBtn" class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center hover:bg-red-200 dark:hover:bg-red-700 transition hidden">
+                        <i class="fas fa-sign-out-alt text-red-600 dark:text-red-300"></i>
+                    </button>
                 </div>
             </div>
-            
-<div id="page-tasks" class="page-content">
-    <div class="task-item">
-        <div class="task-item-icon ads-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M432 64H80C53.5 64 32 85.5 32 112v288c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48zM160 128h64v64h-64V128zm0 128h64v64h-64v-64zm0 128h64v64h-64v-64zm192-256h64v64h-64V128zm0 128h64v64h-64v-64zm0 128h64v64h-64v-64zM96 128h64v64H96V128zm0 128h64v64H96v-64zm0 128h64v64H96v-64zm192-256h64v64h-64V128zm0 128h64v64h-64v-64z"></path><path d="M256 64H80C53.5 64 32 85.5 32 112v288c0 26.5 21.5 48 48 48h176V64z"></path><polygon points="213.7 256 309.3 192 309.3 320 213.7 256"></polygon></svg>
-        </div>
-        <div class="task-item-text">
-            প্রতিদিন ১৫টি বিজ্ঞাপন দেখুন<br>এবং ১০ টাকা ইনকাম করুন।
-        </div>
-        <div class="task-item-button">
-            <button class="task-btn watch-ads-btn" id="watch-ads-btn">Watch Ads</button>
-        </div>
-    </div>
+        </header>
 
-    <div class="task-item">
-        <div class="task-item-icon telegram-icon">
-           <svg viewBox="0 0 24 24"><path fill="#29B6F6" d="M5.6,12.4l11.7-5.1c0.7-0.3,1.3,0.4,0.9,1l-2.8,9.8c-0.2,0.8-1.2,1-1.6,0.3l-2.1-3.6l-3.5,3.4 c-0.3,0.3-0.8,0.3-1.1,0L6,16.5c-0.4-0.4-0.3-1,0.2-1.3L10,12.4L5.6,12.4z"></path><path fill="#0088CC" d="M10,12.4l-4.4,0c-0.5-0.3-0.6-0.9-0.2-1.3l1.1-1.1c0.3-0.3,0.8-0.3,1.1,0l2.1,2.1L10,12.4z"></path></svg>
-        </div>
-        <div class="task-item-text">
-            টেলিগ্রাম চ্যানেলে জয়েন করে<br>১০ টাকা ইনকাম করুন।
-        </div>
-        <div class="task-item-button">
-            <a href="#" id="main-telegram-link" target="_blank" class="task-btn join-now-btn" data-task-id="telegram-main">Join Now</a>
-        </div>
-    </div>
-
-    <div class="task-item">
-        <div class="task-item-icon youtube-icon">
-            <svg viewBox="0 0 24 24"><path d="M12,8L18,12L12,16V8M22,12C22,12,22,6,20,5C18,4,12,4,12,4S6,4,4,5C2,6,2,12,2,12S2,18,4,19C6,20,12,20,12,20S18,20,20,19C22,18,22,12,22,12Z"></path></svg>
-        </div>
-        <div class="task-item-text">
-            ইউটিউব চ্যানেল সাবস্ক্রাইব করে<br>১০ টাকা ইনকাম করুন।
-        </div>
-        <div class="task-item-button">
-            <a href="#" id="main-youtube-link" target="_blank" class="task-btn join-now-btn" data-task-id="youtube-main">Join Now</a>
-        </div>
-    </div>
-
-    <div class="task-item">
-        <div class="task-item-icon telegram-icon">
-           <svg viewBox="0 0 24 24"><path fill="#29B6F6" d="M5.6,12.4l11.7-5.1c0.7-0.3,1.3,0.4,0.9,1l-2.8,9.8c-0.2,0.8-1.2,1-1.6,0.3l-2.1-3.6l-3.5,3.4 c-0.3,0.3-0.8,0.3-1.1,0L6,16.5c-0.4-0.4-0.3-1,0.2-1.3L10,12.4L5.6,12.4z"></path><path fill="#0088CC" d="M10,12.4l-4.4,0c-0.5-0.3-0.6-0.9-0.2-1.3l1.1-1.1c0.3-0.3,0.8-0.3,1.1,0l2.1,2.1L10,12.4z"></path></svg>
-        </div>
-        <div class="task-item-text">
-            টেলিগ্রাম চ্যানেলে জয়েন করে<br>১০ টাকা ইনকাম করুন।
-        </div>
-        <div class="task-item-button">
-            <a href="https://t.me/EarninLiv" target="_blank" class="task-btn join-now-btn" data-task-id="telegram-earninliv">Join Now</a>
-        </div>
-    </div>
-
-    <div class="task-item">
-        <div class="task-item-icon telegram-icon">
-           <svg viewBox="0 0 24 24"><path fill="#29B6F6" d="M5.6,12.4l11.7-5.1c0.7-0.3,1.3,0.4,0.9,1l-2.8,9.8c-0.2,0.8-1.2,1-1.6,0.3l-2.1-3.6l-3.5,3.4 c-0.3,0.3-0.8,0.3-1.1,0L6,16.5c-0.4-0.4-0.3-1,0.2-1.3L10,12.4L5.6,12.4z"></path><path fill="#0088CC" d="M10,12.4l-4.4,0c-0.5-0.3-0.6-0.9-0.2-1.3l1.1-1.1c0.3-0.3,0.8-0.3,1.1,0l2.1,2.1L10,12.4z"></path></svg>
-        </div>
-        <div class="task-item-text">
-            টেলিগ্রাম চ্যানেলে জয়েন করে<br>১০ টাকা ইনকাম করুন।
-        </div>
-        <div class="task-item-button">
-            <a href="https://t.me/live_Pament" target="_blank" class="task-btn join-now-btn" data-task-id="telegram-livepayment">Join Now</a>
-        </div>
-    </div>
-
-    <div class="task-item">
-        <div class="task-item-icon telegram-icon">
-           <svg viewBox="0 0 24 24"><path fill="#29B6F6" d="M5.6,12.4l11.7-5.1c0.7-0.3,1.3,0.4,0.9,1l-2.8,9.8c-0.2,0.8-1.2,1-1.6,0.3l-2.1-3.6l-3.5,3.4 c-0.3,0.3-0.8,0.3-1.1,0L6,16.5c-0.4-0.4-0.3-1,0.2-1.3L10,12.4L5.6,12.4z"></path><path fill="#0088CC" d="M10,12.4l-4.4,0c-0.5-0.3-0.6-0.9-0.2-1.3l1.1-1.1c0.3-0.3,0.8-0.3,1.1,0l2.1,2.1L10,12.4z"></path></svg>
-        </div>
-        <div class="task-item-text">
-            টেলিগ্রাম চ্যানেলে জয়েন করে<br>১০ টাকা ইনকাম করুন।
-        </div>
-        <div class="task-item-button">
-            <a href="https://t.me/Live_suppet" target="_blank" class="task-btn join-now-btn" data-task-id="telegram-livesupport">Join Now</a>
-        </div>
-    </div>
-</div>
-             
-             
-            <div id="page-withdraw" class="page-content">
-                <h2>Withdraw</h2>
-                <div class="withdraw-notice">
-                    <p>উইথড্র করার জন্য নিচের শর্তগুলো পূরণ করতে হবে:</p>
-                    <ul class="requirements">
-                        <li><span id="balance-req-text">মিনিমাম ব্যালেন্স.</span><span id="balance-status" class="status"></span></li>
-                        <li><span id="referral-req-text">মিনমাম রেফারেল.</span><span id="referral-status" class="status"></span></li>
-                    </ul>
+        <!-- Auth Pages -->
+        <div id="authContainer" class="px-4 py-6">
+            <!-- Login Page -->
+            <div id="loginPage" class="page active">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-coins text-white text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Welcome Back!</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mt-2">Login to your account</p>
                 </div>
-                <div class="card" id="withdraw-form-card">
-                    <form id="withdraw-form">
-                        <div class="form-group"><label for="withdraw-amount">টাকার পরিমাণ</label><input type="number" id="withdraw-amount" class="form-control" placeholder="e.g., 500"></div>
-                        <div class="form-group"><label>পেমেন্ট পদ্ধতি</label><div class="payment-method-selector"><input type="radio" id="bkash" name="payment_method" value="Bkash" checked=""><label for="bkash">বিকাশ</label><input type="radio" id="nogod" name="payment_method" value="Nogod"><label for="nogod">নগদ</label></div></div>
-                        <div class="form-group"><label for="account-number">অ্যাকাউন্ট নম্বর</label><input type="tel" id="account-number" class="form-control" placeholder="আপনার ১১ ডিজিটের নম্বর দিন"></div>
-                        <button type="submit" class="btn btn-primary" id="withdraw-submit-btn" disabled>Request Withdraw</button>
+                
+                <div class="glass-card rounded-2xl p-6">
+                    <form id="loginForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email or Phone Number</label>
+                                <input type="text" id="loginEmailPhone" required 
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                       placeholder="Enter email or phone number">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="loginPassword" required 
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                           placeholder="Enter password">
+                                    <button type="button" id="toggleLoginPassword" class="absolute right-3 top-3 text-gray-500">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="rememberMe" 
+                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Remember me</span>
+                                </label>
+                                <a href="#" id="forgotPassword" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Forgot password?</a>
+                            </div>
+                            
+                            <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
+                                <span>Login</span>
+                                <div id="loginSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
+                            </button>
+                            
+                            <div class="text-center">
+                                <p class="text-gray-600 dark:text-gray-300">Don't have an account? 
+                                    <button id="showSignupBtn" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Sign Up</button>
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-center text-gray-600 dark:text-gray-300 text-sm mb-4">Or continue with</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="flex items-center justify-center p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <i class="fab fa-google text-red-600 mr-2"></i>
+                                <span class="text-sm font-medium">Google</span>
+                            </button>
+                            <button class="flex items-center justify-center p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                                <span class="text-sm font-medium">Facebook</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">By continuing, you agree to our 
+                        <a href="#" class="text-blue-600 dark:text-blue-400">Terms of Service</a> and 
+                        <a href="#" class="text-blue-600 dark:text-blue-400">Privacy Policy</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Signup Page -->
+            <div id="signupPage" class="page">
+                <div class="flex items-center mb-6">
+                    <button id="backToLogin" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Create Account</h2>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6">
+                    <form id="signupForm">
+                        <div class="space-y-4">
+                            <!-- Profile Picture Upload -->
+                            <div class="text-center mb-4">
+                                <div class="relative inline-block">
+                                    <img id="profilePreview" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+                                         alt="Profile" class="profile-pic rounded-full mx-auto mb-3">
+                                    <div class="file-input-container">
+                                        <button type="button" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition">
+                                            <i class="fas fa-camera"></i>
+                                        </button>
+                                        <input type="file" id="profilePicture" accept="image/*" class="cursor-pointer">
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Upload profile picture</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                                <input type="text" id="fullName" required 
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                       placeholder="Enter your full name">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                                <input type="email" id="signupEmail" required 
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                       placeholder="Enter your email">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                                <input type="tel" id="phoneNumber" 
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                       placeholder="Enter phone number (optional)">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="signupPassword" required 
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                           placeholder="Create password (min. 6 characters)">
+                                    <button type="button" id="toggleSignupPassword" class="absolute right-3 top-3 text-gray-500">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Must be at least 6 characters</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                                <div class="relative">
+                                    <input type="password" id="confirmPassword" required 
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                           placeholder="Confirm your password">
+                                    <button type="button" id="toggleConfirmPassword" class="absolute right-3 top-3 text-gray-500">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <input type="checkbox" id="agreeTerms" required 
+                                       class="w-4 h-4 mt-1 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                <label for="agreeTerms" class="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                                    I agree to the <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</a>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" id="signupBtn" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
+                                <span>Create Account</span>
+                                <div id="signupSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
+
+        <!-- Main Content - Different Pages (Only shown after login) -->
+        <main id="mainContainer" class="px-4 py-6 hidden">
+            <!-- Home Page -->
+            <div id="homePage" class="page active">
+                <!-- Balance Card -->
+                <div class="glass-card rounded-2xl p-6 mb-6 gradient-primary text-white shadow-xl">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-sm opacity-90">Total Balance</p>
+                            <h2 id="balanceAmount" class="text-4xl font-bold mt-1">
+                                <span class="taka-symbol text-3xl">৳</span> <span id="currentBalance">0</span>
+                            </h2>
+                        </div>
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                            <i class="fas fa-wallet text-2xl"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3 mb-6">
+                        <button id="depositBtn" class="flex-1 bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition active:scale-95">
+                            <i class="fas fa-plus-circle mr-2"></i> Deposit
+                        </button>
+                        <button id="withdrawBtn" class="flex-1 bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition active:scale-95">
+                            <i class="fas fa-dollar-sign mr-2"></i> Withdraw
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-4 gap-3 mb-6">
+                    <button class="quick-action" data-action="watch-ads">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
+                            <i class="fas fa-ad text-blue-600 dark:text-blue-300 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-medium text-gray-800 dark:text-gray-200">Watch Ads</span>
+                    </button>
+                    
+                    <button class="quick-action" data-action="watch-videos">
+                        <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900 flex items-center justify-center mb-2">
+                            <i class="fas fa-play-circle text-red-600 dark:text-red-300 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-medium text-gray-800 dark:text-gray-200">Videos</span>
+                    </button>
+                    
+                    <button class="quick-action" data-action="daily-bonus">
+                        <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center mb-2">
+                            <i class="fas fa-gift text-green-600 dark:text-green-300 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-medium text-gray-800 dark:text-gray-200">Daily Bonus</span>
+                    </button>
+                    
+                    <button class="quick-action" data-action="invite-friends">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-2">
+                            <i class="fas fa-user-plus text-purple-600 dark:text-purple-300 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-medium text-gray-800 dark:text-gray-200">Invite</span>
+                    </button>
+                </div>
+
+                <!-- Start Earning Button -->
+                <button id="startEarningBtn" class="w-full gradient-success text-white font-bold py-4 rounded-xl text-lg mb-6 shadow-lg hover:opacity-90 transition active:scale-95 animate-pulse-slow">
+                    <i class="fas fa-play mr-2"></i> Start Earning Now
+                </button>
+
+                <!-- Referral Section -->
+                <div class="glass-card rounded-2xl p-6 mb-6 gradient-info text-white">
+                    <h3 class="text-xl font-bold mb-3">Refer & Earn</h3>
+                    <p class="text-sm opacity-90 mb-4">Invite friends and earn 50 coins for each friend who joins!</p>
+                    
+                    <div class="bg-white/20 rounded-xl p-4 mb-4">
+                        <p class="text-sm mb-2">Your Referral Link</p>
+                        <div class="flex items-center">
+                            <input id="referralLink" type="text" readonly class="flex-1 bg-transparent text-white text-sm outline-none">
+                            <button id="copyLinkBtn" class="ml-2 w-10 h-10 rounded-full bg-white/30 flex items-center justify-center hover:bg-white/40 transition">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button id="shareBtn" class="flex-1 bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition active:scale-95">
+                            <i class="fas fa-share-alt mr-2"></i> Share Now
+                        </button>
+                        <button id="referralStatsBtn" class="flex-1 bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition active:scale-95">
+                            <i class="fas fa-chart-bar mr-2"></i> Stats
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Section -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                <i class="fas fa-fire text-green-600 dark:text-green-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">Daily Streak</p>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white" id="dailyStreak">0 days</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 0%" id="streakProgress"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mr-3">
+                                <i class="fas fa-users text-purple-600 dark:text-purple-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">Referrals</p>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white" id="referralCount">0 friends</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 0%" id="referralProgress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Page -->
+            <div id="depositPage" class="page">
+                <div class="flex items-center mb-6">
+                    <button id="backFromDeposit" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Deposit Coins</h2>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white">
+                        <p class="text-sm mb-1">Current Balance</p>
+                        <p class="text-3xl font-bold" id="depositBalance">
+                            <span class="taka-symbol text-2xl">৳</span> <span id="depositBalanceAmount">0</span>
+                        </p>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl p-6">
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">Add coins to your account to start earning more.</p>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-6">
+                            <button class="deposit-option p-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-400 transition text-center" data-amount="100">
+                                <p class="font-bold text-lg text-gray-800 dark:text-white">100</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">coins</p>
+                                <p class="text-xs mt-2 text-blue-600 dark:text-blue-400">৳ 10</p>
+                            </button>
+                            
+                            <button class="deposit-option p-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-400 transition text-center" data-amount="500">
+                                <p class="font-bold text-lg text-gray-800 dark:text-white">500</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">coins</p>
+                                <p class="text-xs mt-2 text-blue-600 dark:text-blue-400">৳ 50</p>
+                            </button>
+                            
+                            <button class="deposit-option p-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-400 transition text-center" data-amount="1000">
+                                <p class="font-bold text-lg text-gray-800 dark:text-white">1000</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">coins</p>
+                                <p class="text-xs mt-2 text-blue-600 dark:text-blue-400">৳ 100</p>
+                            </button>
+                            
+                            <button class="deposit-option p-4 border-2 border-blue-200 dark:border-blue-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-400 transition text-center" data-amount="5000">
+                                <p class="font-bold text-lg text-gray-800 dark:text-white">5000</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">coins</p>
+                                <p class="text-xs mt-2 text-blue-600 dark:text-blue-400">৳ 500</p>
+                            </button>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-sm text-gray-500 dark:text-gray-300 mb-3">Payment Methods:</p>
+                            <div class="flex space-x-3">
+                                <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                    <i class="fab fa-paypal text-blue-600 dark:text-blue-300"></i>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                                    <i class="fab fa-cc-visa text-yellow-600 dark:text-yellow-300"></i>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                    <i class="fab fa-cc-mastercard text-green-600 dark:text-green-300"></i>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                                    <i class="fab fa-bitcoin text-purple-600 dark:text-purple-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="proceedToPayment" class="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                            Proceed to Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Withdraw Page -->
+            <div id="withdrawPage" class="page">
+                <div class="flex items-center mb-6">
+                    <button id="backFromWithdraw" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Withdraw Earnings</h2>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white">
+                        <p class="text-sm mb-1">Available Balance</p>
+                        <p class="text-3xl font-bold" id="withdrawBalance">
+                            <span class="taka-symbol text-2xl">৳</span> <span id="withdrawBalanceAmount">0</span>
+                        </p>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl p-6">
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">Select withdrawal method:</p>
+                        
+                        <div class="space-y-4 mb-6" id="withdrawalMethods">
+                            <!-- Withdrawal methods will be loaded here -->
+                        </div>
+                        
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-sm text-gray-500 dark:text-gray-300 mb-3">Withdrawal takes 24-48 hours to process.</p>
+                            <button class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed" id="requestWithdrawalBtn">
+                                Request Withdrawal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Page -->
+            <div id="tasksPage" class="page">
+                <div class="flex items-center mb-6">
+                    <button id="backFromTasks" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">All Tasks</h2>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6 mb-6 gradient-primary text-white">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-90">Tasks Progress</p>
+                            <p class="text-2xl font-bold" id="tasksProgress">0/0</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm opacity-90">Total Earned</p>
+                            <p class="text-2xl font-bold">
+                                <span class="taka-symbol text-xl">৳</span> <span id="totalEarned">0</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4" id="allTasksList">
+                    <!-- All tasks will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="page">
+                <div class="flex items-center mb-6">
+                    <button id="backFromProfile" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">My Profile</h2>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Profile Info Card -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="text-center mb-6">
+                            <img id="userProfilePic" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+                                 alt="Profile" class="profile-pic rounded-full mx-auto mb-4">
+                            <h3 id="userFullName" class="text-xl font-bold text-gray-800 dark:text-white">Loading...</h3>
+                            <p id="userEmail" class="text-gray-600 dark:text-gray-300">Loading...</p>
+                            <p id="userPhone" class="text-gray-500 dark:text-gray-400 text-sm mt-1">Loading...</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500 dark:text-gray-300">Member Since</p>
+                                <p id="memberSince" class="font-bold text-gray-800 dark:text-white">-</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500 dark:text-gray-300">Level</p>
+                                <p id="userLevel" class="font-bold text-gray-800 dark:text-white">Beginner</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500 dark:text-gray-300">Status</p>
+                                <p id="userStatus" class="font-bold text-green-600 dark:text-green-400">Active</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button id="editProfileBtn" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </button>
+                            <button id="changePasswordBtn" class="flex-1 border-2 border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 font-bold py-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                <i class="fas fa-key mr-2"></i> Change Password
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Statistics -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Account Statistics</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-coins text-blue-600 dark:text-blue-300"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-800 dark:text-white">Total Earnings</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-300">All time</p>
+                                    </div>
+                                </div>
+                                <p class="text-xl font-bold text-green-600 dark:text-green-400">
+                                    <span class="taka-symbol">৳</span><span id="totalEarnings">0</span>
+                                </p>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-tasks text-green-600 dark:text-green-300"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-800 dark:text-white">Tasks Completed</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-300">This month</p>
+                                    </div>
+                                </div>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white" id="monthlyTasks">0</p>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-users text-purple-600 dark:text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-800 dark:text-white">Successful Referrals</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-300">Active referrals</p>
+                                    </div>
+                                </div>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white" id="activeReferrals">0</p>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-calendar-alt text-yellow-600 dark:text-yellow-300"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-800 dark:text-white">Current Streak</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-300">Daily login</p>
+                                    </div>
+                                </div>
+                                <p class="text-xl font-bold text-gray-800 dark:text-white" id="currentStreak">0 days</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Settings -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Account Settings</h3>
+                        
+                        <div class="space-y-3">
+                            <button class="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-bell text-red-600 dark:text-red-300"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-800 dark:text-white">Notification Settings</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-shield-alt text-green-600 dark:text-green-300"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-800 dark:text-white">Privacy & Security</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-question-circle text-blue-600 dark:text-blue-300"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-800 dark:text-white">Help & Support</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900 flex items-center justify-center mr-3">
+                                        <i class="fas fa-file-contract text-purple-600 dark:text-purple-300"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-800 dark:text-white">Terms & Conditions</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Logout Button -->
+                    <button id="logoutMainBtn" class="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Logout Account
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation (Only shown after login) -->
+        <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-3 px-6 hidden">
+            <div class="flex justify-between items-center">
+                <button class="nav-btn active" data-page="home">
+                    <i class="fas fa-home text-lg mb-1"></i>
+                    <span class="text-xs">Home</span>
+                </button>
+                
+                <button class="nav-btn" data-page="tasks">
+                    <i class="fas fa-tasks text-lg mb-1"></i>
+                    <span class="text-xs">Tasks</span>
+                </button>
+                
+                <button class="nav-btn" data-page="earn">
+                    <div class="w-14 h-14 rounded-full gradient-primary flex items-center justify-center -mt-6 shadow-lg">
+                        <i class="fas fa-bolt text-white text-xl"></i>
+                    </div>
+                </button>
+                
+                <button class="nav-btn" data-page="withdraw">
+                    <i class="fas fa-wallet text-lg mb-1"></i>
+                    <span class="text-xs">Withdraw</span>
+                </button>
+                
+                <button class="nav-btn" data-page="profile">
+                    <i class="fas fa-user text-lg mb-1"></i>
+                    <span class="text-xs">Profile</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Notification -->
+        <div id="notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-md hidden">
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-xl shadow-lg flex items-center">
+                <i class="fas fa-check-circle text-xl mr-3"></i>
+                <p id="notificationText">Notification message</p>
+                <button id="closeNotification" class="ml-auto text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
     </div>
-    
-    <nav class="bottom-nav" style="display: none;">
-        <button class="nav-item active" data-page="home"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"></path></svg><span>Home</span></button>
-        <button class="nav-item" data-page="tasks"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg><span>Tasks</span></button>
-        <button class="nav-item" data-page="withdraw"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg><span>Withdraw</span></button>
-        <button class="nav-item" data-page="support"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12a9.96 9.96 0 0 0 6.33 9.12c.3.56.24 1.29-.14 1.74-.46.54-1.28.6-1.84.16A11.982 11.982 0 0 1 0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12v-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8c0 1.02.2 2 .56 2.92.56 1.45 2.11 2.43 3.81 2.43.86 0 1.66-.35 2.24-.95.33-.35.39-.85.14-1.29A4.008 4.008 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4c-.58 0-1.13-.13-1.62-.35-.5-.22-.98.2-1.09. seventy three-.11.53.21 1.08.73 1.19.8.34 1.68.53 2.58.53 3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6c0 2.43 1.45 4.5 3.51 5.43.3.13.49.42.49.74v.01z"></path></svg><span>Support</span></button>
-        <button class="nav-item" data-page="account"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><span>Account</span></button>
-    </nav>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, set, update, push, serverTimestamp, query, orderByChild, equalTo } 
-      from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, initializeAuth, browserSessionPersistence } 
-      from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-    const firebaseConfig = {
-  apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
-  authDomain: "daily-earne-aea89.firebaseapp.com",
-  databaseURL: "https://daily-earne-aea89-default-rtdb.firebaseio.com",
-  projectId: "daily-earne-aea89",
-  storageBucket: "daily-earne-aea89.appspot.com",
-  messagingSenderId: "444567470638",
-  appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
-};
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
+            authDomain: "daily-earne-aea89.firebaseapp.com",
+            databaseURL: "https://daily-earne-aea89-default-rtdb.firebaseio.com",
+            projectId: "daily-earne-aea89",
+            storageBucket: "daily-earne-aea89.firebasestorage.app",
+            messagingSenderId: "444567470638",
+            appId: "1:444567470638:web:0fa323d9f5ef6aba1155bf"
+        };
 
-    // Firebase একবারই initialize করুন
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const storage = firebase.storage();
 
-    let userId = null, userData = {}, appSettings = {}, userRef = null;
-    let autoAdsInterval = null;
-    const tg = window.Telegram.WebApp;
+        // Global Variables
+        let currentUser = null;
+        let userData = null;
+        let selectedProfilePicture = null;
 
-    // auth state পরিবর্তন হলে এই ফাংশনটি কাজ করবে
-    // অ্যাপের মূল লজিক শুধুমাত্র ব্যবহারকারী সাইন-ইন হওয়ার পরেই শুরু হবে
-    // ... onAuthStateChanged এর ভেতরের অংশ ...
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // ব্যবহারকারী সফলভাবে সাইন-ইন হয়েছে (anonymously)
-    console.log("Auth state confirmed. Firebase Anonymous UID:", user.uid);
-    
-    // এখন আমরা Firebase এর দেওয়া ইউনিক আইডি (user.uid) ব্যবহার করব
-    userId = user.uid; 
-    userRef = ref(db, 'users/' + userId);
-
-    // এখন অ্যাপের মূল লজিক শুরু করুন
-    initializeAppLogic();
-  } else {
-    // ব্যবহারকারী সাইন-ইন করা নেই
-    console.log("User is not signed in.");
-    document.getElementById('loading-overlay').innerText = 'Authentication Failed. Please restart the app.';
-  }
-});
-
-    document.addEventListener("DOMContentLoaded", () => {
-        tg.ready();
-        tg.expand();
-
-        // 페이지가 로드되면 바로 익명 로그인을 시도합니다.
-        // এই ফাংশনটি কল করার ফলেই উপরের onAuthStateChanged লিসেনারটি কাজ করবে
-        signInAnonymously(auth)
-          .then(() => {
-            console.log("Anonymous sign-in process initiated.");
-          })
-          .catch((error) => {
-            console.error("Anonymous sign-in failed:", error);
-            document.getElementById('loading-overlay').innerText = 'Authentication Error. Please try again.';
-          });
-        
-        // এখান থেকে initializeAppLogic() কলটি মুছে ফেলা হয়েছে কারণ এটি onAuthStateChanged এর ভেতরে منتقل হয়েছে
-    });
-
-    async function initializeAppLogic() {
-        try {
-            const settingsRef = ref(db, 'settings');
-            const settingsSnapshot = await get(settingsRef);
-            appSettings = settingsSnapshot.exists() ? settingsSnapshot.val() : {};
-            if (!appSettings.welcomeMessageTitle) applyDefaultSettings();
+        // DOM Elements
+        const elements = {
+            // Auth Elements
+            authContainer: document.getElementById('authContainer'),
+            loginPage: document.getElementById('loginPage'),
+            signupPage: document.getElementById('signupPage'),
+            loginForm: document.getElementById('loginForm'),
+            signupForm: document.getElementById('signupForm'),
+            loginEmailPhone: document.getElementById('loginEmailPhone'),
+            loginPassword: document.getElementById('loginPassword'),
+            signupEmail: document.getElementById('signupEmail'),
+            signupPassword: document.getElementById('signupPassword'),
+            confirmPassword: document.getElementById('confirmPassword'),
+            fullName: document.getElementById('fullName'),
+            phoneNumber: document.getElementById('phoneNumber'),
+            profilePicture: document.getElementById('profilePicture'),
+            profilePreview: document.getElementById('profilePreview'),
+            loginBtn: document.getElementById('loginBtn'),
+            signupBtn: document.getElementById('signupBtn'),
+            loginSpinner: document.getElementById('loginSpinner'),
+            signupSpinner: document.getElementById('signupSpinner'),
+            showSignupBtn: document.getElementById('showSignupBtn'),
+            backToLogin: document.getElementById('backToLogin'),
+            toggleLoginPassword: document.getElementById('toggleLoginPassword'),
+            toggleSignupPassword: document.getElementById('toggleSignupPassword'),
+            toggleConfirmPassword: document.getElementById('toggleConfirmPassword'),
             
-            updateUIWithSettings();
-            handleWelcomePopup();
-            onValue(settingsRef, (snap) => { if (snap.exists()) { appSettings = snap.val(); updateUIWithSettings(); }});
+            // Main App Elements
+            mainContainer: document.getElementById('mainContainer'),
+            bottomNav: document.getElementById('bottomNav'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            logoutMainBtn: document.getElementById('logoutMainBtn'),
+            
+            // Home Page
+            balanceAmount: document.getElementById('balanceAmount'),
+            currentBalance: document.getElementById('currentBalance'),
+            referralLink: document.getElementById('referralLink'),
+            dailyStreak: document.getElementById('dailyStreak'),
+            streakProgress: document.getElementById('streakProgress'),
+            referralCount: document.getElementById('referralCount'),
+            referralProgress: document.getElementById('referralProgress'),
+            
+            // Deposit Page
+            depositBalanceAmount: document.getElementById('depositBalanceAmount'),
+            
+            // Withdraw Page
+            withdrawBalanceAmount: document.getElementById('withdrawBalanceAmount'),
+            withdrawalMethods: document.getElementById('withdrawalMethods'),
+            requestWithdrawalBtn: document.getElementById('requestWithdrawalBtn'),
+            
+            // Tasks Page
+            tasksProgress: document.getElementById('tasksProgress'),
+            totalEarned: document.getElementById('totalEarned'),
+            allTasksList: document.getElementById('allTasksList'),
+            
+            // Profile Page
+            userProfilePic: document.getElementById('userProfilePic'),
+            userFullName: document.getElementById('userFullName'),
+            userEmail: document.getElementById('userEmail'),
+            userPhone: document.getElementById('userPhone'),
+            memberSince: document.getElementById('memberSince'),
+            userLevel: document.getElementById('userLevel'),
+            userStatus: document.getElementById('userStatus'),
+            totalEarnings: document.getElementById('totalEarnings'),
+            monthlyTasks: document.getElementById('monthlyTasks'),
+            activeReferrals: document.getElementById('activeReferrals'),
+            currentStreak: document.getElementById('currentStreak'),
+            editProfileBtn: document.getElementById('editProfileBtn'),
+            changePasswordBtn: document.getElementById('changePasswordBtn'),
+            
+            // Navigation
+            navBtns: document.querySelectorAll('.nav-btn'),
+            
+            // Notification
+            notification: document.getElementById('notification'),
+            notificationText: document.getElementById('notificationText'),
+            closeNotification: document.getElementById('closeNotification'),
+            
+            // Theme Toggle
+            themeToggle: document.getElementById('themeToggle'),
+            pageTitle: document.getElementById('pageTitle')
+        };
 
-            const userSnapshot = await get(userRef);
-            if (userSnapshot.exists()) {
-                userData = userSnapshot.val();
-            } else {
-                await createNewUser(tg.initDataUnsafe.user);
+        // Current Page State
+        let currentPage = 'home';
+        let previousPage = 'home';
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            setupEventListeners();
+            
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in
+                    currentUser = user;
+                    loadUserData();
+                } else {
+                    // User is signed out
+                    showAuthPages();
+                }
+            });
+        });
+
+        // Initialize App
+        function initializeApp() {
+            // Set initial theme based on localStorage or system preference
+            const savedTheme = localStorage.getItem('dailyEarningTheme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.body.classList.add('dark');
+                updateThemeIcon(true);
             }
             
-            updateAllUI();
-            onValue(userRef, (snap) => { if (snap.exists()) { userData = snap.val(); updateAllUI(); }});
-
-            setupBroadcastListener();
-            setupUIEventListeners();
-            
-            // লোডিং স্ক্রিন সরিয়ে মূল অ্যাপ দেখান
-            document.querySelector('.container').style.display = 'block';
-            document.querySelector('.bottom-nav').style.display = 'flex';
-            document.getElementById('loading-overlay').style.display = 'none';
-
-        } catch (error) {
-            console.error("App Logic Error:", error);
-            document.getElementById('loading-overlay').innerText = `Error: ${error.message}`;
+            // Generate initial referral link
+            generateRandomReferralLink();
         }
-    }
-    
-    async function createNewUser(telegramUser) {
-    // start_param থেকে রেফারারের Telegram ID নিন
-    const referrerTelegramId = tg.initDataUnsafe?.start_param ? String(tg.initDataUnsafe.start_param) : null;
-    
-    const newUser = { 
-        name: telegramUser.first_name || 'New User', 
-        username: telegramUser.username || null,
-        photoUrl: telegramUser.photo_url || null, 
-        balance: 0, 
-        referrals: 0, 
-        totalClicks: 0, 
-        adsWatched: 0, 
-        joinDate: new Date().toISOString(), 
-        // referredBy ফিল্ডে রেফারারের Telegram ID সেভ করুন
-        referredBy: referrerTelegramId || null, 
-        lastBonusClaimed: null, 
-        telegramId: telegramUser.id
-    };
 
-    // নতুন ইউজারের ডেটা তার নিজের Auth ID দিয়ে সেভ করুন
-    await set(userRef, newUser);
-    userData = newUser;
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Auth Event Listeners
+            elements.loginForm.addEventListener('submit', handleLogin);
+            elements.signupForm.addEventListener('submit', handleSignup);
+            elements.showSignupBtn.addEventListener('click', () => navigateToAuthPage('signup'));
+            elements.backToLogin.addEventListener('click', () => navigateToAuthPage('login'));
+            elements.toggleLoginPassword.addEventListener('click', () => togglePasswordVisibility('loginPassword', elements.toggleLoginPassword));
+            elements.toggleSignupPassword.addEventListener('click', () => togglePasswordVisibility('signupPassword', elements.toggleSignupPassword));
+            elements.toggleConfirmPassword.addEventListener('click', () => togglePasswordVisibility('confirmPassword', elements.toggleConfirmPassword));
+            elements.profilePicture.addEventListener('change', handleProfilePictureChange);
+            
+            // Logout Buttons
+            elements.logoutBtn.addEventListener('click', handleLogout);
+            elements.logoutMainBtn.addEventListener('click', handleLogout);
+            
+            // Theme Toggle
+            elements.themeToggle.addEventListener('click', toggleTheme);
+            
+            // Close Notification
+            elements.closeNotification.addEventListener('click', () => {
+                elements.notification.classList.add('hidden');
+            });
+            
+            // Navigation Buttons
+            elements.navBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    if (page === 'earn') {
+                        navigateToPage('home');
+                    } else {
+                        navigateToPage(page);
+                    }
+                    
+                    // Update active state
+                    updateNavActiveState(page === 'earn' ? 'home' : page);
+                });
+            });
+            
+            // Quick Actions
+            document.querySelectorAll('.quick-action').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    handleQuickAction(action);
+                });
+            });
+            
+            // Copy Referral Link
+            document.getElementById('copyLinkBtn').addEventListener('click', copyReferralLink);
+            
+            // Share Button
+            document.getElementById('shareBtn').addEventListener('click', shareReferralLink);
+            
+            // Start Earning Button
+            document.getElementById('startEarningBtn').addEventListener('click', () => navigateToPage('tasks'));
+            
+            // Deposit Options
+            document.querySelectorAll('.deposit-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const amount = this.dataset.amount;
+                    showNotification(`Selected <span class="taka-symbol">৳</span>${amount} for deposit`, 'info');
+                });
+            });
+            
+            // Proceed to Payment
+            document.getElementById('proceedToPayment').addEventListener('click', () => {
+                showNotification('Payment feature would be implemented in production', 'info');
+            });
+            
+            // Edit Profile Button
+            elements.editProfileBtn.addEventListener('click', () => {
+                showNotification('Edit profile feature coming soon!', 'info');
+            });
+            
+            // Change Password Button
+            elements.changePasswordBtn.addEventListener('click', () => {
+                showNotification('Change password feature coming soon!', 'info');
+            });
+        }
 
-    // এখন রেফারারের তথ্য আপডেট করুন (যদি রেফারার থাকে)
-    if (referrerTelegramId && referrerTelegramId !== String(telegramUser.id)) {
-        
-        // এখানে আমরা রেফারারের Telegram ID দিয়ে তাকে ডাটাবেস থেকে খুঁজব
-        // এটি একটি Query ব্যবহার করে করতে হবে কারণ আমরা তার Firebase Auth ID জানি না
-        const usersRef = ref(db, 'users');
-        const referrerQuery = query(usersRef, orderByChild('telegramId'), equalTo(parseInt(referrerTelegramId)));
+        // Auth Page Navigation
+        function navigateToAuthPage(page) {
+            // Hide all auth pages
+            document.querySelectorAll('#authContainer .page').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Show selected auth page
+            const pageElement = document.getElementById(`${page}Page`);
+            if (pageElement) {
+                pageElement.classList.add('active');
+            }
+        }
 
-        try {
-            const snapshot = await get(referrerQuery);
-            if (snapshot.exists()) {
-                // যেহেতু Query একটি লিস্ট রিটার্ন করে, আমাদের প্রথম রেজাল্টটি নিতে হবে
-                const referrerUid = Object.keys(snapshot.val())[0];
-                const referrerData = snapshot.val()[referrerUid];
-                const referrerDbRef = ref(db, 'users/' + referrerUid);
-
-                const newReferralCount = (referrerData.referrals || 0) + 1;
-                const referralBonus = appSettings.referralReward || 0;
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const emailPhone = elements.loginEmailPhone.value.trim();
+            const password = elements.loginPassword.value;
+            
+            if (!emailPhone || !password) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                // Show loading
+                elements.loginSpinner.classList.remove('hidden');
+                elements.loginBtn.disabled = true;
                 
-                const updates = {};
-                updates.referrals = newReferralCount;
-                if (referralBonus > 0) {
-                    updates.balance = (referrerData.balance || 0) + referralBonus;
+                let authResult;
+                
+                // Check if input is email or phone number
+                if (emailPhone.includes('@')) {
+                    // Email login
+                    authResult = await auth.signInWithEmailAndPassword(emailPhone, password);
+                } else {
+                    // Phone login - In production, you would implement phone auth
+                    showNotification('Phone login is not yet implemented. Please use email.', 'error');
+                    elements.loginSpinner.classList.add('hidden');
+                    elements.loginBtn.disabled = false;
+                    return;
                 }
                 
-                // রেফারারের ডেটা তার Auth ID দিয়ে আপডেট করুন
-                await update(referrerDbRef, updates);
-                console.log(`Referrer with Telegram ID ${referrerTelegramId} updated successfully.`);
+                // Login successful
+                currentUser = authResult.user;
+                await loadUserData();
+                
+                showNotification('Login successful! Welcome back.', 'success');
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = 'Login failed. Please try again.';
+                
+                switch(error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No account found with this email/phone.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Incorrect password. Please try again.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = 'This account has been disabled.';
+                        break;
+                }
+                
+                showNotification(errorMessage, 'error');
+            } finally {
+                elements.loginSpinner.classList.add('hidden');
+                elements.loginBtn.disabled = false;
+            }
+        }
+
+        // Handle Signup
+        async function handleSignup(e) {
+            e.preventDefault();
+            
+            const fullName = elements.fullName.value.trim();
+            const email = elements.signupEmail.value.trim();
+            const phone = elements.phoneNumber.value.trim();
+            const password = elements.signupPassword.value;
+            const confirmPassword = elements.confirmPassword.value;
+            
+            // Validation
+            if (!fullName || !email || !password || !confirmPassword) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                // Show loading
+                elements.signupSpinner.classList.remove('hidden');
+                elements.signupBtn.disabled = true;
+                
+                // Create user with email and password
+                const authResult = await auth.createUserWithEmailAndPassword(email, password);
+                currentUser = authResult.user;
+                
+                // Upload profile picture if selected
+                let profilePicUrl = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+                
+                if (selectedProfilePicture) {
+                    try {
+                        profilePicUrl = await uploadProfilePicture(selectedProfilePicture, currentUser.uid);
+                    } catch (uploadError) {
+                        console.error('Profile picture upload failed:', uploadError);
+                        // Continue without profile picture
+                    }
+                }
+                
+                // Create user data in database
+                const userData = {
+                    uid: currentUser.uid,
+                    fullName: fullName,
+                    email: email,
+                    phone: phone || '',
+                    profilePicture: profilePicUrl,
+                    balance: 0,
+                    streak: 0,
+                    referrals: 0,
+                    tasksCompleted: 0,
+                    totalEarnings: 0,
+                    monthlyTasks: 0,
+                    activeReferrals: 0,
+                    memberSince: new Date().toISOString(),
+                    level: 'Beginner',
+                    status: 'Active',
+                    lastLogin: new Date().toISOString()
+                };
+                
+                // Save user data to database
+                await database.ref('users/' + currentUser.uid).set(userData);
+                
+                // Update local user data
+                await loadUserData();
+                
+                showNotification('Account created successfully! Welcome to Daily Earning.', 'success');
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                let errorMessage = 'Signup failed. Please try again.';
+                
+                switch(error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Email already in use. Please use a different email.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Password is too weak. Please use a stronger password.';
+                        break;
+                }
+                
+                showNotification(errorMessage, 'error');
+            } finally {
+                elements.signupSpinner.classList.add('hidden');
+                elements.signupBtn.disabled = false;
+            }
+        }
+
+        // Handle Profile Picture Change
+        function handleProfilePictureChange(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.match('image.*')) {
+                    showNotification('Please select an image file', 'error');
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('Image size should be less than 5MB', 'error');
+                    return;
+                }
+                
+                selectedProfilePicture = file;
+                
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    elements.profilePreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Upload Profile Picture
+        async function uploadProfilePicture(file, userId) {
+            return new Promise((resolve, reject) => {
+                const storageRef = storage.ref();
+                const profilePicRef = storageRef.child(`profile-pictures/${userId}/${file.name}`);
+                
+                const uploadTask = profilePicRef.put(file);
+                
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Progress monitoring can be added here
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload is ' + progress + '% done');
+                    },
+                    (error) => {
+                        reject(error);
+                    },
+                    async () => {
+                        // Upload completed successfully
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        resolve(downloadURL);
+                    }
+                );
+            });
+        }
+
+        // Load User Data
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                // Get user data from database
+                const snapshot = await database.ref('users/' + currentUser.uid).once('value');
+                userData = snapshot.val();
+                
+                if (!userData) {
+                    // Create default user data if not exists
+                    userData = {
+                        uid: currentUser.uid,
+                        fullName: currentUser.displayName || 'User',
+                        email: currentUser.email,
+                        phone: '',
+                        profilePicture: currentUser.photoURL || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                        balance: 0,
+                        streak: 0,
+                        referrals: 0,
+                        tasksCompleted: 0,
+                        totalEarnings: 0,
+                        monthlyTasks: 0,
+                        activeReferrals: 0,
+                        memberSince: new Date().toISOString(),
+                        level: 'Beginner',
+                        status: 'Active',
+                        lastLogin: new Date().toISOString()
+                    };
+                    
+                    await database.ref('users/' + currentUser.uid).set(userData);
+                } else {
+                    // Update last login
+                    await database.ref('users/' + currentUser.uid).update({
+                        lastLogin: new Date().toISOString()
+                    });
+                }
+                
+                // Update UI with user data
+                updateUserInterface();
+                
+                // Show main app
+                showMainApp();
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showNotification('Error loading user data', 'error');
+            }
+        }
+
+        // Update User Interface
+        function updateUserInterface() {
+            if (!userData) return;
+            
+            // Home Page
+            elements.currentBalance.textContent = userData.balance || 0;
+            elements.dailyStreak.textContent = `${userData.streak || 0} days`;
+            elements.streakProgress.style.width = `${Math.min((userData.streak || 0) * 10, 100)}%`;
+            elements.referralCount.textContent = `${userData.referrals || 0} friends`;
+            elements.referralProgress.style.width = `${Math.min((userData.referrals || 0) * 10, 100)}%`;
+            
+            // Deposit Page
+            elements.depositBalanceAmount.textContent = userData.balance || 0;
+            
+            // Withdraw Page
+            elements.withdrawBalanceAmount.textContent = userData.balance || 0;
+            
+            // Tasks Page
+            elements.tasksProgress.textContent = `${userData.tasksCompleted || 0}/10`;
+            elements.totalEarned.textContent = userData.totalEarnings || 0;
+            
+            // Profile Page
+            elements.userProfilePic.src = userData.profilePicture;
+            elements.userFullName.textContent = userData.fullName;
+            elements.userEmail.textContent = userData.email;
+            elements.userPhone.textContent = userData.phone || 'Not provided';
+            
+            // Format member since date
+            if (userData.memberSince) {
+                const date = new Date(userData.memberSince);
+                elements.memberSince.textContent = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+            
+            elements.userLevel.textContent = userData.level || 'Beginner';
+            elements.userStatus.textContent = userData.status || 'Active';
+            elements.totalEarnings.textContent = userData.totalEarnings || 0;
+            elements.monthlyTasks.textContent = userData.monthlyTasks || 0;
+            elements.activeReferrals.textContent = userData.activeReferrals || 0;
+            elements.currentStreak.textContent = `${userData.streak || 0} days`;
+            
+            // Generate referral link with user ID
+            generateUserReferralLink();
+        }
+
+        // Generate User Referral Link
+        function generateUserReferralLink() {
+            if (!currentUser || !userData) return;
+            
+            const baseUrl = 'https://daily-earne.vercel.app';
+            const referralCode = `ref_${currentUser.uid.substring(0, 8)}`;
+            const referralLink = `${baseUrl}/?ref=${referralCode}`;
+            
+            // Update referral link input
+            if (elements.referralLink) {
+                elements.referralLink.value = referralLink;
+            }
+        }
+
+        // Handle Logout
+        async function handleLogout() {
+            try {
+                await auth.signOut();
+                currentUser = null;
+                userData = null;
+                showAuthPages();
+                showNotification('Logged out successfully', 'success');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Logout failed. Please try again.', 'error');
+            }
+        }
+
+        // Show Auth Pages
+        function showAuthPages() {
+            elements.authContainer.classList.remove('hidden');
+            elements.mainContainer.classList.add('hidden');
+            elements.bottomNav.classList.add('hidden');
+            elements.logoutBtn.classList.add('hidden');
+            navigateToAuthPage('login');
+        }
+
+        // Show Main App
+        function showMainApp() {
+            elements.authContainer.classList.add('hidden');
+            elements.mainContainer.classList.remove('hidden');
+            elements.bottomNav.classList.remove('hidden');
+            elements.logoutBtn.classList.remove('hidden');
+            navigateToPage('home');
+            updateNavActiveState('home');
+        }
+
+        // Navigate to Page
+        function navigateToPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Store previous page
+            previousPage = currentPage;
+            currentPage = page;
+            
+            // Show selected page
+            const pageElement = document.getElementById(`${page}Page`);
+            if (pageElement) {
+                pageElement.classList.add('active');
+                
+                // Update page title
+                const pageTitles = {
+                    'home': 'Earn money online',
+                    'deposit': 'Deposit Money',
+                    'withdraw': 'Withdraw Earnings',
+                    'tasks': 'All Tasks',
+                    'profile': 'My Profile'
+                };
+                
+                elements.pageTitle.textContent = pageTitles[page] || 'Daily Earning';
+                
+                // Update data on page if needed
+                if (page === 'deposit') {
+                    elements.depositBalanceAmount.textContent = userData?.balance || 0;
+                } else if (page === 'withdraw') {
+                    elements.withdrawBalanceAmount.textContent = userData?.balance || 0;
+                    loadWithdrawalMethods();
+                } else if (page === 'tasks') {
+                    loadAllTasks();
+                }
+            }
+        }
+
+        // Update Navigation Active State
+        function updateNavActiveState(page) {
+            elements.navBtns.forEach(btn => {
+                btn.classList.remove('active', 'tab-active');
+                btn.classList.add('text-gray-500');
+            });
+            
+            const activeBtn = document.querySelector(`[data-page="${page}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'tab-active', 'text-blue-600');
+            }
+        }
+
+        // Load All Tasks
+        function loadAllTasks() {
+            if (!elements.allTasksList) return;
+            
+            const tasks = [
+                { id: 1, title: 'Watch Short Ad', description: 'Watch a 30-second ad', reward: 10, icon: 'fa-ad', completed: userData?.tasksCompleted >= 1 },
+                { id: 2, title: 'Watch Video', description: 'Watch a 1-minute video', reward: 15, icon: 'fa-play-circle', completed: userData?.tasksCompleted >= 2 },
+                { id: 3, title: 'Complete Survey', description: 'Answer 5 questions', reward: 25, icon: 'fa-clipboard-check', completed: userData?.tasksCompleted >= 3 },
+                { id: 4, title: 'Install App', description: 'Install & open recommended app', reward: 50, icon: 'fa-mobile-alt', completed: userData?.tasksCompleted >= 4 },
+                { id: 5, title: 'Rate App', description: 'Rate our app on store', reward: 20, icon: 'fa-star', completed: userData?.tasksCompleted >= 5 },
+                { id: 6, title: 'Follow Social', description: 'Follow our social media', reward: 15, icon: 'fa-thumbs-up', completed: userData?.tasksCompleted >= 6 },
+                { id: 7, title: 'Daily Login', description: 'Login daily for bonus', reward: 10, icon: 'fa-calendar-check', completed: userData?.tasksCompleted >= 7 },
+                { id: 8, title: 'Invite Friend', description: 'Invite a friend to join', reward: 50, icon: 'fa-user-plus', completed: userData?.tasksCompleted >= 8 }
+            ];
+            
+            elements.allTasksList.innerHTML = '';
+            elements.tasksProgress.textContent = `${userData?.tasksCompleted || 0}/${tasks.length}`;
+            
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = `flex items-center justify-between p-4 rounded-xl border ${task.completed ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'} transition`;
+                taskElement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl ${task.completed ? 'bg-green-100 dark:bg-green-800' : 'bg-blue-100 dark:bg-blue-800'} flex items-center justify-center mr-3">
+                            <i class="fas ${task.icon} ${task.completed ? 'text-green-600 dark:text-green-300' : 'text-blue-600 dark:text-blue-300'}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 dark:text-white">${task.title}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-300">${task.description}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-600 dark:text-green-400">+<span class="taka-symbol">৳</span>${task.reward}</p>
+                        <button class="all-task-complete-btn mt-2 px-3 py-1 rounded-full text-xs font-medium ${task.completed ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-default' : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'}" 
+                                data-id="${task.id}" ${task.completed ? 'disabled' : ''}>
+                            ${task.completed ? '✓ Done' : 'Start'}
+                        </button>
+                    </div>
+                `;
+                elements.allTasksList.appendChild(taskElement);
+            });
+            
+            // Add event listeners to task buttons
+            document.querySelectorAll('.all-task-complete-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    if (this.disabled) return;
+                    
+                    const taskId = parseInt(this.dataset.id);
+                    const taskReward = [10, 15, 25, 50, 20, 15, 10, 50][taskId - 1];
+                    
+                    try {
+                        // Update user data
+                        const updates = {};
+                        updates['balance'] = (userData.balance || 0) + taskReward;
+                        updates['tasksCompleted'] = (userData.tasksCompleted || 0) + 1;
+                        updates['totalEarnings'] = (userData.totalEarnings || 0) + taskReward;
+                        updates['monthlyTasks'] = (userData.monthlyTasks || 0) + 1;
+                        
+                        await database.ref('users/' + currentUser.uid).update(updates);
+                        
+                        // Update local user data
+                        userData = { ...userData, ...updates };
+                        
+                        // Update UI
+                        updateUserInterface();
+                        loadAllTasks();
+                        
+                        showNotification(`Task completed! +<span class="taka-symbol">৳</span>${taskReward} earned.`, 'success');
+                        
+                    } catch (error) {
+                        console.error('Error completing task:', error);
+                        showNotification('Error completing task. Please try again.', 'error');
+                    }
+                });
+            });
+        }
+
+        // Load Withdrawal Methods
+        function loadWithdrawalMethods() {
+            if (!elements.withdrawalMethods) return;
+            
+            const methods = [
+                { id: 1, name: 'bKash', minAmount: 100, rate: '100 taka = ৳100', icon: 'fa-mobile-alt', color: 'text-red-600' },
+                { id: 2, name: 'Nagad', minAmount: 100, rate: '100 taka = ৳100', icon: 'fa-wallet', color: 'text-green-600' },
+                { id: 3, name: 'Bank Transfer', minAmount: 500, rate: '500 taka = ৳500', icon: 'fa-university', color: 'text-blue-600' },
+                { id: 4, name: 'Rocket', minAmount: 100, rate: '100 taka = ৳100', icon: 'fa-rocket', color: 'text-purple-600' }
+            ];
+            
+            elements.withdrawalMethods.innerHTML = '';
+            
+            methods.forEach(method => {
+                const methodElement = document.createElement('div');
+                methodElement.className = 'withdraw-method p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-400 transition cursor-pointer';
+                methodElement.setAttribute('data-id', method.id);
+                methodElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mr-4">
+                                <i class="fas ${method.icon} ${method.color} text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 dark:text-white">${method.name}</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">${method.rate}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Min: <span class="taka-symbol">৳</span>${method.minAmount}</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                `;
+                elements.withdrawalMethods.appendChild(methodElement);
+                
+                // Add click event
+                methodElement.addEventListener('click', () => {
+                    if ((userData?.balance || 0) >= method.minAmount) {
+                        showNotification(`Selected ${method.name} for withdrawal`, 'info');
+                    } else {
+                        showNotification(`Minimum <span class="taka-symbol">৳</span>${method.minAmount} required for ${method.name} withdrawal`, 'error');
+                    }
+                });
+            });
+            
+            // Update withdraw button state
+            const minWithdrawal = 100;
+            elements.requestWithdrawalBtn.disabled = (userData?.balance || 0) < minWithdrawal;
+            if ((userData?.balance || 0) < minWithdrawal) {
+                elements.requestWithdrawalBtn.textContent = `Need <span class="taka-symbol">৳</span>${minWithdrawal - (userData?.balance || 0)} more`;
             } else {
-                console.log(`Referrer with Telegram ID ${referrerTelegramId} not found.`);
+                elements.requestWithdrawalBtn.textContent = 'Request Withdrawal';
             }
-        } catch (error) { 
-            console.error("Referrer update failed:", error); 
-        }
-    }
-}
-
-    // আপনার বাকি সব জাভাস্ক্রিপ্ট ফাংশন (sessionTaskProgress, updateTaskButtonUI, handleTaskButtonClick, ইত্যাদি) অপরিবর্তিত থাকবে...
-    // ... ... ...
-    
-    let sessionTaskProgress = {};
-    const taskProgressManager = {
-        get: function() { return sessionTaskProgress; },
-        getTask: function(taskId) { return this.get()[taskId] || { joined: false, clicks: 0, completed: false }; },
-        updateTask: function(taskId, data) { const progress = this.get(); progress[taskId] = { ...this.getTask(taskId), ...data }; }
-    };
-
-    function updateTaskButtonUI(button) {
-        const taskId = button.dataset.taskId; if (!taskId) return;
-        const taskItem = button.closest('.task-item'); if (!taskItem) return;
-        const textElement = taskItem.querySelector('.task-item-text'); if (!textElement) return;
-        const taskState = taskProgressManager.getTask(taskId);
-        if (taskState.completed) {
-            button.textContent = '✅ Completed'; button.classList.remove('join-now-btn', 'unlock-btn'); button.classList.add('completed-btn'); button.style.pointerEvents = 'none';
-            textElement.innerHTML = 'আপনি সফলভাবে ১০ টাকা পেয়েছেন।<br>আপনার ব্যালেন্স চেক করুন।';
-        } else if (taskState.joined) {
-            button.textContent = `🔓 Unlock (${taskState.clicks}/10)`; button.classList.remove('join-now-btn'); button.classList.add('unlock-btn');
-            textElement.innerHTML = 'আপনি যদি ১০ টাকা পেতে চান তাহলে আপনাকে ১০ টি Ads<br>দেখতে হবে এবং দুইবার Ads এর উপরে ক্লিক করতে হবে।';
-        }
-    }
-
-    async function handleTaskButtonClick(event) {
-        const button = event.currentTarget; const taskId = button.dataset.taskId; if (!taskId || !userRef) return;
-        const taskState = taskProgressManager.getTask(taskId);
-        if (taskState.completed) { event.preventDefault(); return; }
-        if (!taskState.joined) {
-            taskProgressManager.updateTask(taskId, { joined: true }); updateTaskButtonUI(button);
-        } else {
-            event.preventDefault(); 
             
-            if (taskState.clicks === 4 || taskState.clicks === 8) {
-                tg.showAlert("💁 হ্যালো প্রিয় :- দয়াকরে এখন ইমেজের উপর ক্লিক করুন অথবা নিচে Continue বাটনে ক্লিক করুন, আপনাকে একটি ওয়েবসাইট এ নিয়ে যাবে সেই ওয়েবসাইটে গিয়ে আপনাকে ১০ সেকেন্ড ওয়েবসাইট টি দেখতে হবে এবং দেখা শেষ হলে ব্যাক করে ফিরে আসুন, ধন্যবাদ");
-            }
-
-            if (typeof show_8954258 !== 'function') { tg.showAlert('বিজ্ঞাপন পরিষেবা এই মুহূর্তে উপলব্ধ নয়।'); return; }
-            show_8954258(); // Monetag ad
-            
-            const newClicks = taskState.clicks + 1;
-            if (newClicks >= 10) {
-                const newBalance = (userData.balance || 0) + 10;
+            // Add withdrawal request handler
+            elements.requestWithdrawalBtn.addEventListener('click', async function() {
+                if (this.disabled) return;
+                
                 try {
-                    await update(userRef, { balance: newBalance });
-                    taskProgressManager.updateTask(taskId, { clicks: 10, completed: true }); updateTaskButtonUI(button);
-                    tg.HapticFeedback.notificationOccurred('success'); tg.showAlert('অভিনন্দন! 🎉 আপনার অ্যাকাউন্টে ১০ টাকা যোগ হয়েছে।');
-                } catch (error) { console.error("Firebase update failed:", error); tg.showAlert('ব্যালেন্স আপডেট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।'); }
+                    showNotification('Withdrawal request sent! Funds will arrive in 24-48 hours.', 'success');
+                    
+                    // In production, you would save withdrawal request to database
+                    // const withdrawalRef = database.ref('withdrawals').push();
+                    // await withdrawalRef.set({
+                    //     userId: currentUser.uid,
+                    //     amount: userData.balance,
+                    //     method: selectedMethod,
+                    //     status: 'pending',
+                    //     timestamp: new Date().toISOString()
+                    // });
+                    
+                } catch (error) {
+                    console.error('Error processing withdrawal:', error);
+                    showNotification('Error processing withdrawal. Please try again.', 'error');
+                }
+            });
+        }
+
+        // Handle Quick Actions
+        function handleQuickAction(action) {
+            switch(action) {
+                case 'watch-ads':
+                    showNotification('Watch Ads feature coming soon!', 'info');
+                    break;
+                case 'watch-videos':
+                    showNotification('Watch Videos feature coming soon!', 'info');
+                    break;
+                case 'daily-bonus':
+                    claimDailyBonus();
+                    break;
+                case 'invite-friends':
+                    showNotification('Use the referral section below to invite friends!', 'info');
+                    break;
+            }
+        }
+
+        // Claim Daily Bonus
+        async function claimDailyBonus() {
+            if (!currentUser || !userData) return;
+            
+            try {
+                const bonus = 10 + ((userData.streak || 0) * 2);
+                
+                // Update user data
+                const updates = {};
+                updates['balance'] = (userData.balance || 0) + bonus;
+                updates['streak'] = (userData.streak || 0) + 1;
+                updates['totalEarnings'] = (userData.totalEarnings || 0) + bonus;
+                
+                await database.ref('users/' + currentUser.uid).update(updates);
+                
+                // Update local user data
+                userData = { ...userData, ...updates };
+                
+                // Update UI
+                updateUserInterface();
+                
+                showNotification(`Daily bonus claimed! +<span class="taka-symbol">৳</span>${bonus}. Streak: ${userData.streak} days`, 'success');
+                
+            } catch (error) {
+                console.error('Error claiming daily bonus:', error);
+                showNotification('Error claiming daily bonus. Please try again.', 'error');
+            }
+        }
+
+        // Copy Referral Link
+        function copyReferralLink() {
+            navigator.clipboard.writeText(elements.referralLink.value)
+                .then(() => {
+                    showNotification('Referral link copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showNotification('Failed to copy link. Please try again.', 'error');
+                });
+        }
+
+        // Share Referral Link
+        function shareReferralLink() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Daily Earning - Earn Money Online',
+                    text: 'Join Daily Earning and start earning money by completing simple tasks!',
+                    url: elements.referralLink.value
+                })
+                .then(() => showNotification('Thanks for sharing!', 'success'))
+                .catch(err => console.error('Error sharing:', err));
             } else {
-                taskProgressManager.updateTask(taskId, { clicks: newClicks }); updateTaskButtonUI(button);
+                copyReferralLink();
             }
         }
-    }
 
-    function updateAllUI() {
-        if (!userData) return;
-        document.getElementById('user-name').innerHTML = `${userData.name || 'User'} <span class="verified-tick">✔</span>`;
-        document.getElementById('user-photo').src = userData.photoUrl || 'https://i.ibb.co/tZ0d4B4/profile-pic.jpg';
-        document.getElementById('user-balance').innerText = (userData.balance || 0).toFixed(2);
-        document.getElementById('total-clicks').innerText = userData.totalClicks || 0;
-        document.getElementById('ads-watched').innerText = `${userData.adsWatched || 0} / 15`;
-        document.getElementById('total-earning').innerText = (userData.balance || 0).toFixed(2);
-        document.getElementById('total-referrals').innerText = userData.referrals || 0; 
-        // রেফারেল লিঙ্কে এখন ইউজারের Telegram ID দেখানো হবে
-if (userData && userData.telegramId) {
-    document.getElementById('referral-link').value = `https://t.me/Daily_Earne_Bot?start=${userData.telegramId}`;
-}
-        const watchAdsBtn = document.getElementById('watch-ads-btn');
-        if ((userData.adsWatched || 0) >= 15) {
-            watchAdsBtn.textContent = 'Daily Limit Reached'; watchAdsBtn.disabled = true;
-        } else {
-            if (!watchAdsBtn.textContent.includes('Watch Ads')) { watchAdsBtn.textContent = 'Watch Ads'; }
-            watchAdsBtn.disabled = false;
+        // Toggle Password Visibility
+        function togglePasswordVisibility(passwordFieldId, toggleButton) {
+            const passwordField = document.getElementById(passwordFieldId);
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            // Toggle eye icon
+            const icon = toggleButton.querySelector('i');
+            if (type === 'text') {
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                icon.className = 'fas fa-eye';
+            }
         }
-        checkWithdrawEligibility();
-    }
 
-    async function handleGigaAdWithCountdown(event) {
-        const button = event.currentTarget; const titleElement = button.querySelector('.home-card-title'); const originalTitle = button.dataset.originalTitle;
-        button.disabled = true;
-        if (typeof window.showGiga === 'function') {
-            try { await window.showGiga(); } catch (adError) { console.error("Giga Pub ad error:", adError); tg.showAlert("এই মুহূর্তে বিজ্ঞাপন লোড করা যাচ্ছে না।"); button.disabled = false; return; }
-        } else { tg.showAlert("বিজ্ঞাপন পরিষেবা উপলব্ধ নয়।"); button.disabled = false; return; }
-        let countdown = 10; titleElement.textContent = `${countdown}s`;
-        const timerInterval = setInterval(() => {
-            countdown--; titleElement.textContent = `${countdown}s`;
-            if (countdown <= 0) {
-                clearInterval(timerInterval);
-                const rewardAmount = appSettings.adReward || 1;
-                const newBalance = (userData.balance || 0) + rewardAmount;
-                const newTotalClicks = (userData.totalClicks || 0) + 1;
-                update(userRef, { balance: newBalance, totalClicks: newTotalClicks }).then(() => {
-                    tg.HapticFeedback.notificationOccurred('success'); tg.showAlert(`অভিনন্দন! 🎉 আপনার ব্যালেন্সে ${rewardAmount.toFixed(2)} পয়সা যোগ হয়েছে।`);
-                    titleElement.textContent = originalTitle; button.disabled = false;
-                }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে।'); titleElement.textContent = originalTitle; button.disabled = false; });
+        // Generate Random Referral Link
+        function generateRandomReferralLink() {
+            const baseUrl = 'https://daily-earne.vercel.app';
+            const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+            const referralCode = `ref_${randomId}`;
+            const referralLink = `${baseUrl}/?ref=${referralCode}`;
+            
+            // Update referral link input
+            if (elements.referralLink) {
+                elements.referralLink.value = referralLink;
             }
-        }, 1000);
-    }
-
-    async function showGigaAndRewardAuto() {
-        if (typeof window.showGiga !== 'function') { stopAutoAds(); tg.showAlert("Auto Ads পরিষেবা বন্ধ হয়ে গেছে।"); return; }
-        try {
-            await window.showGiga(); // Giga Pub ad
-            const newBalance = (userData.balance || 0) + 0.5; // ০.৫ টাকা পুরস্কার
-            const newTotalClicks = (userData.totalClicks || 0) + 1;
-            await update(userRef, { balance: newBalance, totalClicks: newTotalClicks });
-        } catch(e) { console.error("Auto Ad Error:", e); }
-    }
-
-    function startAutoAds() {
-        if (autoAdsInterval) return;
-        const autoBtn = document.getElementById('auto-ads-btn'); const stopBtn = document.getElementById('stop-ads-btn');
-        showGigaAndRewardAuto();
-        autoAdsInterval = setInterval(showGigaAndRewardAuto, 30000); // 30 seconds
-        autoBtn.disabled = true; stopBtn.disabled = false;
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function stopAutoAds() {
-        if (!autoAdsInterval) return;
-        const autoBtn = document.getElementById('auto-ads-btn'); const stopBtn = document.getElementById('stop-ads-btn');
-        clearInterval(autoAdsInterval); autoAdsInterval = null;
-        autoBtn.disabled = false; stopBtn.disabled = true;
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function setupBroadcastListener() {
-        const broadcastRef = ref(db, 'broadcast/latestMessage');
-        let lastShownTimestamp = parseInt(localStorage.getItem('lastBroadcastTimestamp') || '0');
-        onValue(broadcastRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const message = snapshot.val();
-                if (message.timestamp && message.timestamp > lastShownTimestamp) {
-                    showBroadcastPopup(message);
-                    localStorage.setItem('lastBroadcastTimestamp', message.timestamp);
-                }
-            }
-        });
-    }
-
-    function showBroadcastPopup(message) {
-        const popup = document.getElementById('broadcast-popup'); const bodyEl = document.getElementById('broadcast-body'); const imageEl = document.getElementById('broadcast-image');
-        bodyEl.innerHTML = message.text;
-        if (message.imageUrl) { imageEl.src = message.imageUrl; imageEl.style.display = 'block'; } else { imageEl.style.display = 'none'; }
-        popup.classList.add('show');
-        tg.HapticFeedback.notificationOccurred('warning');
-    }
-
-    function applyDefaultSettings() { appSettings = { welcomeMessageTitle: 'স্বাগতম!', welcomeMessageBody: '<p>আমাদের অ্যাপে আপনাকে স্বাগতম।</p>', noticeContent: '<h3>গুরুত্বপূর্ণ নোটিশ</h3><p>অ্যাপের নিয়মকানুন মেনে কাজ করুন।</p>', referralReward: 20, adReward: 1, minWithdrawAmount: 500, minWithdrawReferrals: 20, tutorialLink: '#', adminChatLink: '#', adminCallLink: '', telegramChannelLink: '#', youtubeChannelLink: '#' }; }
-
-    function updateUIWithSettings() {
-        const welcomeImage = document.getElementById('welcome-popup-image');
-        if (appSettings.welcomeImageUrl && appSettings.welcomeImageUrl.trim() !== '') {
-            welcomeImage.src = appSettings.welcomeImageUrl;
-            welcomeImage.style.display = 'block';
-        } else {
-            welcomeImage.style.display = 'none';
         }
-        document.getElementById('welcome-content-wrapper').innerHTML = `<h2>${appSettings.welcomeMessageTitle || 'স্বাগতম!'}</h2>${appSettings.welcomeMessageBody || ''}`;
-        document.getElementById('notice-body').innerHTML = appSettings.noticeContent || '<p>কোনো নোটিশ নেই।</p>';
-        document.getElementById('referral-title').innerText = 'Refer & Earning';
-        document.getElementById('referral-desc').innerText = `প্রতি রেফারে আয় ${appSettings.referralReward || 0} টাকা।`;
-        document.getElementById('balance-req-text').innerText = `মিনিমাম ব্যালেন্স ${appSettings.minWithdrawAmount || 0} টাকা`;
-        document.getElementById('referral-req-text').innerText = `মিনিমাম রেফারেল ${appSettings.minWithdrawReferrals || 0}টি`;
-        if(userData && Object.keys(userData).length) checkWithdrawEligibility();
-        const marqueeElement = document.getElementById('offer-text'); const marqueeContainer = document.querySelector('.marquee-container');
-        if (appSettings && appSettings.marqueeText && marqueeElement && marqueeContainer) {
-            const text = appSettings.marqueeText.trim();
-            if (text) { marqueeElement.innerText = text; marqueeElement.dataset.text = text; marqueeContainer.style.display = 'block'; } else { marqueeContainer.style.display = 'none'; }
-        } else if (marqueeContainer) { marqueeContainer.style.display = 'none'; }
-        const mainTelegramLink = document.getElementById('main-telegram-link');
-        if (mainTelegramLink) mainTelegramLink.href = appSettings.telegramChannelLink || '#';
-        const mainYoutubeLink = document.getElementById('main-youtube-link');
-        if (mainYoutubeLink) mainYoutubeLink.href = appSettings.youtubeChannelLink || '#';
-    }
 
-    function handleWelcomePopup() { if (appSettings.welcomeMessageBody) { setTimeout(() => { document.getElementById('welcome-popup').classList.add('show'); }, 500); } }
-
-    function checkWithdrawEligibility() {
-        const hasEnoughBalance = (userData.balance || 0) >= (appSettings.minWithdrawAmount || 99999);
-        const hasEnoughReferrals = (userData.referrals || 0) >= (appSettings.minWithdrawReferrals || 999);
-        const balanceStatusEl = document.getElementById('balance-status'); const referralStatusEl = document.getElementById('referral-status');
-        balanceStatusEl.textContent = `${(userData.balance || 0).toFixed(2)} / ${appSettings.minWithdrawAmount || 0}`; balanceStatusEl.className = `status ${hasEnoughBalance ? 'success' : 'error'}`;
-        referralStatusEl.textContent = `${userData.referrals || 0} / ${appSettings.minWithdrawReferrals || 0}`; referralStatusEl.className = `status ${hasEnoughReferrals ? 'success' : 'error'}`;
-        document.getElementById('withdraw-submit-btn').disabled = !(hasEnoughBalance && hasEnoughReferrals);
-    }
-
-    function setupUIEventListeners() { 
-        document.getElementById('popup-close').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show'));
-        document.getElementById('popup-understand-btn').addEventListener('click', () => document.getElementById('welcome-popup').classList.remove('show'));
-        document.getElementById('notice-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.add('show'));
-        document.getElementById('notice-close-btn').addEventListener('click', () => document.getElementById('notice-popup').classList.remove('show'));
-        document.getElementById('broadcast-close-btn').addEventListener('click', () => document.getElementById('broadcast-popup').classList.remove('show')); 
-        document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', function(e) { e.preventDefault(); const pageId = this.dataset.page; document.querySelector('.nav-item.active').classList.remove('active'); this.classList.add('active'); document.querySelector('.page-content.active').classList.remove('active'); document.getElementById(`page-${pageId}`).classList.add('active'); if (pageId === 'withdraw') checkWithdrawEligibility(); }); });
-        document.getElementById('copy-btn').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => { document.getElementById('copy-btn').textContent = 'Copied!'; tg.HapticFeedback.notificationOccurred('success'); setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy Referral Link'; }, 2000); }); }); 
-        document.getElementById('share-btn').addEventListener('click', () => { const shareText = `🔥 এই অ্যাপ থেকে খুব সহজেই ইনকাম করুন! 🔥\n\n রেফারেল লিঙ্ক ব্যবহার করে ইনকাম করুন এবং প্রতি রেফারে ${appSettings.referralReward || 0} টাকা বোনাস নিন।`; tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('referral-link').value)}&text=${encodeURIComponent(shareText)}`); }); 
-        document.getElementById('open-tutorial-btn').addEventListener('click', () => tg.openLink(appSettings.tutorialLink || '#', {try_instant_view: true}));
-        document.getElementById('admin-chat-btn').addEventListener('click', () => tg.openTelegramLink(appSettings.adminChatLink || '#'));
-        document.getElementById('admin-call-btn').addEventListener('click', () => { if(appSettings.adminCallLink) window.location.href = appSettings.adminCallLink; }); 
-        document.getElementById('watch-ads-btn').addEventListener('click', handleWatchAds);
-        document.querySelectorAll('.task-btn[data-task-id]').forEach(button => {
-            updateTaskButtonUI(button);
-            button.addEventListener('click', handleTaskButtonClick);
-        });
-        document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawRequest); 
-        document.querySelectorAll('.giga-ad-countdown-trigger').forEach(btn => btn.addEventListener('click', handleGigaAdWithCountdown));
-        document.getElementById('auto-ads-btn').addEventListener('click', startAutoAds);
-        document.getElementById('stop-ads-btn').addEventListener('click', stopAutoAds);
-    }
-
-    function handleWatchAds() {
-        const watchAdsBtn = document.getElementById('watch-ads-btn'); if ((userData.adsWatched || 0) >= 15) { tg.showAlert('আপনি আজকের জন্য ১৫টি বিজ্ঞাপন দেখে ফেলেছেন।'); return; }
-        watchAdsBtn.disabled = true;
-        if (typeof show_8954258 === 'function') {
-            show_8954258();
-            let countdown = 30; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
-            const timerInterval = setInterval(() => {
-                countdown--; watchAdsBtn.textContent = `অপেক্ষা করুন... ${countdown}s`;
-                if (countdown <= 0) {
-                    clearInterval(timerInterval); tg.HapticFeedback.notificationOccurred('success');
-                    const newBalance = (userData.balance || 0) + (appSettings.adReward || 0);
-                    const newAdsWatched = (userData.adsWatched || 0) + 1;
-                    const newTotalClicks = (userData.totalClicks || 0) + 1;
-                    update(userRef, { balance: newBalance, adsWatched: newAdsWatched, totalClicks: newTotalClicks }).then(() => {
-                        tg.showPopup({ title: 'সফল!', message: `আপনার ব্যালেন্সে ${(appSettings.adReward || 0).toFixed(2)} পয়সা যোগ হয়েছে।`, buttons: [{ type: 'ok' }] });
-                    }).catch(error => { console.error("Firebase update failed:", error); tg.showAlert('একটি সমস্যা হয়েছে।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; });
-                }
-            }, 1000);
-        } else { tg.showAlert('বিজ্ঞাপন লোড করা যায়নি।'); watchAdsBtn.textContent = 'Watch Ads'; watchAdsBtn.disabled = false; }
-    }
-
-    function handleWithdrawRequest(e) {
-        e.preventDefault(); tg.HapticFeedback.impactOccurred('light');
-        const amount = parseInt(document.getElementById('withdraw-amount').value, 10);
-        const method = document.querySelector('input[name="payment_method"]:checked').value;
-        const number = document.getElementById('account-number').value.trim();
-        const minAmount = appSettings.minWithdrawAmount || 500;
-        if (!amount || amount < minAmount) { tg.showAlert(`দুঃখিত, সর্বনিম্ন ${minAmount} টাকা উইথড্র করতে পারবেন।`); return; }
-        if (amount > userData.balance) { tg.showAlert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।'); return; }
-        if (number.length !== 11 || !/^\d+$/.test(number)) { tg.showAlert('দয়া করে একটি সঠিক ১১ ডিজিটের অ্যাকাউন্ট নম্বর দিন।'); return; }
-        tg.showConfirm(`আপনি কি নিশ্চিত যে আপনি ${amount} টাকা আপনার ${method} নম্বর ${number}-এ পাঠাতে চান?`, (ok) => {
-            if (ok) {
-                const newBalance = userData.balance - amount;
-                const withdrawalRequest = { userId, userName: userData.name, amount, method, accountNumber: number, timestamp: serverTimestamp(), status: 'pending' };
-                const newRequestRef = push(ref(db, 'withdrawals/pending'));
-                set(newRequestRef, withdrawalRequest).then(() => {
-                    update(userRef, { balance: newBalance });
-                    tg.showPopup({ title: 'সফল হয়েছে', message: 'আপনার উইথড্র অনুরোধ সফলভাবে পাঠানো হয়েছে।', buttons: [{ type: 'ok' }] });
-                    document.getElementById('withdraw-form').reset();
-                }).catch(err => tg.showAlert("একটি ত্রুটি ঘটেছে।"));
+        // Update Theme Icon
+        function updateThemeIcon(isDark) {
+            const icon = elements.themeToggle.querySelector('i');
+            
+            if (isDark) {
+                icon.className = 'fas fa-sun text-yellow-400';
+                elements.themeToggle.title = 'Switch to light mode';
+            } else {
+                icon.className = 'fas fa-moon text-gray-600';
+                elements.themeToggle.title = 'Switch to dark mode';
             }
-        });
-    }
+        }
 
-</script>
+        // Toggle Theme
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            
+            // Save theme preference
+            localStorage.setItem('dailyEarningTheme', isDark ? 'dark' : 'light');
+            
+            // Update icon
+            updateThemeIcon(isDark);
+            
+            showNotification(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'info');
+        }
+
+        // Show Notification
+        function showNotification(message, type = 'info') {
+            elements.notificationText.innerHTML = message;
+            
+            // Set notification color based on type
+            const notificationDiv = elements.notification.querySelector('div');
+            notificationDiv.className = 'text-white p-4 rounded-xl shadow-lg flex items-center notification-slide';
+            
+            switch(type) {
+                case 'success':
+                    notificationDiv.classList.add('bg-gradient-to-r', 'from-green-500', 'to-emerald-600');
+                    break;
+                case 'error':
+                    notificationDiv.classList.add('bg-gradient-to-r', 'from-red-500', 'to-pink-600');
+                    break;
+                case 'warning':
+                    notificationDiv.classList.add('bg-gradient-to-r', 'from-yellow-500', 'to-orange-600');
+                    break;
+                default:
+                    notificationDiv.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600');
+            }
+            
+            elements.notification.classList.remove('hidden');
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                elements.notification.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
