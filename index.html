@@ -1766,7 +1766,8 @@ function handleQuickAction(action) {
             showMoneTagAdsOnly('ads', 1); // ৳1 reward
             break;
         case 'watch-videos':
-            showMoneTagAdsOnly('videos', 1); // ৳2 reward
+            // Videos বাটনে Mone Tag Ads শো করবে না - শুধু নোটিফিকেশন
+            showNotification('Video ads feature is coming soon!', 'info');
             break;
         case 'daily-bonus':
             claimDailyBonus();
@@ -2000,14 +2001,18 @@ function showMoneTagAdOnly(type, onComplete) {
         if (onComplete) onComplete();
     });
     
+    
+    
     // Auto-complete after 10 seconds
-    setTimeout(() => {
-        if (document.body.contains(adContainer)) {
-            document.body.removeChild(adContainer);
-            if (onComplete) onComplete();
-        }
-    }, 10000);
-}
+  //  setTimeout(() => {
+     //   if (document.body.contains(adContainer)) {
+        //    document.body.removeChild(adContainer);
+         //   if (onComplete) onComplete();
+    //    }
+  //  }, 10000);
+//}
+
+
 
 // Start 15-second timer before reward
 function startRewardTimer(seconds, reward, type) {
@@ -2242,6 +2247,55 @@ async function completeSingleAd(reward, type) {
             
             showNotification(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'info');
         }
+
+// Claim Daily Bonus
+async function claimDailyBonus() {
+    if (!currentUser || !userData) return;
+    
+    const today = new Date().toDateString();
+    const lastBonusDate = userData.lastDailyBonus ? new Date(userData.lastDailyBonus).toDateString() : null;
+    
+    if (lastBonusDate === today) {
+        showNotification('আপনি আজকের Daily Bonus ইতিমধ্যে নিয়ে নিয়েছেন! আগামীকাল আবার চেষ্টা করুন।', 'error');
+        return;
+    }
+    
+    try {
+        const reward = 1;
+        
+        const updates = {};
+        updates['balance'] = (userData.balance || 0) + reward;
+        updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
+        updates['lastDailyBonus'] = new Date().toISOString();
+        
+        // Streak update
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayString = yesterday.toDateString();
+        
+        if (lastBonusDate === yesterdayString) {
+            updates['streak'] = (userData.streak || 0) + 1;
+        } else if (!lastBonusDate) {
+            updates['streak'] = 1;
+        } else {
+            updates['streak'] = 1;
+        }
+        
+        await database.ref('users/' + currentUser.uid).update(updates);
+        
+        // Update local user data
+        userData = { ...userData, ...updates };
+        
+        // Update UI
+        updateUserInterface();
+        
+        showNotification(`Daily Bonus! ৳${reward} has been added to your balance. Streak: ${updates['streak']} days`, 'success');
+        
+    } catch (error) {
+        console.error('Error claiming daily bonus:', error);
+        showNotification('Error claiming daily bonus. Please try again.', 'error');
+    }
+}
 
         // Show Notification
         function showNotification(message, type = 'info') {
