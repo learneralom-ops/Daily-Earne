@@ -456,7 +456,7 @@
                     </div>
                 </div>
 <p>Daily Ads Count
- <span class="text-xs text-gray-500 dark:text-gray-500 mt-1" id="dailyAdsCounter">(0/15</span> </p>
+ <span class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="dailyAdsCounter">(0/15</span> </p>
                 
                 <!-- Quick Actions -->
                 <div class="grid grid-cols-4 gap-3 mb-6">
@@ -1812,7 +1812,7 @@ function showMoneTagAdsOnly(type, rewardPerAd) {
         document.body.removeChild(loadingOverlay);
         showMoneTagAdOnly(type, () => {
             // Mone Tag ad completed - show 15-second timer before reward
-            startRewardTimer(25, rewardPerAd, type);
+            startRewardTimer(20, rewardPerAd, type);
         });
     }, 1500);
 }
