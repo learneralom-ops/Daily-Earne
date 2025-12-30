@@ -1820,8 +1820,12 @@
                         </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="adProviderLabel">Mone Tag Ad</p>
                     </div>
-                    <div id="adContainer" class="mb-4 min-h-[100px] rounded-xl overflow-hidden">
+                    <div id="adContainer" class="mb-4 min-h-[120px] rounded-xl overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                         <!-- Ads will be loaded here -->
+                        <div id="currentAd" class="text-center p-4">
+                            <p class="text-lg font-bold text-gray-800 dark:text-white">Ad Loading...</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please wait</p>
+                        </div>
                     </div>
                     <button class="start-watching-btn w-full bg-gradient-to-r ${type === 'ads' ? 'from-blue-500 to-purple-600' : 'from-red-500 to-pink-600'} text-white font-bold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-play mr-2"></i> Start Watching
@@ -1838,16 +1842,20 @@
             const adTimer = popup.querySelector('#adTimer');
             const adProviderLabel = popup.querySelector('#adProviderLabel');
             const adContainer = popup.querySelector('#adContainer');
+            const currentAd = popup.querySelector('#currentAd');
             
             let currentAdIndex = 0;
             let countdown = seconds;
             let timer = null;
             let isWatching = false;
-            const adProviders = ['moneTag', 'gigaPub'];
+            const adProviders = [
+                { name: 'moneTag', displayName: 'Mone Tag Ad', color: 'from-blue-500 to-purple-600' },
+                { name: 'gigaPub', displayName: 'Giga Pub Ad', color: 'from-green-500 to-teal-600' }
+            ];
             
-            // Load first ad
-            loadAdForProvider(adProviders[currentAdIndex], adContainer, type);
-            adProviderLabel.textContent = `${adProviders[currentAdIndex] === 'moneTag' ? 'Mone Tag Ad' : 'Giga Pub Ad'} (1/2)`;
+            // Load first ad immediately
+            loadAdForProvider(adProviders[currentAdIndex], currentAd, type);
+            adProviderLabel.textContent = `${adProviders[currentAdIndex].displayName} (1/2)`;
             
             closeBtn.addEventListener('click', () => {
                 if (timer) clearInterval(timer);
@@ -1880,10 +1888,13 @@
                         if (currentAdIndex < adProviders.length) {
                             // Load next ad
                             countdown = seconds;
-                            loadAdForProvider(adProviders[currentAdIndex], adContainer, type);
-                            adProviderLabel.textContent = `${adProviders[currentAdIndex] === 'moneTag' ? 'Mone Tag Ad' : 'Giga Pub Ad'} (${currentAdIndex + 1}/2)`;
+                            loadAdForProvider(adProviders[currentAdIndex], currentAd, type);
+                            adProviderLabel.textContent = `${adProviders[currentAdIndex].displayName} (${currentAdIndex + 1}/2)`;
                             adTimer.textContent = `${seconds}s`;
                             countdownBar.style.width = '100%';
+                            
+                            // Update progress bar color for next ad
+                            countdownBar.className = `h-2 ${type === 'ads' ? 'bg-green-500' : 'bg-yellow-500'} countdown-bar`;
                             
                             // Start next ad countdown
                             setTimeout(() => {
@@ -1915,53 +1926,57 @@
         function loadAdForProvider(provider, container, type = 'ads') {
             container.innerHTML = '';
             
-            if (provider === 'moneTag') {
-                // Load Mone Tag Ad
-                container.innerHTML = `
-                    <div class="text-center w-full h-full">
-                        <div id="moneTagAd" class="w-full h-full min-h-[100px] flex flex-col items-center justify-center text-white font-bold rounded-xl" 
-                             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <i class="fas fa-ad text-2xl mb-2"></i>
-                            <p>Mone Tag ${type === 'ads' ? 'Ad' : 'Video'}</p>
-                            <p class="text-sm font-normal mt-1">Watch this to earn money!</p>
+            // Create realistic looking ad
+            const adContent = document.createElement('div');
+            adContent.className = 'text-center w-full h-full p-4';
+            
+            // Different ad content based on provider
+            if (provider.name === 'moneTag') {
+                adContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mb-4">
+                            <i class="fas fa-ad text-white text-2xl"></i>
                         </div>
+                        <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Mone Tag ${type === 'ads' ? 'Advertisement' : 'Video'}</h4>
+                        <p class="text-gray-600 dark:text-gray-300 mb-3">${getRandomAdText()}</p>
+                        <div class="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-6 rounded-full font-medium inline-block">
+                            Earn Money Now!
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Sponsored by Mone Tag</p>
                     </div>
                 `;
-                // In production, the Mone Tag SDK would automatically show ads
-                setTimeout(() => {
-                    const adDiv = document.getElementById('moneTagAd');
-                    if (adDiv) {
-                        adDiv.innerHTML = `
-                            <i class="fas fa-ad text-2xl mb-2"></i>
-                            <p>Mone Tag ${type === 'ads' ? 'Ad' : 'Video'}</p>
-                            <p class="text-sm font-normal mt-1">This is a demo ad. In production, real ads will show here.</p>
-                        `;
-                    }
-                }, 300);
             } else {
-                // Load Giga Pub Ad
-                container.innerHTML = `
-                    <div class="text-center w-full h-full">
-                        <div id="gigaPubAd" class="w-full h-full min-h-[100px] flex flex-col items-center justify-center text-white font-bold rounded-xl"
-                             style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <i class="fas fa-video text-2xl mb-2"></i>
-                            <p>Giga Pub ${type === 'ads' ? 'Ad' : 'Video'}</p>
-                            <p class="text-sm font-normal mt-1">Watch this to earn money!</p>
+                adContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center mb-4">
+                            <i class="fas fa-video text-white text-2xl"></i>
                         </div>
+                        <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Giga Pub ${type === 'ads' ? 'Advertisement' : 'Video'}</h4>
+                        <p class="text-gray-600 dark:text-gray-300 mb-3">${getRandomAdText()}</p>
+                        <div class="mt-4 bg-gradient-to-r from-green-500 to-teal-600 text-white py-2 px-6 rounded-full font-medium inline-block">
+                            Watch & Earn!
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Sponsored by Giga Pub</p>
                     </div>
                 `;
-                // In production, the Giga Pub SDK would automatically show ads
-                setTimeout(() => {
-                    const adDiv = document.getElementById('gigaPubAd');
-                    if (adDiv) {
-                        adDiv.innerHTML = `
-                            <i class="fas fa-video text-2xl mb-2"></i>
-                            <p>Giga Pub ${type === 'ads' ? 'Ad' : 'Video'}</p>
-                            <p class="text-sm font-normal mt-1">This is a demo ad. In production, real ads will show here.</p>
-                        `;
-                    }
-                }, 300);
             }
+            
+            container.appendChild(adContent);
+        }
+
+        // Get random ad text
+        function getRandomAdText() {
+            const adTexts = [
+                "Download this app and get instant cash rewards!",
+                "Complete simple surveys and earn money daily!",
+                "Watch short videos and get paid instantly!",
+                "Play fun games and win real money prizes!",
+                "Invite friends and earn commission on their earnings!",
+                "Install apps and get bonus cash rewards!",
+                "Click ads daily to increase your earnings!",
+                "Test new products and get paid for your feedback!"
+            ];
+            return adTexts[Math.floor(Math.random() * adTexts.length)];
         }
 
         // Complete Sequential Ads
