@@ -1793,7 +1793,19 @@ function showMoneTagAdsOnly(type, rewardPerAd) {
         return;
     }
     
-   
+       // Create loading indicator
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'fixed inset-0 bg-black flex items-center justify-center z-50';
+    loadingOverlay.innerHTML = `
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
+            <p class="text-white text-lg">Starting Mone Tag Ad...</p>
+            <p class="text-gray-400 text-sm mt-2">Please wait</p>
+        </div>
+    `;
+    
+    document.body.appendChild(loadingOverlay);
+    
     // Show Mone Tag ad
     setTimeout(() => {
         document.body.removeChild(loadingOverlay);
