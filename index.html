@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -459,7 +458,7 @@
 
                 <!-- Quick Actions -->
                 <div class="grid grid-cols-4 gap-3 mb-6">
-                    <button onclick="handleWatchAds()" class="quick-action" data-action="watch-ads">
+                    <button class="quick-action" data-action="watch-ads">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
                             <i class="fas fa-ad text-blue-600 dark:text-blue-300 text-xl"></i>
                         </div>
@@ -467,7 +466,7 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="dailyAdsCounter">(0/15)</span>
                     </button>
                     
-                    <button onclick="handleWatchAds()" class="quick-action" data-action="watch-videos">
+                    <button class="quick-action" data-action="watch-videos">
                         <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900 flex items-center justify-center mb-2">
                             <i class="fas fa-play-circle text-red-600 dark:text-red-300 text-xl"></i>
                         </div>
@@ -891,8 +890,7 @@
             </div>
         </div>
     </div>
-
-    <script>
+<script>
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA2HUBFhHEWg4MwkJB4BVdJxUun0Gy07Ts",
@@ -1764,10 +1762,10 @@
         function handleQuickAction(action) {
             switch(action) {
                 case 'watch-ads':
-                    showWatchAdPopup();
+                    showSequentialAdPopup('ads', 1, 10); // ৳1 reward, 10 seconds per ad
                     break;
                 case 'watch-videos':
-                    showWatchVideoPopup();
+                    showSequentialAdPopup('videos', 2, 15); // ৳2 reward, 15 seconds per ad
                     break;
                 case 'daily-bonus':
                     claimDailyBonus();
@@ -1778,8 +1776,8 @@
             }
         }
 
-        // Show Watch Ad Popup
-        function showWatchAdPopup() {
+        // Show Sequential Ad Popup
+        function showSequentialAdPopup(type, rewardPerAd, seconds) {
             if (!currentUser || !userData) return;
             
             // Check daily ads limit
@@ -1788,81 +1786,121 @@
                 return;
             }
             
+            // Calculate how many ads can be watched today
+            const adsLeftToday = 15 - userData.dailyAdsWatched;
+            if (adsLeftToday < 2) {
+                showNotification(`আজ মাত্র ${adsLeftToday}টি Ads দেখার বাকি আছে! আগামীকাল আবার চেষ্টা করুন।`, 'error');
+                return;
+            }
+            
             const popup = document.createElement('div');
             popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
             popup.innerHTML = `
                 <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">Watch Ad</h3>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">${type === 'ads' ? 'Watch Ads' : 'Watch Videos'}</h3>
                         <button class="close-popup text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="text-center mb-6">
-                        <div class="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-ad text-blue-600 dark:text-blue-300 text-2xl"></i>
+                        <div class="w-20 h-20 rounded-full ${type === 'ads' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-red-100 dark:bg-red-900'} flex items-center justify-center mx-auto mb-4">
+                            <i class="fas ${type === 'ads' ? 'fa-ad text-blue-600 dark:text-blue-300' : 'fa-play-circle text-red-600 dark:text-red-300'} text-2xl"></i>
                         </div>
-                        <p class="text-gray-600 dark:text-gray-300">Watch this ad to earn ৳1</p>
+                        <p class="text-gray-600 dark:text-gray-300">Watch 2 ads to earn ৳${rewardPerAd * 2}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Ads watched today: ${userData.dailyAdsWatched || 0}/15</p>
-                        <div class="mt-4 bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-                            <div class="bg-blue-500 h-2 countdown-bar" style="width: 100%"></div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Ad 1 of 2</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300" id="adTimer">${seconds}s</span>
+                            </div>
+                            <div class="bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                                <div class="h-2 ${type === 'ads' ? 'bg-blue-500' : 'bg-red-500'} countdown-bar" style="width: 100%" id="countdownBar"></div>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">10 seconds</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="adProviderLabel">Mone Tag Ad</p>
                     </div>
-                    <div id="adContainer" class="mb-4">
+                    <div id="adContainer" class="mb-4 min-h-[100px] rounded-xl overflow-hidden">
                         <!-- Ads will be loaded here -->
                     </div>
-                    <button class="watch-ad-complete-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button class="start-watching-btn w-full bg-gradient-to-r ${type === 'ads' ? 'from-blue-500 to-purple-600' : 'from-red-500 to-pink-600'} text-white font-bold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-play mr-2"></i> Start Watching
                     </button>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">First Mone Tag Ad, then Giga Pub Ad</p>
                 </div>
             `;
             
             document.body.appendChild(popup);
             
             const closeBtn = popup.querySelector('.close-popup');
-            const completeBtn = popup.querySelector('.watch-ad-complete-btn');
-            const countdownBar = popup.querySelector('.countdown-bar');
+            const startBtn = popup.querySelector('.start-watching-btn');
+            const countdownBar = popup.querySelector('#countdownBar');
+            const adTimer = popup.querySelector('#adTimer');
+            const adProviderLabel = popup.querySelector('#adProviderLabel');
             const adContainer = popup.querySelector('#adContainer');
             
-            let countdown = 10;
+            let currentAdIndex = 0;
+            let countdown = seconds;
             let timer = null;
-            let adCompleted = false;
+            let isWatching = false;
+            const adProviders = ['moneTag', 'gigaPub'];
             
-            // Load appropriate ad based on current provider
-            loadAdForProvider(currentAdProvider, adContainer);
+            // Load first ad
+            loadAdForProvider(adProviders[currentAdIndex], adContainer, type);
+            adProviderLabel.textContent = `${adProviders[currentAdIndex] === 'moneTag' ? 'Mone Tag Ad' : 'Giga Pub Ad'} (1/2)`;
             
             closeBtn.addEventListener('click', () => {
                 if (timer) clearInterval(timer);
                 document.body.removeChild(popup);
             });
             
-            completeBtn.addEventListener('click', async () => {
-                if (completeBtn.disabled || adCompleted) return;
+            startBtn.addEventListener('click', async () => {
+                if (startBtn.disabled || isWatching) return;
                 
-                completeBtn.disabled = true;
-                completeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Watching...';
+                isWatching = true;
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Watching...';
                 
+                startCountdown();
+            });
+            
+            function startCountdown() {
                 timer = setInterval(() => {
                     countdown--;
-                    const width = (countdown / 10) * 100;
+                    const width = (countdown / seconds) * 100;
                     countdownBar.style.width = `${width}%`;
+                    adTimer.textContent = `${countdown}s`;
                     
                     if (countdown <= 0) {
                         clearInterval(timer);
-                        adCompleted = true;
-                        completeAdWatching();
                         
-                        // Switch to next ad provider
-                        currentAdProvider = currentAdProvider === 'moneTag' ? 'gigaPub' : 'moneTag';
+                        // Current ad completed
+                        currentAdIndex++;
                         
-                        setTimeout(() => {
-                            document.body.removeChild(popup);
-                            showNotification('Ad watched successfully! +৳1 earned.', 'success');
-                        }, 1000);
+                        if (currentAdIndex < adProviders.length) {
+                            // Load next ad
+                            countdown = seconds;
+                            loadAdForProvider(adProviders[currentAdIndex], adContainer, type);
+                            adProviderLabel.textContent = `${adProviders[currentAdIndex] === 'moneTag' ? 'Mone Tag Ad' : 'Giga Pub Ad'} (${currentAdIndex + 1}/2)`;
+                            adTimer.textContent = `${seconds}s`;
+                            countdownBar.style.width = '100%';
+                            
+                            // Start next ad countdown
+                            setTimeout(() => {
+                                startCountdown();
+                            }, 500);
+                        } else {
+                            // Both ads completed
+                            completeSequentialAds(rewardPerAd * 2, type);
+                            
+                            setTimeout(() => {
+                                document.body.removeChild(popup);
+                                showNotification(`Both ads watched successfully! +৳${rewardPerAd * 2} earned.`, 'success');
+                            }, 1000);
+                        }
                     }
                 }, 1000);
-            });
+            }
             
             // Close popup when clicking outside
             popup.addEventListener('click', (e) => {
@@ -1874,58 +1912,66 @@
         }
 
         // Load Ad for Provider
-        function loadAdForProvider(provider, container) {
+        function loadAdForProvider(provider, container, type = 'ads') {
             container.innerHTML = '';
             
             if (provider === 'moneTag') {
                 // Load Mone Tag Ad
                 container.innerHTML = `
-                    <div class="text-center">
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Mone Tag Ad</p>
-                        <div id="moneTagAd" style="min-height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                            Mone Tag Ad Loading...
+                    <div class="text-center w-full h-full">
+                        <div id="moneTagAd" class="w-full h-full min-h-[100px] flex flex-col items-center justify-center text-white font-bold rounded-xl" 
+                             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-ad text-2xl mb-2"></i>
+                            <p>Mone Tag ${type === 'ads' ? 'Ad' : 'Video'}</p>
+                            <p class="text-sm font-normal mt-1">Watch this to earn money!</p>
                         </div>
                     </div>
                 `;
                 // In production, the Mone Tag SDK would automatically show ads
-                // For demo, we simulate ad loading
                 setTimeout(() => {
                     const adDiv = document.getElementById('moneTagAd');
                     if (adDiv) {
-                        adDiv.innerHTML = 'Mone Tag Ad - Watch this ad to earn!';
+                        adDiv.innerHTML = `
+                            <i class="fas fa-ad text-2xl mb-2"></i>
+                            <p>Mone Tag ${type === 'ads' ? 'Ad' : 'Video'}</p>
+                            <p class="text-sm font-normal mt-1">This is a demo ad. In production, real ads will show here.</p>
+                        `;
                     }
-                }, 500);
+                }, 300);
             } else {
                 // Load Giga Pub Ad
                 container.innerHTML = `
-                    <div class="text-center">
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Giga Pub Ad</p>
-                        <div id="gigaPubAd" style="min-height: 100px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                            Giga Pub Ad Loading...
+                    <div class="text-center w-full h-full">
+                        <div id="gigaPubAd" class="w-full h-full min-h-[100px] flex flex-col items-center justify-center text-white font-bold rounded-xl"
+                             style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-video text-2xl mb-2"></i>
+                            <p>Giga Pub ${type === 'ads' ? 'Ad' : 'Video'}</p>
+                            <p class="text-sm font-normal mt-1">Watch this to earn money!</p>
                         </div>
                     </div>
                 `;
                 // In production, the Giga Pub SDK would automatically show ads
-                // For demo, we simulate ad loading
                 setTimeout(() => {
                     const adDiv = document.getElementById('gigaPubAd');
                     if (adDiv) {
-                        adDiv.innerHTML = 'Giga Pub Ad - Watch this ad to earn!';
+                        adDiv.innerHTML = `
+                            <i class="fas fa-video text-2xl mb-2"></i>
+                            <p>Giga Pub ${type === 'ads' ? 'Ad' : 'Video'}</p>
+                            <p class="text-sm font-normal mt-1">This is a demo ad. In production, real ads will show here.</p>
+                        `;
                     }
-                }, 500);
+                }, 300);
             }
         }
 
-        // Complete Ad Watching
-        async function completeAdWatching() {
+        // Complete Sequential Ads
+        async function completeSequentialAds(totalReward, type) {
             try {
-                const reward = 1;
-                
                 // Update user data
                 const updates = {};
-                updates['balance'] = (userData.balance || 0) + reward;
-                updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-                updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
+                updates['balance'] = (userData.balance || 0) + totalReward;
+                updates['totalEarnings'] = (userData.totalEarnings || 0) + totalReward;
+                updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 2; // 2 ads watched
                 updates['lastAdsDate'] = new Date().toISOString();
                 
                 await database.ref('users/' + currentUser.uid).update(updates);
@@ -1937,129 +1983,8 @@
                 updateUserInterface();
                 
             } catch (error) {
-                console.error('Error completing ad watching:', error);
+                console.error('Error completing sequential ads:', error);
                 showNotification('Error processing ad reward. Please try again.', 'error');
-            }
-        }
-
-        // Show Watch Video Popup
-        function showWatchVideoPopup() {
-            if (!currentUser || !userData) return;
-            
-            // Check daily ads limit
-            if (userData.dailyAdsWatched >= 15) {
-                showNotification('আজ আপনি সর্বোচ্চ ১৫টি Ads দেখেছেন! আগামীকাল আবার চেষ্টা করুন।', 'error');
-                return;
-            }
-            
-            const popup = document.createElement('div');
-            popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-            popup.innerHTML = `
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">Watch Video</h3>
-                        <button class="close-popup text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="text-center mb-6">
-                        <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-play-circle text-red-600 dark:text-red-300 text-2xl"></i>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-300">Watch this video to earn ৳2</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Ads watched today: ${userData.dailyAdsWatched || 0}/15</p>
-                        <div class="mt-4 bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-                            <div class="bg-red-500 h-2 countdown-bar" style="width: 100%"></div>
-                        </div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">15 seconds</p>
-                    </div>
-                    <div id="videoAdContainer" class="mb-4">
-                        <!-- Video ads will be loaded here -->
-                    </div>
-                    <button class="watch-video-complete-btn w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-play mr-2"></i> Start Watching
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(popup);
-            
-            const closeBtn = popup.querySelector('.close-popup');
-            const completeBtn = popup.querySelector('.watch-video-complete-btn');
-            const countdownBar = popup.querySelector('.countdown-bar');
-            const videoAdContainer = popup.querySelector('#videoAdContainer');
-            
-            let countdown = 15;
-            let timer = null;
-            let videoCompleted = false;
-            
-            // Load appropriate ad for video
-            loadAdForProvider(currentAdProvider, videoAdContainer);
-            
-            closeBtn.addEventListener('click', () => {
-                if (timer) clearInterval(timer);
-                document.body.removeChild(popup);
-            });
-            
-            completeBtn.addEventListener('click', async () => {
-                if (completeBtn.disabled || videoCompleted) return;
-                
-                completeBtn.disabled = true;
-                completeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Watching...';
-                
-                timer = setInterval(() => {
-                    countdown--;
-                    const width = (countdown / 15) * 100;
-                    countdownBar.style.width = `${width}%`;
-                    
-                    if (countdown <= 0) {
-                        clearInterval(timer);
-                        videoCompleted = true;
-                        completeVideoWatching();
-                        
-                        // Switch to next ad provider
-                        currentAdProvider = currentAdProvider === 'moneTag' ? 'gigaPub' : 'moneTag';
-                        
-                        setTimeout(() => {
-                            document.body.removeChild(popup);
-                            showNotification('Video watched successfully! +৳2 earned.', 'success');
-                        }, 1000);
-                    }
-                }, 1000);
-            });
-            
-            // Close popup when clicking outside
-            popup.addEventListener('click', (e) => {
-                if (e.target === popup) {
-                    if (timer) clearInterval(timer);
-                    document.body.removeChild(popup);
-                }
-            });
-        }
-
-        // Complete Video Watching
-        async function completeVideoWatching() {
-            try {
-                const reward = 2;
-                
-                // Update user data
-                const updates = {};
-                updates['balance'] = (userData.balance || 0) + reward;
-                updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-                updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
-                updates['lastAdsDate'] = new Date().toISOString();
-                
-                await database.ref('users/' + currentUser.uid).update(updates);
-                
-                // Update local user data
-                userData = { ...userData, ...updates };
-                
-                // Update UI
-                updateUserInterface();
-                
-            } catch (error) {
-                console.error('Error completing video watching:', error);
-                showNotification('Error processing video reward. Please try again.', 'error');
             }
         }
 
@@ -2239,72 +2164,6 @@
             
             showNotification(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'info');
         }
-
-// --- বিজ্ঞাপন এবং ব্যালেন্স লজিক ---
-const MAX_DAILY_ADS = 15;
-
-// বিজ্ঞাপন দেখার মেইন ফাংশন
-async function handleWatchAds() {
-    if (!currentUser) {
-        showNotification('দয়া করে আগে লগইন করুন', 'error');
-        return;
-    }
-
-    // আজকের তারিখ বের করা (প্রতিদিন লিমিট চেক করার জন্য)
-    const today = new Date().toDateString();
-    const userAdRef = db.ref(`users/${currentUser.uid}/adStats`);
-    
-    const snapshot = await userAdRef.once('value');
-    let adData = snapshot.val() || { lastDate: today, count: 0 };
-
-    // যদি দিন পরিবর্তন হয় তবে কাউন্ট ০ করে দেওয়া
-    if (adData.lastDate !== today) {
-        adData = { lastDate: today, count: 0 };
-    }
-
-    // ১৫টির বেশি হয়েছে কি না চেক
-    if (adData.count >= MAX_DAILY_ADS) {
-        showNotification('আপনার আজকের ১৫টি বিজ্ঞাপনের লিমিট শেষ!', 'warning');
-        return;
-    }
-
-    showNotification('বিজ্ঞাপন লোড হচ্ছে...', 'info');
-
-    try {
-        // ১. প্রথমে Mone Tag এর বিজ্ঞাপন (Zone: 8954258)
-        if (typeof show_8954258 === 'function') {
-            await show_8954258();
-            
-            // ২. Mone Tag শেষ হলে Giga Pub এর বিজ্ঞাপন (এখানে Giga Pub এর SDK কল হবে)
-            // নোট: আপনার Giga Pub এর নির্দিষ্ট ফাংশনটি এখানে দিন, উদাহরণস্বরূপ 'show_giga_ad()'
-            if (typeof show_giga_ad === 'function') {
-                await show_giga_ad();
-            }
-
-            // ৩. দুটি বিজ্ঞাপন শেষ হলে ব্যালেন্স আপডেট
-            const newBalance = (userData.balance || 0) + 1;
-            const newCount = adData.count + 1;
-
-            await db.ref(`users/${currentUser.uid}`).update({
-                balance: newBalance,
-                'adStats/lastDate': today,
-                'adStats/count': newCount
-            });
-
-            showNotification('অভিনন্দন! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
-            
-            // UI আপডেট
-            userData.balance = newBalance;
-            updateUI(); 
-        } else {
-            showNotification('বিজ্ঞাপন লোড করা সম্ভব হচ্ছে না', 'error');
-        }
-    } catch (error) {
-        console.error("Ad error:", error);
-        showNotification('বিজ্ঞাপন দেখতে সমস্যা হয়েছে', 'error');
-    }
-}
-
 
         // Show Notification
         function showNotification(message, type = 'info') {
