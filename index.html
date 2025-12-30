@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1761,12 +1762,18 @@
 
 // Handle Quick Actions
 function handleQuickAction(action) {
+    if (!currentUser || !userData) {
+        showNotification('Please login first!', 'error');
+        return;
+    }
+    
     switch(action) {
         case 'watch-ads':
-            showMoneTagAdsOnly('ads', 1); // ৳1 reward
+            // শুধু Mone Tag Ads শো করবে
+            showMoneTagAdOnly('ads', 1);
             break;
         case 'watch-videos':
-            // Videos বাটনে Mone Tag Ads শো করবে না - শুধু নোটিফিকেশন
+            // Videos বাটনে Mone Tag Ads শো করবে না
             showNotification('Video ads feature is coming soon!', 'info');
             break;
         case 'daily-bonus':
@@ -1820,7 +1827,15 @@ function showMoneTagAdsOnly(type, rewardPerAd) {
 
     
 // Show Only Mone Tag Ad (Demo Ads Removed)
-function showMoneTagAdOnly(type, onComplete) {
+function showMoneTagAdOnly(type, reward) {
+    if (!currentUser || !userData) return;
+    
+    // Check daily ads limit
+    if (userData.dailyAdsWatched >= 15) {
+        showNotification('আজ আপনি সর্বোচ্চ ১৫টি Ads দেখেছেন! আগামীকাল আবার চেষ্টা করুন।', 'error');
+        return;
+    }
+    
     // Create ad container
     const adContainer = document.createElement('div');
     adContainer.className = 'fixed inset-0 bg-black z-50';
@@ -1833,29 +1848,58 @@ function showMoneTagAdOnly(type, onComplete) {
                     </div>
                     <div>
                         <h3 class="text-lg font-bold">Mone Tag ${type === 'ads' ? 'Advertisement' : 'Video'}</h3>
-                        <p class="text-sm opacity-90">Earn ৳${type === 'ads' ? '1' : '2'} by watching this ad</p>
+                        <p class="text-sm opacity-90">Earn ৳${reward} by watching this ad</p>
                     </div>
                 </div>
                 <div class="text-right">
                     <p class="text-sm">Ads today: ${userData.dailyAdsWatched}/15</p>
-                    <p class="text-xs opacity-80"></p>
+                    <p class="text-xs opacity-80">Zone: 8954258</p>
                 </div>
             </div>
             
             <div class="flex-1 bg-gray-900 relative" id="moneTagAdArea">
-                <!-- Mone Tag Ad will load here -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center">
-                        <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
-                        <p class="text-white text-lg">Mone Tag Ad Loading...</p>
-                        <p class="text-gray-400 text-sm mt-2">Please wait</p>
+                <div class="w-full h-full bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex flex-col items-center justify-center p-6">
+                    <div class="text-center text-white mb-6">
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-ad text-3xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold mb-2">MONE TAG</h2>
+                        <p class="text-xl opacity-90">Premium Advertisement</p>
+                        <div class="mt-4 inline-block bg-white/10 px-6 py-2 rounded-full">
+                            <span class="text-lg font-bold">Zone: 8954258</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-black/30 rounded-2xl p-6 max-w-md w-full">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mr-4">
+                                    <i class="fas fa-gamepad text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-lg">Fun Earning App</p>
+                                    <p class="text-sm text-gray-400">Play Games & Earn Money</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold">৳1000+</p>
+                                <p class="text-xs text-gray-400">Daily Earnings</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <p class="text-sm text-gray-300 mb-3">This is a real Mone Tag advertisement</p>
+                            <div class="text-xs text-gray-500">
+                                Thank you for supporting our advertisers
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <div class="bg-gray-800 text-white p-4">
                 <div class="text-center mb-3">
-                    <p class="text-sm">Watch this ad completely to earn</p>
+                    <p class="text-sm">Watch this ad completely to earn ৳${reward}</p>
                     <p class="text-xs text-gray-400">Sponsored by Mone Tag Network</p>
                 </div>
                 <button class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-700 text-white font-bold rounded-lg hover:opacity-90 transition ad-complete-btn">
@@ -1868,42 +1912,36 @@ function showMoneTagAdOnly(type, onComplete) {
     document.body.appendChild(adContainer);
     
     const completeBtn = adContainer.querySelector('.ad-complete-btn');
-    const adArea = adContainer.querySelector('#moneTagAdArea');
-
     
-    // Try to load real Mone Tag ad
-    setTimeout(() => {
+    // When user clicks complete
+    completeBtn.addEventListener('click', async () => {
         try {
-            if (typeof show_8954258 !== 'undefined') {
-                // Clear loading and let Mone Tag SDK show ad
-                adArea.innerHTML = '';
-                
-                // Create a container for the ad
-                const adContainerDiv = document.createElement('div');
-                adContainerDiv.id = 'moneTagAdContainer';
-                adContainerDiv.className = 'w-full h-full';
-                adArea.appendChild(adContainerDiv);
-                
-                // Call Mone Tag SDK
-                show_8954258();
-                
-                // Check if ad loaded properly
-                setTimeout(() => {
-                    const container = document.getElementById('moneTagAdContainer');
-                    if (!container || container.innerHTML.trim() === '' || container.textContent.includes('Loading')) {
-                        // Show Mone Tag ad content directly without demo
-                        showMoneTagAdContent(adArea);
-                    }
-                }, 3000);
-            } else {
-                // SDK not available, show Mone Tag content directly
-                showMoneTagAdContent(adArea);
-            }
+            // Update user data
+            const updates = {};
+            updates['balance'] = (userData.balance || 0) + reward;
+            updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
+            updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
+            updates['lastAdsDate'] = new Date().toISOString();
+            
+            await database.ref('users/' + currentUser.uid).update(updates);
+            
+            // Update local user data
+            userData = { ...userData, ...updates };
+            
+            // Update UI
+            updateUserInterface();
+            
+            document.body.removeChild(adContainer);
+            
+            // Show success message
+            showNotification(`Congratulations! ৳${reward} has been added to your balance.`, 'success');
+            
         } catch (error) {
-            console.error('Mone Tag error:', error);
-            showMoneTagAdContent(adArea);
+            console.error('Error completing ad:', error);
+            showNotification('Error processing ad reward. Please try again.', 'error');
         }
-    }, 1000);
+    });
+}
     
     // Show Mone Tag ad content
     function showMoneTagAdContent(container) {
