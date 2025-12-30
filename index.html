@@ -1781,13 +1781,13 @@ function showMoneTagFirstThenGigaPub(type, rewardPerAd) {
     if (!currentUser || !userData) return;
     
     // Check daily ads limit
-    if (userData.dailyAdsWatched >= 15) {
+    if (userData.dailyAdsWatched >= 100) {
         showNotification('আজ আপনি সর্বোচ্চ ১৫টি Ads দেখেছেন! আগামীকাল আবার চেষ্টা করুন।', 'error');
         return;
     }
     
     // Calculate how many ads can be watched today
-    const adsLeftToday = 15 - userData.dailyAdsWatched;
+    const adsLeftToday = 100 - userData.dailyAdsWatched;
     if (adsLeftToday < 2) {
         showNotification(`আজ মাত্র ${adsLeftToday}টি Ads দেখার বাকি আছে! আগামীকাল আবার চেষ্টা করুন।`, 'error');
         return;
