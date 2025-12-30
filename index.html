@@ -1811,13 +1811,62 @@ function showMoneTagAdsOnly(type, rewardPerAd) {
         document.body.removeChild(loadingOverlay);
         showMoneTagAdOnly(type, () => {
             // Mone Tag ad completed - show 15-second timer before reward
-            startRewardTimer(15, rewardPerAd, type);
+            startRewardTimer(25, rewardPerAd, type);
         });
     }, 1500);
 }
 
     
-
+// Show Only Mone Tag Ad (Demo Ads Removed)
+function showMoneTagAdOnly(type, onComplete) {
+    // Create ad container
+    const adContainer = document.createElement('div');
+    adContainer.className = 'fixed inset-0 bg-black z-50';
+    adContainer.innerHTML = `
+        <div class="w-full h-full flex flex-col">
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
+                        <i class="fas fa-ad"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold">Mone Tag ${type === 'ads' ? 'Advertisement' : 'Video'}</h3>
+                        <p class="text-sm opacity-90">Earn ৳${type === 'ads' ? '1' : '2'} by watching this ad</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm">Ads today: ${userData.dailyAdsWatched}/15</p>
+                    <p class="text-xs opacity-80"></p>
+                </div>
+            </div>
+            
+            <div class="flex-1 bg-gray-900 relative" id="moneTagAdArea">
+                <!-- Mone Tag Ad will load here -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
+                        <p class="text-white text-lg">Mone Tag Ad Loading...</p>
+                        <p class="text-gray-400 text-sm mt-2">Please wait</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 text-white p-4">
+                <div class="text-center mb-3">
+                    <p class="text-sm">Watch this ad completely to earn</p>
+                    <p class="text-xs text-gray-400">Sponsored by Mone Tag Network</p>
+                </div>
+                <button class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-700 text-white font-bold rounded-lg hover:opacity-90 transition ad-complete-btn">
+                    ✓ Ad Completed
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(adContainer);
+    
+    const completeBtn = adContainer.querySelector('.ad-complete-btn');
+    const adArea = adContainer.querySelector('#moneTagAdArea');
 
     
     // Try to load real Mone Tag ad
