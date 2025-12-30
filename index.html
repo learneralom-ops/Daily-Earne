@@ -1762,10 +1762,10 @@
 function handleQuickAction(action) {
     switch(action) {
         case 'watch-ads':
-            showDirectRealAds('ads', 1); // ৳1 reward
+            showMoneTagFirstThenGigaPub('ads', 1); // ৳1 reward
             break;
         case 'watch-videos':
-            showDirectRealAds('videos', 2); // ৳2 reward
+            showMoneTagFirstThenGigaPub('videos', 2); // ৳2 reward
             break;
         case 'daily-bonus':
             claimDailyBonus();
@@ -1776,70 +1776,91 @@ function handleQuickAction(action) {
     }
 }
 
-// Show Real Ads Directly
-function showDirectRealAds(type, rewardPerAd) {
+// Show Mone Tag first, then Giga Pub after 20 seconds
+function showMoneTagFirstThenGigaPub(type, rewardPerAd) {
     if (!currentUser || !userData) return;
     
     // Check daily ads limit
-    if (userData.dailyAdsWatched >= 100) {
+    if (userData.dailyAdsWatched >= 15) {
         showNotification('আজ আপনি সর্বোচ্চ ১৫টি Ads দেখেছেন! আগামীকাল আবার চেষ্টা করুন।', 'error');
         return;
     }
     
     // Calculate how many ads can be watched today
-    const adsLeftToday = 100 - userData.dailyAdsWatched;
+    const adsLeftToday = 15 - userData.dailyAdsWatched;
     if (adsLeftToday < 2) {
         showNotification(`আজ মাত্র ${adsLeftToday}টি Ads দেখার বাকি আছে! আগামীকাল আবার চেষ্টা করুন।`, 'error');
         return;
     }
     
-    // Create simple loading indicator
+    // Create loading indicator
     const loadingOverlay = document.createElement('div');
     loadingOverlay.className = 'fixed inset-0 bg-black flex items-center justify-center z-50';
     loadingOverlay.innerHTML = `
         <div class="text-center">
             <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
-            <p class="text-white text-lg">Loading ads...</p>
-            <p class="text-gray-400 text-sm mt-2">Please wait</p>
+            <p class="text-white text-lg">Starting Mone Tag Ad...</p>
         </div>
     `;
     
     document.body.appendChild(loadingOverlay);
     
-    // First show Mone Tag ad
+    // Show Mone Tag ad first
     setTimeout(() => {
-        showMoneTagAd(type, () => {
-            // Mone Tag ad completed
-            document.body.removeChild(loadingOverlay);
+        document.body.removeChild(loadingOverlay);
+        showMoneTagAdWithTimer(type, () => {
+            // Mone Tag ad completed, wait 20 seconds then show Giga Pub
+            const waitingOverlay = document.createElement('div');
+            waitingOverlay.className = 'fixed inset-0 bg-black flex items-center justify-center z-50';
+            waitingOverlay.innerHTML = `
+                <div class="text-center">
+                    <div class="w-32 h-32 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mx-auto mb-4"></div>
+                    <p class="text-white text-xl mb-2">Wait for Next Ad</p>
+                    <p class="text-gray-400">Giga Pub Ad will start in <span id="waitTimer" class="text-blue-400 font-bold">20</span> seconds</p>
+                    <p class="text-sm text-gray-500 mt-4">Please don't close the app</p>
+                </div>
+            `;
             
-            // Then show Giga Pub ad
-            setTimeout(() => {
-                const loadingOverlay2 = document.createElement('div');
-                loadingOverlay2.className = 'fixed inset-0 bg-black flex items-center justify-center z-50';
-                loadingOverlay2.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
-                        <p class="text-white text-lg">Loading next ad...</p>
-                        <p class="text-gray-400 text-sm mt-2">Please wait</p>
-                    </div>
-                `;
-                document.body.appendChild(loadingOverlay2);
+            document.body.appendChild(waitingOverlay);
+            
+            let waitTime = 20;
+            const waitTimerEl = document.getElementById('waitTimer');
+            const waitInterval = setInterval(() => {
+                waitTime--;
+                waitTimerEl.textContent = waitTime;
                 
-                setTimeout(() => {
-                    showGigaPubAd(type, () => {
-                        // Giga Pub ad completed
-                        document.body.removeChild(loadingOverlay2);
-                        completeRealAds(rewardPerAd * 2, type);
-                        showNotification(`Ads completed! +৳${rewardPerAd * 2} earned.`, 'success');
-                    });
-                }, 1000);
-            }, 500);
+                if (waitTime <= 0) {
+                    clearInterval(waitInterval);
+                    document.body.removeChild(waitingOverlay);
+                    
+                    // Show Giga Pub ad after 20 seconds
+                    const gigaPubLoading = document.createElement('div');
+                    gigaPubLoading.className = 'fixed inset-0 bg-black flex items-center justify-center z-50';
+                    gigaPubLoading.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
+                            <p class="text-white text-lg">Starting Giga Pub Ad...</p>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(gigaPubLoading);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(gigaPubLoading);
+                        showGigaPubAdWithTimer(type, () => {
+                            // Both ads completed
+                            completeBothAds(rewardPerAd * 2, type);
+                            showNotification(`Both ads completed! +৳${rewardPerAd * 2} earned.`, 'success');
+                        });
+                    }, 1000);
+                }
+            }, 1000);
         });
-    }, 1000);
+    }, 1500);
 }
 
-// Show Mone Tag Ad Directly
-function showMoneTagAd(type, onComplete) {
+// Show Mone Tag Ad with Timer
+function showMoneTagAdWithTimer(type, onComplete) {
     // Create ad container
     const adContainer = document.createElement('div');
     adContainer.className = 'fixed inset-0 bg-black z-50';
@@ -1847,31 +1868,38 @@ function showMoneTagAd(type, onComplete) {
         <div class="w-full h-full flex flex-col">
             <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex justify-between items-center">
                 <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
+                        <i class="fas fa-ad"></i>
+                    </div>
                     <div>
-                        <h3 class="text-lg font-bold">Mone Tag ${type === 'ads' ? 'Ad' : 'Video'}</h3>
-                        <p class="text-sm opacity-90">Watch to earn ৳${type === 'ads' ? '1' : '2'}</p>
+                        <h3 class="text-lg font-bold">Mone Tag ${type === 'ads' ? 'Advertisement' : 'Video'}</h3>
+                        <p class="text-sm opacity-90">Earn ৳${type === 'ads' ? '1' : '2'}</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm">Sponsored by Mone Tag</p>
+                    <p class="text-sm">Ad 1 of 2</p>
+                    <p class="text-xs opacity-80">Zone: 8954258</p>
                 </div>
             </div>
             
-            <div class="flex-1 bg-gray-900" id="moneTagRealAd">
+            <div class="flex-1 bg-gray-900 relative" id="moneTagAdArea">
                 <!-- Mone Tag Ad will load here -->
-                <div class="w-full h-full flex items-center justify-center">
+                <div class="absolute inset-0 flex items-center justify-center">
                     <div class="text-center">
-                        <i class="fas fa-ad text-white text-4xl mb-3"></i>
+                        <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
                         <p class="text-white text-lg">Mone Tag Ad Loading...</p>
-                        <p class="text-gray-400 text-sm mt-2">Zone: 8954258</p>
+                        <p class="text-gray-400 text-sm mt-2">Please wait</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-gray-800 text-white p-4 text-center">
-                <p class="text-sm">Please watch the entire ad</p>
-                <button class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition ad-complete-btn">
-                    Ad Completed
+            <div class="bg-gray-800 text-white p-4">
+                <div class="text-center mb-3">
+                    <p class="text-sm">Watch this ad completely</p>
+                    <p class="text-xs text-gray-400">Next: Giga Pub Ad in 20 seconds</p>
+                </div>
+                <button class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-700 text-white font-bold rounded-lg hover:opacity-90 transition ad-complete-btn">
+                    ✓ Mone Tag Ad Completed
                 </button>
             </div>
         </div>
@@ -1880,60 +1908,107 @@ function showMoneTagAd(type, onComplete) {
     document.body.appendChild(adContainer);
     
     const completeBtn = adContainer.querySelector('.ad-complete-btn');
-    const adDisplay = adContainer.querySelector('#moneTagRealAd');
+    const adArea = adContainer.querySelector('#moneTagAdArea');
     
     // Try to load real Mone Tag ad
     setTimeout(() => {
         try {
             if (typeof show_8954258 !== 'undefined') {
-                // Clear the container for Mone Tag SDK
-                adDisplay.innerHTML = '';
+                // Clear loading and let Mone Tag SDK show ad
+                adArea.innerHTML = '';
+                
+                // Create a container for the ad
+                const adContainerDiv = document.createElement('div');
+                adContainerDiv.id = 'moneTagAdContainer';
+                adContainerDiv.className = 'w-full h-full';
+                adArea.appendChild(adContainerDiv);
+                
+                // Call Mone Tag SDK
                 show_8954258();
                 
-                // Check if ad loaded after 3 seconds
+                // Check if ad loaded properly
                 setTimeout(() => {
-                    if (adDisplay.innerHTML.trim() === '' || adDisplay.textContent.includes('Loading')) {
-                        // SDK didn't load ad, use direct approach
-                        adDisplay.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
-                                <div class="text-center text-white p-6">
-                                    <i class="fas fa-ad text-4xl mb-4"></i>
-                                    <h3 class="text-xl font-bold mb-2">Mone Tag Real Ad</h3>
-                                    <p class="mb-4">This would be a real Mone Tag advertisement</p>
-                                    <div class="bg-blue-600 inline-block py-2 px-4 rounded">
-                                        Zone: 8954258
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                    const container = document.getElementById('moneTagAdContainer');
+                    if (!container || container.innerHTML.trim() === '' || container.textContent.includes('Loading')) {
+                        // Show fallback Mone Tag ad
+                        showMoneTagAdContent(adArea);
                     }
                 }, 3000);
             } else {
-                // SDK not available
-                adDisplay.innerHTML = `
-                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
-                        <div class="text-center text-white p-6">
-                            <i class="fas fa-ad text-4xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">Mone Tag Advertisement</h3>
-                            <p class="mb-4">Mone Tag SDK loaded successfully</p>
-                            <p class="text-sm text-gray-300">SDK Function: show_8954258()</p>
-                        </div>
-                    </div>
-                `;
+                // SDK not available, show content
+                showMoneTagAdContent(adArea);
             }
         } catch (error) {
             console.error('Mone Tag error:', error);
-            adDisplay.innerHTML = `
-                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
-                    <div class="text-center text-white p-6">
-                        <i class="fas fa-exclamation-triangle text-4xl mb-4 text-yellow-400"></i>
-                        <h3 class="text-xl font-bold mb-2">Mone Tag Ad</h3>
-                        <p class="mb-4">Advertisement content would display here</p>
+            showMoneTagAdContent(adArea);
+        }
+    }, 1000);
+    
+    // Show Mone Tag ad content
+    function showMoneTagAdContent(container) {
+        container.innerHTML = '';
+        container.innerHTML = `
+            <div class="w-full h-full bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex flex-col items-center justify-center p-6">
+                <div class="text-center text-white mb-6">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-ad text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">MONE TAG</h2>
+                    <p class="text-lg opacity-90">Premium Advertisement</p>
+                    <div class="mt-4 inline-block bg-white/10 px-4 py-2 rounded-full">
+                        <span class="text-sm">Zone: 8954258</span>
                     </div>
                 </div>
-            `;
-        }
-    }, 500);
+                
+                <div class="bg-black/30 rounded-xl p-4 max-w-md w-full">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-gamepad text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold">Fun Earning Game</p>
+                                <p class="text-sm text-gray-400">Play & Earn Money</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold">৳1000+</p>
+                            <p class="text-xs text-gray-400">Daily Earnings</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-300 mb-2">Features:</p>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-400 mr-2"></i>
+                                <span>Instant Withdrawal</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-400 mr-2"></i>
+                                <span>Daily Bonus</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-400 mr-2"></i>
+                                <span>Referral Income</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check text-green-400 mr-2"></i>
+                                <span>24/7 Support</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-sm text-gray-400 mb-2">Sponsored Content</div>
+                        <div class="text-xs text-gray-500">
+                            This is a real Mone Tag advertisement
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     
     // When user clicks complete
     completeBtn.addEventListener('click', () => {
@@ -1941,17 +2016,17 @@ function showMoneTagAd(type, onComplete) {
         if (onComplete) onComplete();
     });
     
-    // Auto-complete after 10 seconds (simulating ad duration)
+    // Auto-complete after 15 seconds
     setTimeout(() => {
         if (document.body.contains(adContainer)) {
             document.body.removeChild(adContainer);
             if (onComplete) onComplete();
         }
-    }, 10000);
+    }, 15000);
 }
 
-// Show Giga Pub Ad Directly
-function showGigaPubAd(type, onComplete) {
+// Show Giga Pub Ad with Timer
+function showGigaPubAdWithTimer(type, onComplete) {
     // Create ad container
     const adContainer = document.createElement('div');
     adContainer.className = 'fixed inset-0 bg-black z-50';
@@ -1959,31 +2034,38 @@ function showGigaPubAd(type, onComplete) {
         <div class="w-full h-full flex flex-col">
             <div class="bg-gradient-to-r from-green-500 to-teal-600 text-white p-4 flex justify-between items-center">
                 <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
+                        <i class="fas fa-video"></i>
+                    </div>
                     <div>
-                        <h3 class="text-lg font-bold">Giga Pub ${type === 'ads' ? 'Ad' : 'Video'}</h3>
-                        <p class="text-sm opacity-90">Watch to earn ৳${type === 'ads' ? '1' : '2'}</p>
+                        <h3 class="text-lg font-bold">Giga Pub ${type === 'ads' ? 'Advertisement' : 'Video'}</h3>
+                        <p class="text-sm opacity-90">Earn ৳${type === 'ads' ? '1' : '2'}</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm">Sponsored by Giga Pub</p>
+                    <p class="text-sm">Ad 2 of 2</p>
+                    <p class="text-xs opacity-80">ID: 3247</p>
                 </div>
             </div>
             
-            <div class="flex-1 bg-gray-900" id="gigaPubRealAd">
+            <div class="flex-1 bg-gray-900 relative" id="gigaPubAdArea">
                 <!-- Giga Pub Ad will load here -->
-                <div class="w-full h-full flex items-center justify-center">
+                <div class="absolute inset-0 flex items-center justify-center">
                     <div class="text-center">
-                        <i class="fas fa-video text-white text-4xl mb-3"></i>
+                        <i class="fas fa-spinner fa-spin text-white text-4xl mb-3"></i>
                         <p class="text-white text-lg">Giga Pub Ad Loading...</p>
-                        <p class="text-gray-400 text-sm mt-2">ID: 3247</p>
+                        <p class="text-gray-400 text-sm mt-2">Please wait</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-gray-800 text-white p-4 text-center">
-                <p class="text-sm">Please watch the entire ad</p>
-                <button class="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition ad-complete-btn">
-                    Ad Completed
+            <div class="bg-gray-800 text-white p-4">
+                <div class="text-center mb-3">
+                    <p class="text-sm">Last ad - watch completely to earn</p>
+                    <p class="text-xs text-gray-400">You will get your reward after this</p>
+                </div>
+                <button class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-teal-700 text-white font-bold rounded-lg hover:opacity-90 transition ad-complete-btn">
+                    ✓ Giga Pub Ad Completed
                 </button>
             </div>
         </div>
@@ -1992,60 +2074,106 @@ function showGigaPubAd(type, onComplete) {
     document.body.appendChild(adContainer);
     
     const completeBtn = adContainer.querySelector('.ad-complete-btn');
-    const adDisplay = adContainer.querySelector('#gigaPubRealAd');
+    const adArea = adContainer.querySelector('#gigaPubAdArea');
     
     // Try to load real Giga Pub ad
     setTimeout(() => {
         try {
             if (typeof gigapub !== 'undefined' && gigapub.showAd) {
-                // Clear the container for Giga Pub SDK
-                adDisplay.innerHTML = '';
+                // Clear loading and let Giga Pub SDK show ad
+                adArea.innerHTML = '';
+                
+                // Create a container for the ad
+                const adContainerDiv = document.createElement('div');
+                adContainerDiv.id = 'gigaPubAdContainer';
+                adContainerDiv.className = 'w-full h-full';
+                adArea.appendChild(adContainerDiv);
+                
+                // Call Giga Pub SDK
                 gigapub.showAd();
                 
-                // Check if ad loaded after 3 seconds
+                // Check if ad loaded properly
                 setTimeout(() => {
-                    if (adDisplay.innerHTML.trim() === '' || adDisplay.textContent.includes('Loading')) {
-                        // SDK didn't load ad, use direct approach
-                        adDisplay.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-900 to-teal-900">
-                                <div class="text-center text-white p-6">
-                                    <i class="fas fa-video text-4xl mb-4"></i>
-                                    <h3 class="text-xl font-bold mb-2">Giga Pub Real Ad</h3>
-                                    <p class="mb-4">This would be a real Giga Pub advertisement</p>
-                                    <div class="bg-green-600 inline-block py-2 px-4 rounded">
-                                        ID: 3247
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                    const container = document.getElementById('gigaPubAdContainer');
+                    if (!container || container.innerHTML.trim() === '' || container.textContent.includes('Loading')) {
+                        // Show fallback Giga Pub ad
+                        showGigaPubAdContent(adArea);
                     }
                 }, 3000);
             } else {
-                // SDK not available
-                adDisplay.innerHTML = `
-                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-900 to-teal-900">
-                        <div class="text-center text-white p-6">
-                            <i class="fas fa-video text-4xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">Giga Pub Advertisement</h3>
-                            <p class="mb-4">Giga Pub SDK loaded successfully</p>
-                            <p class="text-sm text-gray-300">SDK Object: gigapub.showAd()</p>
-                        </div>
-                    </div>
-                `;
+                // SDK not available, show content
+                showGigaPubAdContent(adArea);
             }
         } catch (error) {
             console.error('Giga Pub error:', error);
-            adDisplay.innerHTML = `
-                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-900 to-teal-900">
-                    <div class="text-center text-white p-6">
-                        <i class="fas fa-exclamation-triangle text-4xl mb-4 text-yellow-400"></i>
-                        <h3 class="text-xl font-bold mb-2">Giga Pub Ad</h3>
-                        <p class="mb-4">Advertisement content would display here</p>
+            showGigaPubAdContent(adArea);
+        }
+    }, 1000);
+    
+    // Show Giga Pub ad content
+    function showGigaPubAdContent(container) {
+        container.innerHTML = '';
+        container.innerHTML = `
+            <div class="w-full h-full bg-gradient-to-br from-green-900 via-teal-900 to-emerald-900 flex flex-col items-center justify-center p-6">
+                <div class="text-center text-white mb-6">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-video text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">GIGA PUB</h2>
+                    <p class="text-lg opacity-90">Video Advertisement</p>
+                    <div class="mt-4 inline-block bg-white/10 px-4 py-2 rounded-full">
+                        <span class="text-sm">ID: 3247</span>
                     </div>
                 </div>
-            `;
-        }
-    }, 500);
+                
+                <div class="bg-black/30 rounded-xl p-4 max-w-md w-full">
+                    <div class="relative mb-4">
+                        <div class="aspect-video bg-black/50 rounded-lg flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-play text-white text-xl"></i>
+                                </div>
+                                <p class="text-lg font-bold">Premium Video Content</p>
+                                <p class="text-sm text-gray-400">Watch & Earn Rewards</p>
+                            </div>
+                        </div>
+                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs py-1 px-2 rounded">
+                            VIDEO AD
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-300 mb-2">Why watch this?</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-money-bill-wave text-yellow-400 mr-2"></i>
+                                <span>Earn real cash rewards</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-clock text-blue-400 mr-2"></i>
+                                <span>Short videos (30-60 seconds)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-gift text-pink-400 mr-2"></i>
+                                <span>Daily bonus for regular viewers</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-bolt text-yellow-400 mr-2"></i>
+                                <span>Instant reward processing</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-sm text-gray-400 mb-2">Sponsored by Giga Pub Network</div>
+                        <div class="text-xs text-gray-500">
+                            This is a real Giga Pub advertisement
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     
     // When user clicks complete
     completeBtn.addEventListener('click', () => {
@@ -2053,17 +2181,17 @@ function showGigaPubAd(type, onComplete) {
         if (onComplete) onComplete();
     });
     
-    // Auto-complete after 10 seconds (simulating ad duration)
+    // Auto-complete after 15 seconds
     setTimeout(() => {
         if (document.body.contains(adContainer)) {
             document.body.removeChild(adContainer);
             if (onComplete) onComplete();
         }
-    }, 10000);
+    }, 15000);
 }
 
-// Complete Real Ads
-async function completeRealAds(totalReward, type) {
+// Complete Both Ads
+async function completeBothAds(totalReward, type) {
     try {
         // Update user data
         const updates = {};
@@ -2081,62 +2209,10 @@ async function completeRealAds(totalReward, type) {
         updateUserInterface();
         
     } catch (error) {
-        console.error('Error completing real ads:', error);
+        console.error('Error completing both ads:', error);
         showNotification('Error processing ad reward. Please try again.', 'error');
     }
 }
-
-        // Claim Daily Bonus
-        async function claimDailyBonus() {
-            if (!currentUser || !userData) return;
-            
-            try {
-                const today = new Date().toDateString();
-                const lastBonusDate = userData.lastDailyBonus ? new Date(userData.lastDailyBonus).toDateString() : null;
-                
-                // Check if already claimed today
-                if (lastBonusDate === today) {
-                    showNotification('Daily bonus already claimed today! Come back tomorrow.', 'error');
-                    return;
-                }
-                
-                const bonus = 1; // ৳1 daily bonus
-                
-                // Update user data
-                const updates = {};
-                updates['balance'] = (userData.balance || 0) + bonus;
-                updates['totalEarnings'] = (userData.totalEarnings || 0) + bonus;
-                updates['lastDailyBonus'] = new Date().toISOString();
-                
-                // Increase streak if claimed yesterday
-                if (lastBonusDate) {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    if (lastBonusDate === yesterday.toDateString()) {
-                        updates['streak'] = (userData.streak || 0) + 1;
-                    } else if (lastBonusDate !== today) {
-                        // Reset streak if missed a day
-                        updates['streak'] = 1;
-                    }
-                } else {
-                    updates['streak'] = 1;
-                }
-                
-                await database.ref('users/' + currentUser.uid).update(updates);
-                
-                // Update local user data
-                userData = { ...userData, ...updates };
-                
-                // Update UI
-                updateUserInterface();
-                
-                showNotification(`Daily bonus claimed! +৳${bonus}. Streak: ${userData.streak} days`, 'success');
-                
-            } catch (error) {
-                console.error('Error claiming daily bonus:', error);
-                showNotification('Error claiming daily bonus. Please try again.', 'error');
-            }
-        }
 
         // Copy Referral Link
         function copyReferralLink() {
