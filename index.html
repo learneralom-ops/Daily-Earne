@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -458,7 +459,7 @@
 
                 <!-- Quick Actions -->
                 <div class="grid grid-cols-4 gap-3 mb-6">
-                    <button class="quick-action" data-action="watch-ads">
+                    <button onclick="handleWatchAds()" class="quick-action" data-action="watch-ads">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
                             <i class="fas fa-ad text-blue-600 dark:text-blue-300 text-xl"></i>
                         </div>
@@ -466,7 +467,7 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="dailyAdsCounter">(0/15)</span>
                     </button>
                     
-                    <button class="quick-action" data-action="watch-videos">
+                    <button onclick="handleWatchAds()" class="quick-action" data-action="watch-videos">
                         <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900 flex items-center justify-center mb-2">
                             <i class="fas fa-play-circle text-red-600 dark:text-red-300 text-xl"></i>
                         </div>
@@ -2238,6 +2239,72 @@
             
             showNotification(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'info');
         }
+
+// --- বিজ্ঞাপন এবং ব্যালেন্স লজিক ---
+const MAX_DAILY_ADS = 15;
+
+// বিজ্ঞাপন দেখার মেইন ফাংশন
+async function handleWatchAds() {
+    if (!currentUser) {
+        showNotification('দয়া করে আগে লগইন করুন', 'error');
+        return;
+    }
+
+    // আজকের তারিখ বের করা (প্রতিদিন লিমিট চেক করার জন্য)
+    const today = new Date().toDateString();
+    const userAdRef = db.ref(`users/${currentUser.uid}/adStats`);
+    
+    const snapshot = await userAdRef.once('value');
+    let adData = snapshot.val() || { lastDate: today, count: 0 };
+
+    // যদি দিন পরিবর্তন হয় তবে কাউন্ট ০ করে দেওয়া
+    if (adData.lastDate !== today) {
+        adData = { lastDate: today, count: 0 };
+    }
+
+    // ১৫টির বেশি হয়েছে কি না চেক
+    if (adData.count >= MAX_DAILY_ADS) {
+        showNotification('আপনার আজকের ১৫টি বিজ্ঞাপনের লিমিট শেষ!', 'warning');
+        return;
+    }
+
+    showNotification('বিজ্ঞাপন লোড হচ্ছে...', 'info');
+
+    try {
+        // ১. প্রথমে Mone Tag এর বিজ্ঞাপন (Zone: 8954258)
+        if (typeof show_8954258 === 'function') {
+            await show_8954258();
+            
+            // ২. Mone Tag শেষ হলে Giga Pub এর বিজ্ঞাপন (এখানে Giga Pub এর SDK কল হবে)
+            // নোট: আপনার Giga Pub এর নির্দিষ্ট ফাংশনটি এখানে দিন, উদাহরণস্বরূপ 'show_giga_ad()'
+            if (typeof show_giga_ad === 'function') {
+                await show_giga_ad();
+            }
+
+            // ৩. দুটি বিজ্ঞাপন শেষ হলে ব্যালেন্স আপডেট
+            const newBalance = (userData.balance || 0) + 1;
+            const newCount = adData.count + 1;
+
+            await db.ref(`users/${currentUser.uid}`).update({
+                balance: newBalance,
+                'adStats/lastDate': today,
+                'adStats/count': newCount
+            });
+
+            showNotification('অভিনন্দন! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+            
+            // UI আপডেট
+            userData.balance = newBalance;
+            updateUI(); 
+        } else {
+            showNotification('বিজ্ঞাপন লোড করা সম্ভব হচ্ছে না', 'error');
+        }
+    } catch (error) {
+        console.error("Ad error:", error);
+        showNotification('বিজ্ঞাপন দেখতে সমস্যা হয়েছে', 'error');
+    }
+}
+
 
         // Show Notification
         function showNotification(message, type = 'info') {
