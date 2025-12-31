@@ -1425,12 +1425,12 @@
             try {
                 // ৩. ধাপ ১: Rewarded interstitial Ads
                 updateAdProgress(1, 10);
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 await show_8954258().then(() => {
                     console.log('Rewarded interstitial ad completed successfully');
                     updateAdProgress(1, 100);
-                    return new Promise(resolve => setTimeout(resolve, 1000));
+                    return new Promise(resolve => setTimeout(resolve, 2000));
                 }).catch(error => {
                     console.error('Rewarded interstitial ad error:', error);
                     throw new Error('Failed to show rewarded interstitial ad');
@@ -1438,12 +1438,12 @@
 
                 // ৪. ধাপ ২: Rewarded Popup Ads
                 updateAdProgress(2, 10);
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 await show_8954258('pop').then(() => {
                     console.log('Rewarded popup ad completed successfully');
                     updateAdProgress(2, 100);
-                    return new Promise(resolve => setTimeout(resolve, 1000));
+                    return new Promise(resolve => setTimeout(resolve, 2000));
                 }).catch(error => {
                     console.error('Rewarded popup ad error:', error);
                     throw new Error('Failed to show rewarded popup ad');
@@ -1451,7 +1451,7 @@
 
                 // ৫. ধাপ ৩: In-App Interstitial Ads
                 updateAdProgress(3, 10);
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 await show_8954258({
                     type: 'inApp',
@@ -1465,7 +1465,7 @@
                 }).then(() => {
                     console.log('In-app interstitial ad completed successfully');
                     updateAdProgress(3, 100);
-                    return new Promise(resolve => setTimeout(resolve, 1000));
+                    return new Promise(resolve => setTimeout(resolve, 2000));
                 }).catch(error => {
                     console.error('In-app interstitial ad error:', error);
                     throw new Error('Failed to show in-app interstitial ad');
