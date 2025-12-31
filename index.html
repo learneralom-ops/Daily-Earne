@@ -1743,15 +1743,15 @@
                 try {
                     showNotification('Withdrawal request sent! Funds will arrive in 24-48 hours.', 'success');
                     
-                     In production, you would save withdrawal request to database
-                     const withdrawalRef = database.ref('withdrawals').push();
-                     await withdrawalRef.set({
-                         userId: currentUser.uid,
-                         amount: userData.balance,
-                         method: selectedMethod,
-                         status: 'pending',
-                         timestamp: new Date().toISOString()
-                     });
+                  //   In production, you would save withdrawal request to database
+                 //    const withdrawalRef = database.ref('withdrawals').push();
+                 //    await withdrawalRef.set({
+                  //       userId: currentUser.uid,
+                  //       amount: userData.balance,
+                  //       method: selectedMethod,
+                  //       status: 'pending',
+                  //       timestamp: new Date().toISOString()
+                 //    });
                     
                 } catch (error) {
                     console.error('Error processing withdrawal:', error);
@@ -1986,14 +1986,14 @@ function showMoneTagAdOnly(type, reward) {
     
     
     
-     //Auto-complete after 10 seconds
-    //setTimeout(() => {
-       // if (document.body.contains(adContainer)) {
-        //    document.body.removeChild(adContainer);
-          //  if (onComplete) onComplete();
-       // }
-  //  }, 10000);
-//}
+     Auto-complete after 10 seconds
+    setTimeout(() => {
+        if (document.body.contains(adContainer)) {
+            document.body.removeChild(adContainer);
+            if (onComplete) onComplete();
+        }
+    }, 10000);
+}
 
 
 
