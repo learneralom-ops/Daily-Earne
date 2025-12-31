@@ -15,6 +15,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
+<script src="https://ad.gigapub.tech/script?id=3247"></script>
+    
     <!-- Mone Tag Ads SDK -->
     <script src='//libtl.com/sdk.js' data-zone='8954258' data-sdk='show_8954258'></script>
     
@@ -1264,7 +1266,8 @@
                 });
             });
         }
-
+        
+        // --- FINAL UPDATED AD LOGIC START ---
         function handleQuickAction(action) {
             if (!currentUser || !userData) {
                 showNotification('Please login first!', 'error');
@@ -1273,7 +1276,7 @@
             
             switch(action) {
                 case 'watch-ads':
-                    showMoneTagAdOnly('ads', 1);
+                    triggerAdsSequence(); 
                     break;
                 case 'watch-videos':
                     showNotification('Video ads feature is coming soon!', 'info');
@@ -1287,61 +1290,66 @@
             }
         }
 
-        function showMoneTagAdOnly(type, reward) {
-            if (!currentUser || !userData) return;
-            
+                async function triggerAdsSequence() {
             if (userData.dailyAdsWatched >= 15) {
-                showNotification('আজ আপনি সর্বোচ্চ ১৫টি Ads দেখেছেন!', 'error');
+                showNotification('আজকের লিমিট শেষ! আগামীকাল আবার ট্রাই করুন।', 'error');
                 return;
             }
-            
+
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center';
+            loadingOverlay.innerHTML = `<div class="text-center text-white p-6"><div class="loader mb-4 mx-auto"></div><p class="text-lg font-bold">Preparing Ads...</p></div>`;
+            document.body.appendChild(loadingOverlay);
+
             try {
-                if (typeof show_8954258 === 'function') {
-                    const loadingDiv = document.createElement('div');
-                    loadingDiv.className = 'fixed inset-0 bg-black z-50 flex items-center justify-center';
-                    loadingDiv.innerHTML = `
-                        <div class="text-center text-white">
-                            <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
-                            <p class="text-xl">Loading Ads...</p>
-                            <p class="text-gray-400 mt-2">Please wait</p>
-                        </div>
-                    `;
-                    document.body.appendChild(loadingDiv);
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(loadingDiv);
-                        show_8954258();
-                        
-                        setTimeout(async () => {
-                            try {
-                                const updates = {};
-                                updates['balance'] = (userData.balance || 0) + reward;
-                                updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-                                updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
-                                updates['lastAdsDate'] = new Date().toISOString();
-                                
-                                await database.ref('users/' + currentUser.uid).update(updates);
-                                userData = { ...userData, ...updates };
-                                updateUserInterface();
-                                
-                                showNotification(`Ads watched! ৳${reward} added to balance.`, 'success');
-                                
-                            } catch (error) {
-                                console.error('Error:', error);
-                                showNotification('Error processing reward.', 'error');
-                            }
-                        }, 15000);
-                        
-                    }, 2000);
-                    
+                // ১. Giga Pub চেক ও শো
+                if (typeof window.showGiga === 'function') {
+                    await window.showGiga();
                 } else {
-                    showNotification('Mone Tag Ads not available. Please try again later.', 'error');
+                    console.warn("Giga SDK not found, trying Mone Tag...");
                 }
+
+                // ২. Mone Tag চেক ও শো (আপনার data-sdk='show_8954258' অনুযায়ী)
+                if (typeof window.show_8954258 === 'function') {
+                    await window.show_8954258();
+                    // অ্যাড সফলভাবে শেষ হলে রিওয়ার্ড
+                    await rewardUserAfterAds();
+                } else {
+                    throw new Error("Mone Tag SDK not ready");
+                }
+
             } catch (error) {
-                console.error('Mone Tag Error:', error);
-                showNotification('Failed to load ads.', 'error');
+                console.error("Detailed Ad Error:", error);
+                // যদি ইউজার অ্যাড কেটে দেয় বা লোড না হয় তবে এই মেসেজ আসবে
+                showNotification('অ্যাড লোড হতে সমস্যা হয়েছে বা কেটে দেওয়া হয়েছে।', 'warning');
+            } finally {
+                if (document.body.contains(loadingOverlay)) {
+                    document.body.removeChild(loadingOverlay);
+                }
             }
         }
+
+        async function rewardUserAfterAds() {
+            const reward = 1; // রিওয়ার্ড ১ টাকা
+            try {
+                const updates = {};
+                updates['balance'] = (userData.balance || 0) + reward;
+                updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
+                updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
+                updates['lastAdsDate'] = new Date().toISOString();
+                
+                await database.ref('users/' + currentUser.uid).update(updates);
+                
+                // লোকাল ডাটা আপডেট এবং UI রিফ্রেশ
+                userData = { ...userData, ...updates };
+                updateUserInterface();
+                
+                showNotification(`সাফল্য! ৳${reward} আপনার ব্যালেন্সে যোগ হয়েছে।`, 'success');
+            } catch (err) {
+                showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
+            }
+        }
+        // --- FINAL UPDATED AD LOGIC END ---
 
         async function claimDailyBonus() {
             if (!currentUser || !userData) return;
