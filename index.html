@@ -283,7 +283,7 @@
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center">
                                     <input type="checkbox" id="rememberMe" 
-                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                     <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Remember me</span>
                                 </label>
                                 <a href="#" id="forgotPassword" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Forgot password?</a>
@@ -729,6 +729,24 @@
                 <div class="ad-step" id="step3">3</div>
             </div>
         </div>
+        
+        <!-- Video Ad Loading Overlay -->
+        <div id="videoAdLoadingOverlay" class="ad-loading-overlay hidden">
+            <div class="loader mb-4"></div>
+            <h2 class="text-2xl font-bold mb-2">Loading Video Ad...</h2>
+            <p class="text-gray-300 mb-4">Please watch the video advertisement to earn money</p>
+            
+            <div class="ad-progress-bar">
+                <div class="ad-progress-fill" id="videoAdProgressFill"></div>
+            </div>
+            
+            <div class="flex flex-col items-center mt-6">
+                <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mb-3">
+                    <i class="fas fa-play-circle text-red-600 dark:text-red-300 text-3xl"></i>
+                </div>
+                <p class="text-lg font-medium">Rewarded Popup Video Ad</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -828,7 +846,10 @@
             adProgressFill: document.getElementById('adProgressFill'),
             step1: document.getElementById('step1'),
             step2: document.getElementById('step2'),
-            step3: document.getElementById('step3')
+            step3: document.getElementById('step3'),
+            
+            videoAdLoadingOverlay: document.getElementById('videoAdLoadingOverlay'),
+            videoAdProgressFill: document.getElementById('videoAdProgressFill')
         };
 
         // Initialize App
@@ -1031,7 +1052,9 @@
                     lastLogin: new Date().toISOString(),
                     lastDailyBonus: null,
                     dailyAdsWatched: 0,
-                    lastAdsDate: null
+                    lastAdsDate: null,
+                    videosWatched: 0,
+                    lastVideoDate: null
                 };
                 
                 await database.ref('users/' + currentUser.uid).set(userData);
@@ -1134,7 +1157,9 @@
                         lastLogin: new Date().toISOString(),
                         lastDailyBonus: null,
                         dailyAdsWatched: 0,
-                        lastAdsDate: null
+                        lastAdsDate: null,
+                        videosWatched: 0,
+                        lastVideoDate: null
                     };
                     
                     await database.ref('users/' + currentUser.uid).set(userData);
@@ -1145,6 +1170,7 @@
                     
                     const today = new Date().toDateString();
                     const lastAdsDate = userData.lastAdsDate ? new Date(userData.lastAdsDate).toDateString() : null;
+                    const lastVideoDate = userData.lastVideoDate ? new Date(userData.lastVideoDate).toDateString() : null;
                     
                     if (lastAdsDate !== today) {
                         await database.ref('users/' + currentUser.uid).update({
@@ -1153,6 +1179,15 @@
                         });
                         userData.dailyAdsWatched = 0;
                         userData.lastAdsDate = new Date().toISOString();
+                    }
+                    
+                    if (lastVideoDate !== today) {
+                        await database.ref('users/' + currentUser.uid).update({
+                            videosWatched: 0,
+                            lastVideoDate: new Date().toISOString()
+                        });
+                        userData.videosWatched = 0;
+                        userData.lastVideoDate = new Date().toISOString();
                     }
                 }
                 
@@ -1363,7 +1398,7 @@
                     triggerAdsSequence(); 
                     break;
                 case 'watch-videos':
-                    showNotification('Video ads feature is coming soon!', 'info');
+                    triggerVideoAd();
                     break;
                 case 'daily-bonus':
                     claimDailyBonus();
@@ -1411,9 +1446,13 @@
             }
         }
 
+        function updateVideoAdProgress(progress) {
+            elements.videoAdProgressFill.style.width = `${progress}%`;
+        }
+
         async function triggerAdsSequence() {
             // ১. ডেইলি লিমিট চেক
-            if (userData.dailyAdsWatched >= 100) {
+            if (userData.dailyAdsWatched >= 15) {
                 showNotification('আজকের লিমিট শেষ! আগামীকাল আবার ট্রাই করুন।', 'error');
                 return;
             }
@@ -1425,12 +1464,12 @@
             try {
                 // ৩. ধাপ ১: Rewarded interstitial Ads
                 updateAdProgress(1, 10);
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 await show_8954258().then(() => {
                     console.log('Rewarded interstitial ad completed successfully');
                     updateAdProgress(1, 100);
-                    return new Promise(resolve => setTimeout(resolve, 2000));
+                    return new Promise(resolve => setTimeout(resolve, 1000));
                 }).catch(error => {
                     console.error('Rewarded interstitial ad error:', error);
                     throw new Error('Failed to show rewarded interstitial ad');
@@ -1438,12 +1477,12 @@
 
                 // ৪. ধাপ ২: Rewarded Popup Ads
                 updateAdProgress(2, 10);
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 await show_8954258('pop').then(() => {
                     console.log('Rewarded popup ad completed successfully');
                     updateAdProgress(2, 100);
-                    return new Promise(resolve => setTimeout(resolve, 2000));
+                    return new Promise(resolve => setTimeout(resolve, 1000));
                 }).catch(error => {
                     console.error('Rewarded popup ad error:', error);
                     throw new Error('Failed to show rewarded popup ad');
@@ -1451,7 +1490,7 @@
 
                 // ৫. ধাপ ৩: In-App Interstitial Ads
                 updateAdProgress(3, 10);
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 await show_8954258({
                     type: 'inApp',
@@ -1465,7 +1504,7 @@
                 }).then(() => {
                     console.log('In-app interstitial ad completed successfully');
                     updateAdProgress(3, 100);
-                    return new Promise(resolve => setTimeout(resolve, 2000));
+                    return new Promise(resolve => setTimeout(resolve, 1000));
                 }).catch(error => {
                     console.error('In-app interstitial ad error:', error);
                     throw new Error('Failed to show in-app interstitial ad');
@@ -1492,6 +1531,56 @@
             showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
         }
 
+        async function triggerVideoAd() {
+            // ১. ভিডিও ডেইলি লিমিট চেক
+            const today = new Date().toDateString();
+            const lastVideoDate = userData.lastVideoDate ? new Date(userData.lastVideoDate).toDateString() : null;
+            
+            if (lastVideoDate === today && userData.videosWatched >= 10) {
+                showNotification('আজকের ভিডিও লিমিট শেষ! আগামীকাল আবার ট্রাই করুন।', 'error');
+                return;
+            }
+
+            // ২. ভিডিও লোডিং স্ক্রিন শো করা
+            elements.videoAdLoadingOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            try {
+                // ৩. Progress বার আপডেট
+                updateVideoAdProgress(20);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // ৪. Rewarded Popup Ads শো করা
+                await show_8954258('pop').then(() => {
+                    console.log('Video ad completed successfully');
+                    updateVideoAdProgress(100);
+                    return new Promise(resolve => setTimeout(resolve, 1000));
+                }).catch(error => {
+                    console.error('Video ad error:', error);
+                    throw new Error('Failed to show video ad');
+                });
+
+                // ৫. ভিডিও রিওয়ার্ড প্রদান
+                await rewardUserAfterVideoAd();
+
+            } catch (error) {
+                console.error("Video Ad Error:", error);
+                showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
+                
+                // লোডিং স্ক্রিন হাইড করা
+                elements.videoAdLoadingOverlay.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                return;
+            }
+
+            // ৬. লোডিং স্ক্রিন হাইড করা
+            elements.videoAdLoadingOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            
+            // ৭. সফল হওয়ার নোটিফিকেশন
+            showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳২ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        }
+
         async function rewardUserAfterAds() {
             const reward = 1; // রিওয়ার্ড ১ টাকা
             try {
@@ -1509,6 +1598,27 @@
                 
             } catch (err) {
                 console.error('Reward error:', err);
+                showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
+            }
+        }
+
+        async function rewardUserAfterVideoAd() {
+            const reward = 2; // রিওয়ার্ড ২ টাকা (ভিডিওর জন্য বেশি)
+            try {
+                const updates = {};
+                updates['balance'] = (userData.balance || 0) + reward;
+                updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
+                updates['videosWatched'] = (userData.videosWatched || 0) + 1;
+                updates['lastVideoDate'] = new Date().toISOString();
+                
+                await database.ref('users/' + currentUser.uid).update(updates);
+                
+                // লোকাল ডাটা আপডেট এবং UI রিফ্রেশ
+                userData = { ...userData, ...updates };
+                updateUserInterface();
+                
+            } catch (err) {
+                console.error('Video reward error:', err);
                 showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
             }
         }
