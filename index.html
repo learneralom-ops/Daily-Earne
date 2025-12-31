@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,6 +156,68 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
+        }
+        
+        /* Ad loading overlay styles */
+        .ad-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .ad-progress-bar {
+            width: 80%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .ad-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .ad-step-indicator {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .ad-step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .ad-step.active {
+            background: #667eea;
+            transform: scale(1.1);
+        }
+        
+        .ad-step.completed {
+            background: #10B981;
         }
     </style>
 </head>
@@ -651,6 +712,23 @@
                 </button>
             </div>
         </div>
+        
+        <!-- Ad Loading Overlay -->
+        <div id="adLoadingOverlay" class="ad-loading-overlay hidden">
+            <div class="loader mb-4"></div>
+            <h2 class="text-2xl font-bold mb-2" id="adStepTitle">Loading Ads...</h2>
+            <p class="text-gray-300 mb-4" id="adStepDescription">Please wait while we load the advertisement</p>
+            
+            <div class="ad-progress-bar">
+                <div class="ad-progress-fill" id="adProgressFill"></div>
+            </div>
+            
+            <div class="ad-step-indicator">
+                <div class="ad-step completed" id="step1">1</div>
+                <div class="ad-step" id="step2">2</div>
+                <div class="ad-step" id="step3">3</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -742,7 +820,15 @@
             closeNotification: document.getElementById('closeNotification'),
             
             themeToggle: document.getElementById('themeToggle'),
-            pageTitle: document.getElementById('pageTitle')
+            pageTitle: document.getElementById('pageTitle'),
+            
+            adLoadingOverlay: document.getElementById('adLoadingOverlay'),
+            adStepTitle: document.getElementById('adStepTitle'),
+            adStepDescription: document.getElementById('adStepDescription'),
+            adProgressFill: document.getElementById('adProgressFill'),
+            step1: document.getElementById('step1'),
+            step2: document.getElementById('step2'),
+            step3: document.getElementById('step3')
         };
 
         // Initialize App
@@ -1288,43 +1374,122 @@
             }
         }
 
+        function updateAdProgress(step, progress) {
+            // Update step indicators
+            elements.step1.classList.remove('active', 'completed');
+            elements.step2.classList.remove('active', 'completed');
+            elements.step3.classList.remove('active', 'completed');
+            
+            if (step >= 1) elements.step1.classList.add('completed');
+            if (step >= 2) elements.step2.classList.add('completed');
+            if (step >= 3) elements.step3.classList.add('completed');
+            
+            if (step === 1) elements.step1.classList.add('active');
+            if (step === 2) elements.step2.classList.add('active');
+            if (step === 3) elements.step3.classList.add('active');
+            
+            // Update progress bar
+            const totalProgress = (step - 1) * 33 + progress;
+            elements.adProgressFill.style.width = `${totalProgress}%`;
+            
+            // Update titles and descriptions
+            const stepTitles = [
+                'Rewarded Interstitial Ads',
+                'Rewarded Popup Ads',
+                'In-App Interstitial Ads'
+            ];
+            
+            const stepDescriptions = [
+                'Please watch the advertisement completely to earn money',
+                'Watch this popup advertisement to continue earning',
+                'Final advertisement - watch to complete the process'
+            ];
+            
+            if (step <= 3) {
+                elements.adStepTitle.textContent = stepTitles[step - 1];
+                elements.adStepDescription.textContent = stepDescriptions[step - 1];
+            }
+        }
+
         async function triggerAdsSequence() {
             // ১. ডেইলি লিমিট চেক
-            if (userData.dailyAdsWatched >= 15) {
+            if (userData.dailyAdsWatched >= 100) {
                 showNotification('আজকের লিমিট শেষ! আগামীকাল আবার ট্রাই করুন।', 'error');
                 return;
             }
 
-            // ২. স্ক্রিন লক/লোডিং (যাতে ইউজার বারবার ক্লিক না করে)
-            const loadingOverlay = document.createElement('div');
-            loadingOverlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center';
-            loadingOverlay.innerHTML = `
-                <div class="text-center text-white p-6">
-                    <div class="loader mb-4 mx-auto"></div>
-                    <p class="text-lg font-bold">অ্যাড লোড হচ্ছে...</p>
-                </div>`;
-            document.body.appendChild(loadingOverlay);
-
+            // ২. লোডিং স্ক্রিন শো করা
+            elements.adLoadingOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
             try {
-                // শুধু Mone Tag অ্যাড শো করা
-                if (typeof window.show_8954258 === 'function') {
-                    await window.show_8954258(); // Promise হিসেবে কাজ করবে
-                    
-                    // রিওয়ার্ড প্রদান (সব সফল হলে)
-                    await rewardUserAfterAds();
-                } else {
-                    showNotification('Mone Tag SDK not ready.', 'error');
-                }
+                // ৩. ধাপ ১: Rewarded interstitial Ads
+                updateAdProgress(1, 10);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await show_8954258().then(() => {
+                    console.log('Rewarded interstitial ad completed successfully');
+                    updateAdProgress(1, 100);
+                    return new Promise(resolve => setTimeout(resolve, 1000));
+                }).catch(error => {
+                    console.error('Rewarded interstitial ad error:', error);
+                    throw new Error('Failed to show rewarded interstitial ad');
+                });
+
+                // ৪. ধাপ ২: Rewarded Popup Ads
+                updateAdProgress(2, 10);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await show_8954258('pop').then(() => {
+                    console.log('Rewarded popup ad completed successfully');
+                    updateAdProgress(2, 100);
+                    return new Promise(resolve => setTimeout(resolve, 1000));
+                }).catch(error => {
+                    console.error('Rewarded popup ad error:', error);
+                    throw new Error('Failed to show rewarded popup ad');
+                });
+
+                // ৫. ধাপ ৩: In-App Interstitial Ads
+                updateAdProgress(3, 10);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await show_8954258({
+                    type: 'inApp',
+                    inAppSettings: {
+                        frequency: 2,
+                        capping: 0.1,
+                        interval: 30,
+                        timeout: 5,
+                        everyPage: false
+                    }
+                }).then(() => {
+                    console.log('In-app interstitial ad completed successfully');
+                    updateAdProgress(3, 100);
+                    return new Promise(resolve => setTimeout(resolve, 1000));
+                }).catch(error => {
+                    console.error('In-app interstitial ad error:', error);
+                    throw new Error('Failed to show in-app interstitial ad');
+                });
+
+                // ৬. সব ধাপ সফল হলে রিওয়ার্ড প্রদান
+                await rewardUserAfterAds();
 
             } catch (error) {
                 console.error("Ad Sequence Error:", error);
                 showNotification('অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
-            } finally {
-                // সব শেষে লোডিং স্ক্রিন সরিয়ে ফেলা
-                if (document.body.contains(loadingOverlay)) {
-                    document.body.removeChild(loadingOverlay);
-                }
+                
+                // লোডিং স্ক্রিন হাইড করা
+                elements.adLoadingOverlay.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                return;
             }
+
+            // ৭. লোডিং স্ক্রিন হাইড করা
+            elements.adLoadingOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            
+            // ৮. সফল হওয়ার নোটিফিকেশন
+            showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
         }
 
         async function rewardUserAfterAds() {
@@ -1342,8 +1507,8 @@
                 userData = { ...userData, ...updates };
                 updateUserInterface();
                 
-                showNotification(`সাফল্য! ৳${reward} আপনার ব্যালেন্সে যোগ হয়েছে।`, 'success');
             } catch (err) {
+                console.error('Reward error:', err);
                 showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
             }
         }
