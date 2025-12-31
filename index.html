@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,8 +15,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
-<script src="https://ad.gigapub.tech/script?id=3247"></script>
     
     <!-- Mone Tag Ads SDK -->
     <script src='//libtl.com/sdk.js' data-zone='8954258' data-sdk='show_8954258'></script>
@@ -1266,8 +1265,7 @@
                 });
             });
         }
-        
-        // --- FINAL UPDATED AD LOGIC START ---
+
         function handleQuickAction(action) {
             if (!currentUser || !userData) {
                 showNotification('Please login first!', 'error');
@@ -1290,39 +1288,39 @@
             }
         }
 
-                async function triggerAdsSequence() {
+        async function triggerAdsSequence() {
+            // ১. ডেইলি লিমিট চেক
             if (userData.dailyAdsWatched >= 15) {
                 showNotification('আজকের লিমিট শেষ! আগামীকাল আবার ট্রাই করুন।', 'error');
                 return;
             }
 
+            // ২. স্ক্রিন লক/লোডিং (যাতে ইউজার বারবার ক্লিক না করে)
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center';
-            loadingOverlay.innerHTML = `<div class="text-center text-white p-6"><div class="loader mb-4 mx-auto"></div><p class="text-lg font-bold">Preparing Ads...</p></div>`;
+            loadingOverlay.innerHTML = `
+                <div class="text-center text-white p-6">
+                    <div class="loader mb-4 mx-auto"></div>
+                    <p class="text-lg font-bold">অ্যাড লোড হচ্ছে...</p>
+                </div>`;
             document.body.appendChild(loadingOverlay);
 
             try {
-                // ১. Giga Pub চেক ও শো
-                if (typeof window.showGiga === 'function') {
-                    await window.showGiga();
-                } else {
-                    console.warn("Giga SDK not found, trying Mone Tag...");
-                }
-
-                // ২. Mone Tag চেক ও শো (আপনার data-sdk='show_8954258' অনুযায়ী)
+                // শুধু Mone Tag অ্যাড শো করা
                 if (typeof window.show_8954258 === 'function') {
-                    await window.show_8954258();
-                    // অ্যাড সফলভাবে শেষ হলে রিওয়ার্ড
+                    await window.show_8954258(); // Promise হিসেবে কাজ করবে
+                    
+                    // রিওয়ার্ড প্রদান (সব সফল হলে)
                     await rewardUserAfterAds();
                 } else {
-                    throw new Error("Mone Tag SDK not ready");
+                    showNotification('Mone Tag SDK not ready.', 'error');
                 }
 
             } catch (error) {
-                console.error("Detailed Ad Error:", error);
-                // যদি ইউজার অ্যাড কেটে দেয় বা লোড না হয় তবে এই মেসেজ আসবে
-                showNotification('অ্যাড লোড হতে সমস্যা হয়েছে বা কেটে দেওয়া হয়েছে।', 'warning');
+                console.error("Ad Sequence Error:", error);
+                showNotification('অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
             } finally {
+                // সব শেষে লোডিং স্ক্রিন সরিয়ে ফেলা
                 if (document.body.contains(loadingOverlay)) {
                     document.body.removeChild(loadingOverlay);
                 }
@@ -1349,7 +1347,6 @@
                 showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
             }
         }
-        // --- FINAL UPDATED AD LOGIC END ---
 
         async function claimDailyBonus() {
             if (!currentUser || !userData) return;
