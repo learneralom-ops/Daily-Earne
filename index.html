@@ -590,6 +590,14 @@
                                 </div>
                             </div>
                             
+                            <!-- Referral Code Input -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Referral Code (Optional)</label>
+                                <input type="text" id="referralCodeInput" 
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                       placeholder="Enter referral code if you have one">
+                            </div>
+                            
                             <div class="flex items-start">
                                 <input type="checkbox" id="agreeTerms" required 
                                        class="w-4 h-4 mt-1 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
@@ -688,6 +696,7 @@
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
+                        <p class="text-xs opacity-75 mt-2">Copy and share your referral link with friends</p>
                     </div>
                     
                     <div class="flex space-x-3">
@@ -1109,6 +1118,7 @@
         let countdownInterval = null;
         let countdownSeconds = 15;
         let isVideoAd = false;
+        let referralCodeFromUrl = null;
 
         // DOM Elements
         const elements = {
@@ -1124,6 +1134,7 @@
             confirmPassword: document.getElementById('confirmPassword'),
             fullName: document.getElementById('fullName'),
             phoneNumber: document.getElementById('phoneNumber'),
+            referralCodeInput: document.getElementById('referralCodeInput'),
             profilePicture: document.getElementById('profilePicture'),
             profilePreview: document.getElementById('profilePreview'),
             loginBtn: document.getElementById('loginBtn'),
@@ -1218,6 +1229,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initializeApp();
             setupEventListeners();
+            checkForReferralInURL();
             
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -1236,6 +1248,24 @@
             if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
                 document.body.classList.add('dark');
                 updateThemeIcon(true);
+            }
+        }
+
+        function checkForReferralInURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCode = urlParams.get('ref');
+            
+            if (referralCode) {
+                referralCodeFromUrl = referralCode;
+                // Store referral code in localStorage for signup
+                localStorage.setItem('pendingReferralCode', referralCode);
+                
+                // If on login page, show notification
+                if (window.location.pathname.includes('login') || window.location.pathname === '/') {
+                    setTimeout(() => {
+                        showNotification('You have been referred by a friend! Sign up to get started.', 'info');
+                    }, 1000);
+                }
             }
         }
 
@@ -1304,6 +1334,14 @@
             const pageElement = document.getElementById(`${page}Page`);
             if (pageElement) {
                 pageElement.classList.add('active');
+                
+                // If going to signup page and there's a pending referral code, auto-fill it
+                if (page === 'signup') {
+                    const pendingReferralCode = localStorage.getItem('pendingReferralCode');
+                    if (pendingReferralCode && elements.referralCodeInput) {
+                        elements.referralCodeInput.value = pendingReferralCode;
+                    }
+                }
             }
         }
 
@@ -1372,6 +1410,7 @@
             const phone = elements.phoneNumber.value.trim();
             const password = elements.signupPassword.value;
             const confirmPassword = elements.confirmPassword.value;
+            const referralCode = elements.referralCodeInput.value.trim();
             
             if (!fullName || !email || !password || !confirmPassword) {
                 showNotification('Please fill in all required fields', 'error');
@@ -1405,6 +1444,26 @@
                     }
                 }
                 
+                // Check for referral code
+                let referrerId = null;
+                let usedReferralCode = null;
+                
+                if (referralCode) {
+                    // Check if referral code is valid (format: ref_userid)
+                    if (referralCode.startsWith('ref_')) {
+                        const userId = referralCode.substring(4);
+                        try {
+                            const referrerSnapshot = await database.ref('users/' + userId).once('value');
+                            if (referrerSnapshot.exists()) {
+                                referrerId = userId;
+                                usedReferralCode = referralCode;
+                            }
+                        } catch (error) {
+                            console.error('Error checking referral code:', error);
+                        }
+                    }
+                }
+                
                 const userData = {
                     uid: currentUser.uid,
                     fullName: fullName,
@@ -1428,10 +1487,21 @@
                     dailyAdsWatched: 0,
                     lastAdsDate: null,
                     videosWatched: 0,
-                    lastVideoDate: null
+                    lastVideoDate: null,
+                    referrer: referrerId, // Store who referred this user
+                    referralCode: `ref_${currentUser.uid.substring(0, 8)}` // This user's referral code
                 };
                 
                 await database.ref('users/' + currentUser.uid).set(userData);
+                
+                // If user was referred, update referrer's data
+                if (referrerId) {
+                    await processReferralReward(referrerId, currentUser.uid, usedReferralCode);
+                    
+                    // Clear pending referral code from localStorage
+                    localStorage.removeItem('pendingReferralCode');
+                }
+                
                 await loadUserData();
                 
                 showNotification('Account created successfully! Welcome to Daily Earning.', 'success');
@@ -1456,6 +1526,55 @@
             } finally {
                 elements.signupSpinner.classList.add('hidden');
                 elements.signupBtn.disabled = false;
+            }
+        }
+
+        async function processReferralReward(referrerId, referredUserId, referralCode) {
+            try {
+                const reward = 20; // ৳20 reward for successful referral
+                
+                // Update referrer's data
+                const referrerRef = database.ref('users/' + referrerId);
+                const referrerSnapshot = await referrerRef.once('value');
+                const referrerData = referrerSnapshot.val();
+                
+                const updates = {
+                    balance: (referrerData.balance || 0) + reward,
+                    totalEarnings: (referrerData.totalEarnings || 0) + reward,
+                    totalReferralEarnings: (referrerData.totalReferralEarnings || 0) + reward,
+                    successfulReferrals: (referrerData.successfulReferrals || 0) + 1,
+                    referrals: (referrerData.referrals || 0) + 1
+                };
+                
+                await referrerRef.update(updates);
+                
+                // Create referral record
+                const referralRecord = {
+                    referrerId: referrerId,
+                    referredUserId: referredUserId,
+                    referralCode: referralCode,
+                    reward: reward,
+                    timestamp: new Date().toISOString(),
+                    status: 'completed'
+                };
+                
+                await database.ref('referrals/' + referredUserId).set(referralRecord);
+                
+                // Send notification to referrer
+                const notificationData = {
+                    type: 'referral_reward',
+                    title: 'Referral Reward!',
+                    message: `You earned ৳${reward} from referral! ${referralCode} used your referral link.`,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                };
+                
+                await database.ref(`notifications/${referrerId}/${Date.now()}`).set(notificationData);
+                
+                console.log(`Referral reward processed: ${referrerId} earned ৳${reward} from ${referredUserId}`);
+                
+            } catch (error) {
+                console.error('Error processing referral reward:', error);
             }
         }
 
@@ -1555,7 +1674,8 @@
                         dailyAdsWatched: 0,
                         lastAdsDate: null,
                         videosWatched: 0,
-                        lastVideoDate: null
+                        lastVideoDate: null,
+                        referralCode: `ref_${currentUser.uid.substring(0, 8)}`
                     };
                     
                     await database.ref('users/' + currentUser.uid).set(userData);
@@ -1639,8 +1759,8 @@
         function generateUserReferralLink() {
             if (!currentUser || !userData) return;
             
-            const baseUrl = 'https://daily-earne.vercel.app';
-            const referralCode = `ref_${currentUser.uid.substring(0, 8)}`;
+            const baseUrl = window.location.origin;
+            const referralCode = userData.referralCode || `ref_${currentUser.uid.substring(0, 8)}`;
             const referralLink = `${baseUrl}/?ref=${referralCode}`;
             
             if (elements.referralLink) {
@@ -2136,24 +2256,9 @@
 
         async function copyReferralLink() {
             navigator.clipboard.writeText(elements.referralLink.value)
-                .then(async () => {
-                    try {
-                        const reward = 20;
-                        
-                        const updates = {};
-                        updates['balance'] = (userData.balance || 0) + reward;
-                        updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-                        updates['totalReferralEarnings'] = (userData.totalReferralEarnings || 0) + reward;
-                        
-                        await database.ref('users/' + currentUser.uid).update(updates);
-                        userData = { ...userData, ...updates };
-                        updateUserInterface();
-                        
-                        showNotification('Referral link copied to clipboard! +৳20 earned for sharing.', 'success');
-                    } catch (error) {
-                        console.error('Error adding referral share reward:', error);
-                        showNotification('Referral link copied to clipboard!', 'success');
-                    }
+                .then(() => {
+                    // শুধু লিংক কপি করা হয়েছে, ব্যালেন্স যোগ করা হবে না
+                    showNotification('Referral link copied to clipboard! Share with friends to earn ৳20.', 'success');
                 })
                 .catch(err => {
                     console.error('Failed to copy: ', err);
@@ -2165,27 +2270,11 @@
             if (navigator.share) {
                 navigator.share({
                     title: 'Daily Earning - Earn Money Online',
-                    text: 'Join Daily Earning and start earning money by completing simple tasks!',
+                    text: 'Join Daily Earning and start earning money by completing simple tasks! Use my referral link to get started.',
                     url: elements.referralLink.value
                 })
-                .then(async () => {
-                    try {
-                        const reward = 20;
-                        
-                        const updates = {};
-                        updates['balance'] = (userData.balance || 0) + reward;
-                        updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-                        updates['totalReferralEarnings'] = (userData.totalReferralEarnings || 0) + reward;
-                        
-                        await database.ref('users/' + currentUser.uid).update(updates);
-                        userData = { ...userData, ...updates };
-                        updateUserInterface();
-                        
-                        showNotification('Thanks for sharing! +৳20 earned.', 'success');
-                    } catch (error) {
-                        console.error('Error adding referral share reward:', error);
-                        showNotification('Thanks for sharing!', 'success');
-                    }
+                .then(() => {
+                    showNotification('Thanks for sharing! You will earn ৳20 when friends join using your link.', 'success');
                 })
                 .catch(err => console.error('Error sharing:', err));
             } else {
