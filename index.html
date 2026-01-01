@@ -365,6 +365,66 @@
             margin-bottom: 30px;
             max-width: 300px;
         }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9998;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .modal-container {
+            background: #1e293b;
+            color: white;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .dark .modal-title {
+            color: white;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-close:hover {
+            color: #ef4444;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
@@ -926,6 +986,104 @@
         </div>
     </div>
 
+    <!-- Profile Edit Modal -->
+    <div id="profileEditModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile</h3>
+                <button id="closeProfileEditModal" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="profileEditForm">
+                <div class="space-y-4">
+                    <!-- Profile Picture Upload -->
+                    <div class="text-center mb-4">
+                        <div class="relative inline-block">
+                            <img id="editProfilePreview" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+                                 alt="Profile" class="profile-pic rounded-full mx-auto mb-3">
+                            <div class="file-input-container">
+                                <button type="button" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                                <input type="file" id="editProfilePicture" accept="image/*" class="cursor-pointer">
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Change profile picture</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                        <input type="text" id="editFullName" required 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                               placeholder="Enter your full name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                        <input type="email" id="editEmail" required 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                               placeholder="Enter your email">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                        <input type="tel" id="editPhoneNumber" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                               placeholder="Enter phone number">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password (for verification)</label>
+                        <div class="relative">
+                            <input type="password" id="currentPassword" 
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                   placeholder="Enter current password">
+                            <button type="button" id="toggleCurrentPassword" class="absolute right-3 top-3 text-gray-500">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password (optional)</label>
+                        <div class="relative">
+                            <input type="password" id="newPassword" 
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                   placeholder="Enter new password (leave empty to keep current)">
+                            <button type="button" id="toggleNewPassword" class="absolute right-3 top-3 text-gray-500">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty if you don't want to change password</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+                        <div class="relative">
+                            <input type="password" id="confirmNewPassword" 
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                   placeholder="Confirm new password">
+                            <button type="button" id="toggleConfirmNewPassword" class="absolute right-3 top-3 text-gray-500">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button type="submit" id="saveProfileBtn" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
+                            <span>Save Changes</span>
+                            <div id="saveProfileSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
+                        </button>
+                        <button type="button" id="cancelProfileEdit" class="flex-1 border-2 border-red-600 text-red-600 dark:text-red-400 dark:border-red-400 font-bold py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1034,7 +1192,26 @@
             remainingSeconds: document.getElementById('remainingSeconds'),
             
             celebrationOverlay: document.getElementById('celebrationOverlay'),
-            closeCelebrationBtn: document.getElementById('closeCelebrationBtn')
+            closeCelebrationBtn: document.getElementById('closeCelebrationBtn'),
+            
+            // Profile Edit Modal Elements
+            profileEditModal: document.getElementById('profileEditModal'),
+            editProfilePreview: document.getElementById('editProfilePreview'),
+            editProfilePicture: document.getElementById('editProfilePicture'),
+            editFullName: document.getElementById('editFullName'),
+            editEmail: document.getElementById('editEmail'),
+            editPhoneNumber: document.getElementById('editPhoneNumber'),
+            currentPassword: document.getElementById('currentPassword'),
+            newPassword: document.getElementById('newPassword'),
+            confirmNewPassword: document.getElementById('confirmNewPassword'),
+            toggleCurrentPassword: document.getElementById('toggleCurrentPassword'),
+            toggleNewPassword: document.getElementById('toggleNewPassword'),
+            toggleConfirmNewPassword: document.getElementById('toggleConfirmNewPassword'),
+            profileEditForm: document.getElementById('profileEditForm'),
+            saveProfileBtn: document.getElementById('saveProfileBtn'),
+            saveProfileSpinner: document.getElementById('saveProfileSpinner'),
+            cancelProfileEdit: document.getElementById('cancelProfileEdit'),
+            closeProfileEditModal: document.getElementById('closeProfileEditModal')
         };
 
         // Initialize App
@@ -1107,6 +1284,16 @@
             document.getElementById('backFromProfile').addEventListener('click', () => navigateToPage('home'));
             
             elements.closeCelebrationBtn.addEventListener('click', closeCelebration);
+            
+            // Profile Edit Modal Event Listeners
+            elements.editProfileBtn.addEventListener('click', openProfileEditModal);
+            elements.closeProfileEditModal.addEventListener('click', closeProfileEditModal);
+            elements.cancelProfileEdit.addEventListener('click', closeProfileEditModal);
+            elements.profileEditForm.addEventListener('submit', handleProfileEdit);
+            elements.toggleCurrentPassword.addEventListener('click', () => togglePasswordVisibility('currentPassword', elements.toggleCurrentPassword));
+            elements.toggleNewPassword.addEventListener('click', () => togglePasswordVisibility('newPassword', elements.toggleNewPassword));
+            elements.toggleConfirmNewPassword.addEventListener('click', () => togglePasswordVisibility('confirmNewPassword', elements.toggleConfirmNewPassword));
+            elements.editProfilePicture.addEventListener('change', handleEditProfilePictureChange);
         }
 
         function navigateToAuthPage(page) {
@@ -1295,10 +1482,32 @@
             }
         }
 
+        function handleEditProfilePictureChange(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.match('image.*')) {
+                    showNotification('Please select an image file', 'error');
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('Image size should be less than 5MB', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    elements.editProfilePreview.src = e.target.result;
+                    selectedProfilePicture = file;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         async function uploadProfilePicture(file, userId) {
             return new Promise((resolve, reject) => {
                 const storageRef = storage.ref();
-                const profilePicRef = storageRef.child(`profile-pictures/${userId}/${file.name}`);
+                const profilePicRef = storageRef.child(`profile-pictures/${userId}/${Date.now()}_${file.name}`);
                 
                 const uploadTask = profilePicRef.put(file);
                 
@@ -1981,6 +2190,135 @@
                 .catch(err => console.error('Error sharing:', err));
             } else {
                 copyReferralLink();
+            }
+        }
+
+        // Profile Edit Modal Functions
+        function openProfileEditModal() {
+            if (!currentUser || !userData) return;
+            
+            // Populate form with current user data
+            elements.editProfilePreview.src = userData.profilePicture;
+            elements.editFullName.value = userData.fullName || '';
+            elements.editEmail.value = userData.email || '';
+            elements.editPhoneNumber.value = userData.phone || '';
+            
+            // Reset password fields
+            elements.currentPassword.value = '';
+            elements.newPassword.value = '';
+            elements.confirmNewPassword.value = '';
+            
+            // Show modal
+            elements.profileEditModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProfileEditModal() {
+            elements.profileEditModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            selectedProfilePicture = null;
+        }
+
+        async function handleProfileEdit(e) {
+            e.preventDefault();
+            
+            const fullName = elements.editFullName.value.trim();
+            const email = elements.editEmail.value.trim();
+            const phone = elements.editPhoneNumber.value.trim();
+            const currentPasswordValue = elements.currentPassword.value;
+            const newPasswordValue = elements.newPassword.value;
+            const confirmNewPasswordValue = elements.confirmNewPassword.value;
+            
+            if (!fullName || !email) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Verify current password
+            if (!currentPasswordValue) {
+                showNotification('Please enter your current password for verification', 'error');
+                return;
+            }
+            
+            try {
+                // Verify current password
+                const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPasswordValue);
+                await currentUser.reauthenticateWithCredential(credential);
+                
+                elements.saveProfileSpinner.classList.remove('hidden');
+                elements.saveProfileBtn.disabled = true;
+                
+                let profilePicUrl = userData.profilePicture;
+                
+                // Upload new profile picture if selected
+                if (selectedProfilePicture) {
+                    try {
+                        profilePicUrl = await uploadProfilePicture(selectedProfilePicture, currentUser.uid);
+                    } catch (uploadError) {
+                        console.error('Profile picture upload failed:', uploadError);
+                    }
+                }
+                
+                const updates = {
+                    fullName: fullName,
+                    email: email,
+                    phone: phone,
+                    profilePicture: profilePicUrl
+                };
+                
+                // Update Firebase user data
+                await database.ref('users/' + currentUser.uid).update(updates);
+                
+                // Update email if changed
+                if (email !== currentUser.email) {
+                    await currentUser.updateEmail(email);
+                }
+                
+                // Update password if provided
+                if (newPasswordValue) {
+                    if (newPasswordValue.length < 6) {
+                        showNotification('New password must be at least 6 characters', 'error');
+                        elements.saveProfileSpinner.classList.add('hidden');
+                        elements.saveProfileBtn.disabled = false;
+                        return;
+                    }
+                    
+                    if (newPasswordValue !== confirmNewPasswordValue) {
+                        showNotification('New passwords do not match', 'error');
+                        elements.saveProfileSpinner.classList.add('hidden');
+                        elements.saveProfileBtn.disabled = false;
+                        return;
+                    }
+                    
+                    await currentUser.updatePassword(newPasswordValue);
+                }
+                
+                // Reload user data
+                await loadUserData();
+                
+                showNotification('Profile updated successfully!', 'success');
+                closeProfileEditModal();
+                
+            } catch (error) {
+                console.error('Profile update error:', error);
+                let errorMessage = 'Failed to update profile. Please try again.';
+                
+                switch(error.code) {
+                    case 'auth/wrong-password':
+                        errorMessage = 'Current password is incorrect.';
+                        break;
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Email already in use. Please use a different email.';
+                        break;
+                    case 'auth/requires-recent-login':
+                        errorMessage = 'Please login again to change your email or password.';
+                        break;
+                }
+                
+                showNotification(errorMessage, 'error');
+            } finally {
+                elements.saveProfileSpinner.classList.add('hidden');
+                elements.saveProfileBtn.disabled = false;
             }
         }
 
