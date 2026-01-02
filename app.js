@@ -1356,3 +1356,442 @@ function showNotification(message, type = 'info') {
         elements.notification.classList.add('hidden');
     }, 3000);
 }
+
+
+// Deposit and Withdraw Functions
+function setupDepositWithdrawEvents() {
+    // Deposit Button Event
+    document.getElementById('depositBtn').addEventListener('click', openDepositModal);
+    document.getElementById('closeDepositModal').addEventListener('click', closeDepositModal);
+    document.getElementById('cancelDeposit').addEventListener('click', closeDepositModal);
+    document.getElementById('depositForm').addEventListener('submit', handleDeposit);
+    
+    // Withdraw Button Event
+    document.getElementById('withdrawBtn').addEventListener('click', openWithdrawModal);
+    document.getElementById('closeWithdrawModal').addEventListener('click', closeWithdrawModal);
+    document.getElementById('cancelWithdraw').addEventListener('click', closeWithdrawModal);
+    document.getElementById('withdrawForm').addEventListener('submit', handleWithdraw);
+    
+    // Success Modals Events
+    document.getElementById('closeDepositSuccessBtn').addEventListener('click', closeDepositSuccessModal);
+    document.getElementById('closeDepositSuccess').addEventListener('click', closeDepositSuccessModal);
+    document.getElementById('closeWithdrawSuccessBtn').addEventListener('click', closeWithdrawSuccessModal);
+    document.getElementById('closeWithdrawSuccess').addEventListener('click', closeWithdrawSuccessModal);
+    
+    // Back to Home button
+    document.getElementById('goBackBtn').addEventListener('click', closeWithdrawModal);
+}
+
+function openDepositModal() {
+    if (!currentUser || !userData) {
+        showNotification('Please login first!', 'error');
+        return;
+    }
+    
+    // Reset form
+    document.getElementById('depositForm').reset();
+    
+    // Show modal
+    document.getElementById('depositModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDepositModal() {
+    document.getElementById('depositModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function openWithdrawModal() {
+    if (!currentUser || !userData) {
+        showNotification('Please login first!', 'error');
+        return;
+    }
+    
+    // Reset form
+    document.getElementById('withdrawForm').reset();
+    
+    // Show modal
+    document.getElementById('withdrawModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Check withdrawal eligibility
+    checkWithdrawalEligibility();
+}
+
+function closeWithdrawModal() {
+    document.getElementById('withdrawModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function checkWithdrawalEligibility() {
+    // Show loading status
+    document.getElementById('withdrawStatus').classList.remove('hidden');
+    document.getElementById('withdrawStatus').classList.add('flex', 'flex-col');
+    document.getElementById('statusMessage').textContent = 'Checking eligibility...';
+    document.getElementById('eligibleMessage').classList.add('hidden');
+    document.getElementById('notEligibleMessage').classList.add('hidden');
+    document.getElementById('withdrawFormFields').classList.add('hidden');
+    document.getElementById('backToHomeBtn').classList.add('hidden');
+    
+    // Get current balance and referral count
+    const currentBalance = userData.balance || 0;
+    const successfulReferrals = userData.successfulReferrals || 0;
+    const requiredReferrals = 20;
+    const minBalance = 500;
+    
+    // Update display
+    document.getElementById('currentBalanceDisplay').textContent = `৳${currentBalance}`;
+    document.getElementById('referralCountDisplay').textContent = `${successfulReferrals}/${requiredReferrals}`;
+    document.getElementById('availableBalance').textContent = `৳${currentBalance}`;
+    
+    // Check balance requirement
+    const balanceCheckElement = document.getElementById('balanceCheck');
+    const balanceStatusElement = document.getElementById('balanceStatus');
+    
+    if (currentBalance >= minBalance) {
+        balanceCheckElement.classList.add('border-green-200', 'dark:border-green-800', 'bg-green-50', 'dark:bg-green-900/20');
+        balanceCheckElement.classList.remove('border-red-200', 'dark:border-red-800', 'bg-red-50', 'dark:bg-red-900/20');
+        balanceStatusElement.textContent = '✓ Eligible';
+        balanceStatusElement.className = 'text-sm text-green-600 dark:text-green-400';
+    } else {
+        balanceCheckElement.classList.add('border-red-200', 'dark:border-red-800', 'bg-red-50', 'dark:bg-red-900/20');
+        balanceCheckElement.classList.remove('border-green-200', 'dark:border-green-800', 'bg-green-50', 'dark:bg-green-900/20');
+        balanceStatusElement.textContent = `Need ৳${minBalance - currentBalance} more`;
+        balanceStatusElement.className = 'text-sm text-red-600 dark:text-red-400';
+    }
+    
+    // Check referral requirement
+    const referralCheckElement = document.getElementById('referralCheck');
+    const referralStatusElement = document.getElementById('referralStatus');
+    
+    if (successfulReferrals >= requiredReferrals) {
+        referralCheckElement.classList.add('border-green-200', 'dark:border-green-800', 'bg-green-50', 'dark:bg-green-900/20');
+        referralCheckElement.classList.remove('border-red-200', 'dark:border-red-800', 'bg-red-50', 'dark:bg-red-900/20');
+        referralStatusElement.textContent = '✓ Eligible';
+        referralStatusElement.className = 'text-sm text-green-600 dark:text-green-400';
+    } else {
+        referralCheckElement.classList.add('border-red-200', 'dark:border-red-800', 'bg-red-50', 'dark:bg-red-900/20');
+        referralCheckElement.classList.remove('border-green-200', 'dark:border-green-800', 'bg-green-50', 'dark:bg-green-900/20');
+        referralStatusElement.textContent = `Need ${requiredReferrals - successfulReferrals} more`;
+        referralStatusElement.className = 'text-sm text-red-600 dark:text-red-400';
+    }
+    
+    // Simulate API call delay
+    setTimeout(() => {
+        document.getElementById('withdrawStatus').classList.add('hidden');
+        
+        // Check if both requirements are met
+        if (currentBalance >= minBalance && successfulReferrals >= requiredReferrals) {
+            document.getElementById('eligibleMessage').classList.remove('hidden');
+            document.getElementById('withdrawFormFields').classList.remove('hidden');
+            
+            // Update available balance
+            document.getElementById('availableBalance').textContent = `৳${currentBalance}`;
+            
+            // Set max withdrawal amount
+            const withdrawAmountInput = document.getElementById('withdrawAmount');
+            withdrawAmountInput.max = currentBalance;
+            withdrawAmountInput.value = Math.min(currentBalance, 500); // Default to min or available
+            
+            // Calculate initial amounts
+            calculateWithdrawAmount();
+            
+        } else {
+            document.getElementById('notEligibleMessage').classList.remove('hidden');
+            document.getElementById('backToHomeBtn').classList.remove('hidden');
+            
+            // Show reason
+            const reasons = [];
+            if (currentBalance < minBalance) {
+                reasons.push(`Minimum balance ৳${minBalance} required`);
+            }
+            if (successfulReferrals < requiredReferrals) {
+                reasons.push(`${requiredReferrals} successful referrals required`);
+            }
+            
+            document.getElementById('notEligibleReason').textContent = 
+                `You need to complete: ${reasons.join(' and ')}`;
+        }
+    }, 1500);
+}
+
+function calculateWithdrawAmount() {
+    const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+    const transactionFee = 10;
+    const netAmount = withdrawAmount - transactionFee;
+    
+    document.getElementById('displayWithdrawAmount').textContent = `৳${withdrawAmount}`;
+    document.getElementById('transactionFee').textContent = `৳${transactionFee}`;
+    document.getElementById('netAmount').textContent = `৳${netAmount > 0 ? netAmount : 0}`;
+}
+
+async function handleDeposit(e) {
+    e.preventDefault();
+    
+    const depositAmount = parseFloat(document.getElementById('depositAmount').value);
+    const transactionId = document.getElementById('transactionId').value.trim();
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const senderNumber = document.getElementById('senderNumber').value.trim();
+    
+    // Validation
+    if (!depositAmount || depositAmount < 10) {
+        showNotification('Minimum deposit amount is ৳10', 'error');
+        return;
+    }
+    
+    if (!transactionId) {
+        showNotification('Please enter transaction ID', 'error');
+        return;
+    }
+    
+    if (!paymentMethod) {
+        showNotification('Please select payment method', 'error');
+        return;
+    }
+    
+    if (!senderNumber || senderNumber.length < 11) {
+        showNotification('Please enter valid phone number', 'error');
+        return;
+    }
+    
+    try {
+        // Show loading spinner
+        document.getElementById('depositSpinner').classList.remove('hidden');
+        document.getElementById('submitDepositBtn').disabled = true;
+        
+        // Create deposit record
+        const depositData = {
+            userId: currentUser.uid,
+            amount: depositAmount,
+            transactionId: transactionId,
+            paymentMethod: paymentMethod,
+            senderNumber: senderNumber,
+            receiverNumber: '01749666991',
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            userName: userData.fullName,
+            userEmail: userData.email
+        };
+        
+        // Save to database
+        const depositRef = database.ref('deposits').push();
+        await depositRef.set(depositData);
+        
+        // Update user's pending deposits
+        const userRef = database.ref('users/' + currentUser.uid);
+        const userSnapshot = await userRef.once('value');
+        const currentUserData = userSnapshot.val();
+        
+        const pendingDeposits = currentUserData.pendingDeposits || [];
+        pendingDeposits.push({
+            id: depositRef.key,
+            amount: depositAmount,
+            timestamp: new Date().toISOString()
+        });
+        
+        await userRef.update({
+            pendingDeposits: pendingDeposits,
+            totalDeposits: (currentUserData.totalDeposits || 0) + 1
+        });
+        
+        // Send notification to admin (simulated)
+        const notificationData = {
+            type: 'new_deposit',
+            title: 'New Deposit Request',
+            message: `${userData.fullName} requested ৳${depositAmount} deposit`,
+            userId: currentUser.uid,
+            depositId: depositRef.key,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        await database.ref('admin_notifications').push(notificationData);
+        
+        // Close deposit modal
+        closeDepositModal();
+        
+        // Show success modal
+        showDepositSuccess(depositAmount, paymentMethod, transactionId);
+        
+        // Send confirmation notification
+        showNotification(`Deposit request submitted! Amount: ৳${depositAmount}`, 'success');
+        
+    } catch (error) {
+        console.error('Deposit error:', error);
+        showNotification('Failed to submit deposit request. Please try again.', 'error');
+    } finally {
+        document.getElementById('depositSpinner').classList.add('hidden');
+        document.getElementById('submitDepositBtn').disabled = false;
+    }
+}
+
+async function handleWithdraw(e) {
+    e.preventDefault();
+    
+    const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value);
+    const withdrawMethod = document.getElementById('withdrawMethod').value;
+    const accountNumber = document.getElementById('accountNumber').value.trim();
+    const accountName = document.getElementById('accountName').value.trim();
+    const transactionFee = 10;
+    const netAmount = withdrawAmount - transactionFee;
+    
+    // Validation
+    if (!withdrawAmount || withdrawAmount < 500) {
+        showNotification('Minimum withdrawal amount is ৳500', 'error');
+        return;
+    }
+    
+    if (withdrawAmount > userData.balance) {
+        showNotification('Insufficient balance', 'error');
+        return;
+    }
+    
+    if (!withdrawMethod) {
+        showNotification('Please select payment method', 'error');
+        return;
+    }
+    
+    if (!accountNumber) {
+        showNotification('Please enter account number', 'error');
+        return;
+    }
+    
+    if (!accountName) {
+        showNotification('Please enter account holder name', 'error');
+        return;
+    }
+    
+    // Check eligibility again
+    if (userData.balance < 500 || (userData.successfulReferrals || 0) < 20) {
+        showNotification('You are not eligible for withdrawal', 'error');
+        return;
+    }
+    
+    try {
+        // Show loading spinner
+        document.getElementById('withdrawSpinner').classList.remove('hidden');
+        document.getElementById('submitWithdrawBtn').disabled = true;
+        
+        // Create withdrawal record
+        const withdrawData = {
+            userId: currentUser.uid,
+            amount: withdrawAmount,
+            netAmount: netAmount,
+            transactionFee: transactionFee,
+            paymentMethod: withdrawMethod,
+            accountNumber: accountNumber,
+            accountName: accountName,
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            userName: userData.fullName,
+            userEmail: userData.email,
+            userPhone: userData.phone || '',
+            successfulReferrals: userData.successfulReferrals || 0
+        };
+        
+        // Save to database
+        const withdrawRef = database.ref('withdrawals').push();
+        await withdrawRef.set(withdrawData);
+        
+        // Update user balance and withdrawals
+        const userRef = database.ref('users/' + currentUser.uid);
+        const userSnapshot = await userRef.once('value');
+        const currentUserData = userSnapshot.val();
+        
+        const pendingWithdrawals = currentUserData.pendingWithdrawals || [];
+        pendingWithdrawals.push({
+            id: withdrawRef.key,
+            amount: withdrawAmount,
+            netAmount: netAmount,
+            timestamp: new Date().toISOString()
+        });
+        
+        await userRef.update({
+            balance: (currentUserData.balance || 0) - withdrawAmount,
+            pendingWithdrawals: pendingWithdrawals,
+            totalWithdrawals: (currentUserData.totalWithdrawals || 0) + 1,
+            totalWithdrawalAmount: (currentUserData.totalWithdrawalAmount || 0) + withdrawAmount
+        });
+        
+        // Update local user data
+        userData.balance -= withdrawAmount;
+        updateUserInterface();
+        
+        // Send notification to admin
+        const notificationData = {
+            type: 'new_withdrawal',
+            title: 'New Withdrawal Request',
+            message: `${userData.fullName} requested ৳${withdrawAmount} withdrawal`,
+            userId: currentUser.uid,
+            withdrawalId: withdrawRef.key,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        await database.ref('admin_notifications').push(notificationData);
+        
+        // Close withdraw modal
+        closeWithdrawModal();
+        
+        // Show success modal
+        showWithdrawSuccess(withdrawAmount, withdrawMethod, accountNumber, netAmount);
+        
+        // Send confirmation notification
+        showNotification(`Withdrawal request submitted! You will receive ৳${netAmount}`, 'success');
+        
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+        showNotification('Failed to submit withdrawal request. Please try again.', 'error');
+    } finally {
+        document.getElementById('withdrawSpinner').classList.add('hidden');
+        document.getElementById('submitWithdrawBtn').disabled = false;
+    }
+}
+
+function showDepositSuccess(amount, method, transactionId) {
+    // Update success modal content
+    document.getElementById('successDepositAmount').textContent = `৳${amount}`;
+    document.getElementById('successPaymentMethod').textContent = getPaymentMethodName(method);
+    document.getElementById('successTransactionId').textContent = transactionId;
+    
+    // Show success modal
+    document.getElementById('depositSuccessModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDepositSuccessModal() {
+    document.getElementById('depositSuccessModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function showWithdrawSuccess(amount, method, accountNumber, netAmount) {
+    // Update success modal content
+    document.getElementById('successWithdrawAmount').textContent = `৳${amount}`;
+    document.getElementById('successWithdrawMethod').textContent = getPaymentMethodName(method);
+    document.getElementById('successAccountNumber').textContent = accountNumber;
+    document.getElementById('successNetAmount').textContent = `৳${netAmount}`;
+    
+    // Show success modal
+    document.getElementById('withdrawSuccessModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeWithdrawSuccessModal() {
+    document.getElementById('withdrawSuccessModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function getPaymentMethodName(method) {
+    const methods = {
+        'bkash': 'বিকাশ',
+        'nagad': 'নগদ',
+        'rocket': 'রকেট',
+        'bank': 'Bank Account'
+    };
+    return methods[method] || method;
+}
+
+// Initialize deposit/withdraw events when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    setupDepositWithdrawEvents();
+});
