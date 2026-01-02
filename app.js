@@ -1785,7 +1785,6 @@ function getPaymentMethodName(method) {
     const methods = {
         'bkash': 'বিকাশ',
         'nagad': 'নগদ',
-        'rocket': 'রকেট',
         'bank': 'Bank Account'
     };
     return methods[method] || method;
