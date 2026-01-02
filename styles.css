@@ -376,3 +376,151 @@ body.dark {
 .modal-close:hover {
     color: #ef4444;
 }
+
+
+/* Deposit/Withdraw specific styles */
+.deposit-step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.deposit-step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.deposit-step-content h4 {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.deposit-step-content p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Payment method badges */
+.payment-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.bkash-badge {
+    background: #E2136E;
+    color: white;
+}
+
+.nagad-badge {
+    background: #F8A61C;
+    color: white;
+}
+
+.rocket-badge {
+    background: #5D2D91;
+    color: white;
+}
+
+.bank-badge {
+    background: #1E40AF;
+    color: white;
+}
+
+/* Requirement check styles */
+.requirement-check {
+    transition: all 0.3s ease;
+}
+
+.requirement-check.eligible {
+    border-color: #10B981 !important;
+    background: rgba(16, 185, 129, 0.1) !important;
+}
+
+.requirement-check.not-eligible {
+    border-color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Amount input with currency symbol */
+.amount-input-container {
+    position: relative;
+}
+
+.amount-input-container input {
+    padding-right: 40px;
+}
+
+.currency-symbol {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: #6B7280;
+}
+
+.dark .currency-symbol {
+    color: #9CA3AF;
+}
+
+/* Success animation */
+.success-animation {
+    animation: successPulse 2s ease-in-out;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Loading overlay for deposit/withdraw */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    z-index: 10;
+}
+
+.dark .loading-overlay {
+    background: rgba(30, 41, 59, 0.9);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .modal-container {
+        width: 95%;
+        padding: 16px;
+        margin: 10px;
+    }
+    
+    .payment-badge {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
