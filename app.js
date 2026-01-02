@@ -1795,3 +1795,19 @@ function getPaymentMethodName(method) {
 document.addEventListener('DOMContentLoaded', () => {
     setupDepositWithdrawEvents();
 });
+
+
+
+// Update the initializeApp function or add this in DOMContentLoaded
+function initializeApp() {
+    const savedTheme = localStorage.getItem('dailyEarningTheme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        document.body.classList.add('dark');
+        updateThemeIcon(true);
+    }
+    
+    // Initialize deposit/withdraw events
+    setupDepositWithdrawEvents();
+}
