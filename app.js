@@ -136,6 +136,9 @@ function initializeApp() {
         document.body.classList.add('dark');
         updateThemeIcon(true);
     }
+    
+    // Initialize deposit/withdraw events
+    setupDepositWithdrawEvents();
 }
 
 function checkForReferralInURL() {
@@ -211,6 +214,12 @@ function setupEventListeners() {
     elements.toggleNewPassword.addEventListener('click', () => togglePasswordVisibility('newPassword', elements.toggleNewPassword));
     elements.toggleConfirmNewPassword.addEventListener('click', () => togglePasswordVisibility('confirmNewPassword', elements.toggleConfirmNewPassword));
     elements.editProfilePicture.addEventListener('change', handleEditProfilePictureChange);
+    
+    // রেফারেল স্ট্যাটস বাটন ইভেন্ট
+    const referralStatsBtn = document.getElementById('referralStatsBtn');
+    if (referralStatsBtn) {
+        referralStatsBtn.addEventListener('click', showReferralStats);
+    }
 }
 
 function navigateToAuthPage(page) {
@@ -331,7 +340,7 @@ async function handleSignup(e) {
             }
         }
         
-        // Check for referral code
+        // Check for referral code from input field
         let referrerId = null;
         let usedReferralCode = null;
         
@@ -351,6 +360,40 @@ async function handleSignup(e) {
             }
         }
         
+        // Check from URL parameter if not from input
+        if (!referrerId && referralCodeFromUrl) {
+            if (referralCodeFromUrl.startsWith('ref_')) {
+                const userId = referralCodeFromUrl.substring(4);
+                try {
+                    const referrerSnapshot = await database.ref('users/' + userId).once('value');
+                    if (referrerSnapshot.exists()) {
+                        referrerId = userId;
+                        usedReferralCode = referralCodeFromUrl;
+                    }
+                } catch (error) {
+                    console.error('Error checking referral code from URL:', error);
+                }
+            }
+        }
+        
+        // Check from localStorage if not from input or URL
+        if (!referrerId) {
+            const pendingReferralCode = localStorage.getItem('pendingReferralCode');
+            if (pendingReferralCode && pendingReferralCode.startsWith('ref_')) {
+                const userId = pendingReferralCode.substring(4);
+                try {
+                    const referrerSnapshot = await database.ref('users/' + userId).once('value');
+                    if (referrerSnapshot.exists()) {
+                        referrerId = userId;
+                        usedReferralCode = pendingReferralCode;
+                    }
+                } catch (error) {
+                    console.error('Error checking referral code from localStorage:', error);
+                }
+            }
+        }
+        
+        // Create user data
         const userData = {
             uid: currentUser.uid,
             fullName: fullName,
@@ -376,7 +419,9 @@ async function handleSignup(e) {
             videosWatched: 0,
             lastVideoDate: null,
             referrer: referrerId, // Store who referred this user
-            referralCode: `ref_${currentUser.uid.substring(0, 8)}` // This user's referral code
+            referralCode: `ref_${currentUser.uid}`, // This user's referral code (full UID)
+            signupTimestamp: new Date().toISOString(),
+            isActive: true
         };
         
         await database.ref('users/' + currentUser.uid).set(userData);
@@ -385,8 +430,15 @@ async function handleSignup(e) {
         if (referrerId) {
             await processReferralReward(referrerId, currentUser.uid, usedReferralCode);
             
-            // Clear pending referral code from localStorage
+            // Clear pending referral code from localStorage and URL
             localStorage.removeItem('pendingReferralCode');
+            referralCodeFromUrl = null;
+            
+            // Also update the referred user's data to show who referred them
+            await database.ref('users/' + currentUser.uid).update({
+                referredBy: referrerId,
+                referralSource: usedReferralCode
+            });
         }
         
         await loadUserData();
@@ -425,6 +477,13 @@ async function processReferralReward(referrerId, referredUserId, referralCode) {
         const referrerSnapshot = await referrerRef.once('value');
         const referrerData = referrerSnapshot.val();
         
+        // First, check if this referral has already been processed
+        const existingRefCheck = await database.ref(`referrals/${referrerId}/${referredUserId}`).once('value');
+        if (existingRefCheck.exists()) {
+            console.log('Referral already processed');
+            return;
+        }
+        
         const updates = {
             balance: (referrerData.balance || 0) + reward,
             totalEarnings: (referrerData.totalEarnings || 0) + reward,
@@ -435,25 +494,36 @@ async function processReferralReward(referrerId, referredUserId, referralCode) {
         
         await referrerRef.update(updates);
         
-        // Create referral record
+        // Create referral record with detailed information
         const referralRecord = {
             referrerId: referrerId,
             referredUserId: referredUserId,
             referralCode: referralCode,
             reward: reward,
             timestamp: new Date().toISOString(),
-            status: 'completed'
+            status: 'completed',
+            isActive: true
         };
         
-        await database.ref('referrals/' + referredUserId).set(referralRecord);
+        // Save referral under referrer's referrals
+        await database.ref(`referrals/${referrerId}/${referredUserId}`).set(referralRecord);
+        
+        // Also save under global referrals for tracking
+        await database.ref('all_referrals/' + referredUserId).set({
+            referrerId: referrerId,
+            referralCode: referralCode,
+            timestamp: new Date().toISOString()
+        });
         
         // Send notification to referrer
         const notificationData = {
             type: 'referral_reward',
-            title: 'Referral Reward!',
-            message: `You earned ৳${reward} from referral! ${referralCode} used your referral link.`,
+            title: '🎉 Referral Reward Earned!',
+            message: `You earned ৳${reward} from referral!`,
+            amount: reward,
             timestamp: new Date().toISOString(),
-            read: false
+            read: false,
+            userId: referrerId
         };
         
         await database.ref(`notifications/${referrerId}/${Date.now()}`).set(notificationData);
@@ -562,7 +632,7 @@ async function loadUserData() {
                 lastAdsDate: null,
                 videosWatched: 0,
                 lastVideoDate: null,
-                referralCode: `ref_${currentUser.uid.substring(0, 8)}`
+                referralCode: `ref_${currentUser.uid}` // Full UID
             };
             
             await database.ref('users/' + currentUser.uid).set(userData);
@@ -592,10 +662,16 @@ async function loadUserData() {
                 userData.videosWatched = 0;
                 userData.lastVideoDate = new Date().toISOString();
             }
+            
+            // Get actual referral count from database
+            await updateReferralCount();
         }
         
         updateUserInterface();
         showMainApp();
+        
+        // Check for pending referrals
+        await setupReferralTracking();
         
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -609,6 +685,8 @@ function updateUserInterface() {
     elements.currentBalance.textContent = userData.balance || 0;
     elements.dailyStreak.textContent = `${userData.streak || 0} days`;
     elements.streakProgress.style.width = `${Math.min((userData.streak || 0) * 10, 100)}%`;
+    
+    // রেফারেল কাউন্ট ডিসপ্লে
     elements.referralCount.textContent = `${userData.successfulReferrals || 0} friends`;
     elements.referralProgress.style.width = `${Math.min((userData.successfulReferrals || 0) * 5, 100)}%`;
     
@@ -1810,3 +1888,233 @@ function initializeApp() {
     // Initialize deposit/withdraw events
     setupDepositWithdrawEvents();
 }
+
+// রেফারেল কাউন্ট আপডেট ফাংশন
+async function updateReferralCount() {
+    if (!currentUser) return;
+    
+    try {
+        // Count successful referrals from referrals collection
+        const referralsSnapshot = await database.ref(`referrals/${currentUser.uid}`).once('value');
+        const referrals = referralsSnapshot.val();
+        
+        let successfulReferrals = 0;
+        let activeReferrals = 0;
+        
+        if (referrals) {
+            Object.keys(referrals).forEach(key => {
+                const referral = referrals[key];
+                if (referral.status === 'completed' || referral.isActive) {
+                    successfulReferrals++;
+                    
+                    // Check if referred user is still active
+                    if (referral.isActive) {
+                        activeReferrals++;
+                    }
+                }
+            });
+        }
+        
+        // Update user data with actual counts
+        await database.ref('users/' + currentUser.uid).update({
+            successfulReferrals: successfulReferrals,
+            activeReferrals: activeReferrals,
+            referrals: successfulReferrals // Update referrals count too
+        });
+        
+        // Update local userData
+        userData.successfulReferrals = successfulReferrals;
+        userData.activeReferrals = activeReferrals;
+        userData.referrals = successfulReferrals;
+        
+    } catch (error) {
+        console.error('Error updating referral count:', error);
+    }
+}
+// রেফারেল ট্র্যাকিং সিস্টেম সেটআপ
+async function setupReferralTracking() {
+    if (!currentUser) return;
+    
+    // Check if user has pending referral from localStorage
+    const pendingReferral = localStorage.getItem('pendingReferralCode');
+    if (pendingReferral) {
+        // If user logged in with a referral code pending
+        if (pendingReferral.startsWith('ref_')) {
+            const referrerId = pendingReferral.substring(4);
+            try {
+                const referrerSnapshot = await database.ref('users/' + referrerId).once('value');
+                if (referrerSnapshot.exists()) {
+                    // Check if this referral already processed
+                    const referralCheck = await database.ref(`referrals/${referrerId}/${currentUser.uid}`).once('value');
+                    if (!referralCheck.exists()) {
+                        // Process referral reward
+                        await processReferralReward(referrerId, currentUser.uid, pendingReferral);
+                        
+                        // Update current user's data to show who referred them
+                        await database.ref('users/' + currentUser.uid).update({
+                            referredBy: referrerId,
+                            referralSource: pendingReferral
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing pending referral:', error);
+            }
+        }
+        localStorage.removeItem('pendingReferralCode');
+    }
+}
+// রেফারেল স্ট্যাটস দেখানোর ফাংশন
+async function showReferralStats() {
+    if (!currentUser) {
+        showNotification('Please login first!', 'error');
+        return;
+    }
+    
+    try {
+        // Fetch referral details
+        const referralsSnapshot = await database.ref(`referrals/${currentUser.uid}`).once('value');
+        const referrals = referralsSnapshot.val();
+        
+        let totalEarned = 0;
+        let referralList = [];
+        
+        if (referrals) {
+            Object.keys(referrals).forEach(key => {
+                const referral = referrals[key];
+                referralList.push({
+                    userId: key,
+                    reward: referral.reward || 20,
+                    timestamp: referral.timestamp,
+                    status: referral.status || 'completed'
+                });
+                totalEarned += referral.reward || 20;
+            });
+        }
+        
+        // Create stats modal
+        const statsHTML = `
+            <div class="modal-overlay" id="referralStatsModal">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <h3 class="modal-title">📊 Referral Statistics</h3>
+                        <button class="modal-close" id="closeReferralStats">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Summary Stats -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl">
+                                <p class="text-sm text-blue-600 dark:text-blue-400">Total Referrals</p>
+                                <p class="text-2xl font-bold">${referralList.length}</p>
+                            </div>
+                            <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded-xl">
+                                <p class="text-sm text-green-600 dark:text-green-400">Total Earned</p>
+                                <p class="text-2xl font-bold">৳${totalEarned}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Requirements -->
+                        <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-xl">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-info-circle text-yellow-600 dark:text-yellow-400 mr-2"></i>
+                                <p class="font-medium">Withdrawal Requirements</p>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span>Minimum Referrals:</span>
+                                    <span class="font-bold ${referralList.length >= 20 ? 'text-green-600' : 'text-red-600'}">
+                                        ${referralList.length}/20
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400">
+                                    ${referralList.length >= 20 
+                                        ? '✅ You meet the referral requirement for withdrawal!' 
+                                        : `You need ${20 - referralList.length} more referrals for withdrawal`}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Referral List -->
+                        <div>
+                            <h4 class="font-bold mb-3">Your Referrals</h4>
+                            ${referralList.length > 0 ? `
+                                <div class="space-y-3 max-h-60 overflow-y-auto">
+                                    ${referralList.map((ref, index) => `
+                                        <div class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
+                                            <div>
+                                                <p class="font-medium">Referred User #${index + 1}</p>
+                                                <p class="text-xs text-gray-500">${new Date(ref.timestamp).toLocaleDateString()}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="font-bold text-green-600">+৳${ref.reward}</p>
+                                                <p class="text-xs ${ref.status === 'completed' ? 'text-green-500' : 'text-yellow-500'}">
+                                                    ${ref.status}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div class="text-center py-8">
+                                    <i class="fas fa-users text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-500">No referrals yet</p>
+                                    <p class="text-sm text-gray-400 mt-2">Share your referral link to earn</p>
+                                </div>
+                            `}
+                        </div>
+                        
+                        <!-- Close Button -->
+                        <button id="closeStatsBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to body
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = statsHTML;
+        document.body.appendChild(modalContainer.firstElementChild);
+        
+        // Add event listeners
+        document.getElementById('closeReferralStats').addEventListener('click', () => {
+            const modal = document.getElementById('referralStatsModal');
+            if (modal) modal.remove();
+        });
+        
+        document.getElementById('closeStatsBtn').addEventListener('click', () => {
+            const modal = document.getElementById('referralStatsModal');
+            if (modal) modal.remove();
+        });
+        
+        // Close when clicking outside
+        modalContainer.firstElementChild.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                const modal = document.getElementById('referralStatsModal');
+                if (modal) modal.remove();
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error loading referral stats:', error);
+        showNotification('Error loading referral statistics', 'error');
+    }
+}
+// Initialize App
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
+    setupEventListeners();
+    checkForReferralInURL();
+    
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            currentUser = user;
+            loadUserData();
+        } else {
+            showAuthPages();
+        }
+    });
+});
