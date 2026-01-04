@@ -242,8 +242,9 @@
                     </div>
                 </div>
                 
-                <p>Daily Ads Count
-                 <span class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="dailyAdsCounter">(0/15)</span> </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Daily Ads Count <span class="text-blue-600 dark:text-blue-400 font-medium" id="dailyAdsCounter">(0/15)</span>
+                </p>
                 
                 <!-- Quick Actions -->
                 <div class="grid grid-cols-4 gap-3 mb-6">
@@ -301,10 +302,9 @@
                         <button id="shareBtn" class="flex-1 bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition active:scale-95">
                             <i class="fas fa-share-alt mr-2"></i> Share Now
                         </button>
-                        <!-- Referral Section এ নিচের মতো বাটন আছে নিশ্চিত করুন -->
-<button id="referralStatsBtn" class="flex-1 bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition active:scale-95">
-    <i class="fas fa-chart-bar mr-2"></i> Stats
-</button>
+                        <button id="referralStatsBtn" class="flex-1 bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition active:scale-95">
+                            <i class="fas fa-chart-bar mr-2"></i> Stats
+                        </button>
                     </div>
                 </div>
 
@@ -342,47 +342,47 @@
                 </div>
             </div>
 
-<!-- Tasks Page -->
-<div id="tasksPage" class="page">
-    <div class="flex items-center mb-4">
-        <button id="backFromTasks" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-            <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
-        </button>
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">All Tasks</h2>
-    </div>
-    
-    <!-- Task Description -->
-    <div class="glass-card rounded-2xl p-4 mb-6">
-        <div class="flex items-start">
-            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-1 mr-3 text-lg"></i>
-            <div>
-                <h3 class="font-bold text-gray-800 dark:text-white mb-2">📱 Premium APK Download Center</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300">
-                    এখান থেকে আপনি প্রতিনিয়ত PREMIUM APK ফ্রিতে ডাউনলোড করতে পারবেন। যা আপনার বিভিন্ন কাজের জন্য প্রয়োজন হবে, আপনাকে টাকা দিয়ে আর PREMIUM APK কিনতে হবেনা। এখানেই শেষ না, এখান থেকে আপনি PREMIUM APK গুলোতো নিতে পারছেন, এরপর এখান থেকে ইনকাম ও করতে পারছেন।
-                </p>
+            <!-- Tasks Page -->
+            <div id="tasksPage" class="page">
+                <div class="flex items-center mb-4">
+                    <button id="backFromTasks" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">All Tasks</h2>
+                </div>
+                
+                <!-- Task Description -->
+                <div class="glass-card rounded-2xl p-4 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-1 mr-3 text-lg"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-2">📱 Premium APK Download Center</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                                এখান থেকে আপনি প্রতিনিয়ত PREMIUM APK ফ্রিতে ডাউনলোড করতে পারবেন। যা আপনার বিভিন্ন কাজের জন্য প্রয়োজন হবে, আপনাকে টাকা দিয়ে আর PREMIUM APK কিনতে হবেনা। এখানেই শেষ না, এখান থেকে আপনি PREMIUM APK গুলোতো নিতে পারছেন, এরপর এখান থেকে ইনকাম ও করতে পারছেন।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6 mb-6 gradient-primary text-white">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-90">Tasks Completed</p>
+                            <p class="text-2xl font-bold" id="tasksProgress">0/8</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm opacity-90">Total Earned</p>
+                            <p class="text-2xl font-bold">
+                                <span class="taka-symbol text-xl">৳</span> <span id="totalEarned">0</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4" id="allTasksList">
+                    <!-- All tasks will be loaded here -->
+                </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="glass-card rounded-2xl p-6 mb-6 gradient-primary text-white">
-        <div class="flex justify-between items-center">
-            <div>
-                <p class="text-sm opacity-90">Tasks Completed</p>
-                <p class="text-2xl font-bold" id="tasksProgress">0/8</p>
-            </div>
-            <div class="text-right">
-                <p class="text-sm opacity-90">Total Earned</p>
-                <p class="text-2xl font-bold">
-                    <span class="taka-symbol text-xl">৳</span> <span id="totalEarned">0</span>
-                </p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="space-y-4" id="allTasksList">
-        <!-- All tasks will be loaded here -->
-    </div>
-</div>
 
             <!-- Profile Page -->
             <div id="profilePage" class="page">
@@ -705,409 +705,409 @@
         </div>
     </div>
 
-<!-- Deposit Modal -->
-<div id="depositModal" class="modal-overlay hidden">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 class="modal-title">📥 Deposit Money</h3>
-            <button id="closeDepositModal" class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <form id="depositForm">
-            <div class="space-y-4">
-                <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-4">
-                    <div class="flex items-center mb-3">
-                        <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-2"></i>
-                        <p class="font-medium text-blue-800 dark:text-blue-200">Important Information</p>
-                    </div>
-                    <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-2">
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                            <span>Minimum deposit amount: ৳500</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                            <span>Deposit will be added within 24 hours</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                            <span>Send money to the number below</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl">
-                        <p class="text-sm opacity-90 mb-2">Send money to this number:</p>
-                        <div class="flex items-center justify-center space-x-2 mb-3">
-                            <i class="fas fa-mobile-alt text-2xl"></i>
-                            <p class="text-2xl font-bold tracking-wider">01749666991</p>
-                        </div>
-                        <p class="text-sm opacity-90">বিকাশ / নগদ</p>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Deposit Amount (৳)
-                    </label>
-                    <input type="number" id="depositAmount" required min="10"
-                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                           placeholder="Enter amount (minimum ৳500)">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Transaction ID
-                    </label>
-                    <input type="text" id="transactionId" required
-                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                           placeholder="Enter transaction ID from payment">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Payment Method
-                    </label>
-                    <select id="paymentMethod" required
-                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
-                        <option value="">Select payment method</option>
-                        <option value="bkash">বিকাশ</option>
-                        <option value="nagad">নগদ</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Your Payment Number
-                    </label>
-                    <input type="tel" id="senderNumber" required
-                           class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                           placeholder="Enter your payment number">
-                </div>
-                
-                <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-xl">
-                    <div class="flex items-start">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-1 mr-2"></i>
-                        <div>
-                            <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Important:</p>
-                            <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                                Money must be sent to <span class="font-bold">01749666991</span> only. 
-                                Wrong number transactions will not be processed.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex space-x-3">
-                    <button type="submit" id="submitDepositBtn" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
-                        <span>Submit Deposit</span>
-                        <div id="depositSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
-                    </button>
-                    <button type="button" id="cancelDeposit" class="flex-1 border-2 border-red-600 text-red-600 dark:text-red-400 dark:border-red-400 font-bold py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition">
-                        Cancel
-                    </button>
-                </div>
+    <!-- Deposit Modal -->
+    <div id="depositModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">📥 Deposit Money</h3>
+                <button id="closeDepositModal" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-        </form>
-    </div>
-</div>
-
-<!-- Withdraw Modal -->
-<div id="withdrawModal" class="modal-overlay hidden">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 class="modal-title">📤 Withdraw Money</h3>
-            <button id="closeWithdrawModal" class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <form id="withdrawForm">
-            <div class="space-y-4">
-                <!-- Withdrawal Requirements Check -->
-                <div id="withdrawRequirements" class="space-y-3">
-                    <!-- Minimum Balance Check -->
-                    <div class="flex items-center justify-between p-3 rounded-xl border" id="balanceCheck">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-wallet"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">Minimum Balance</p>
-                                <p class="text-sm text-gray-500">At least ৳500 required</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold" id="currentBalanceDisplay">৳0</p>
-                            <p class="text-sm" id="balanceStatus"></p>
-                        </div>
-                    </div>
-                    
-                    <!-- Referral Requirement Check -->
-                    <div class="flex items-center justify-between p-3 rounded-xl border" id="referralCheck">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">Referral Requirement</p>
-                                <p class="text-sm text-gray-500">20 successful referrals needed</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold" id="referralCountDisplay">0/20</p>
-                            <p class="text-sm" id="referralStatus"></p>
-                        </div>
-                    </div>
-                    
-                    <!-- Status Summary -->
-                    <div id="withdrawStatus" class="hidden p-4 rounded-xl text-center">
-                        <div class="loader mx-auto mb-3" style="width: 40px; height: 40px;"></div>
-                        <p class="font-medium" id="statusMessage">Checking eligibility...</p>
-                    </div>
-                    
-                    <!-- Eligible Message -->
-                    <div id="eligibleMessage" class="hidden bg-green-50 dark:bg-green-900/30 p-4 rounded-xl">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl mr-3"></i>
-                            <div>
-                                <p class="font-medium text-green-800 dark:text-green-200">Congratulations!</p>
-                                <p class="text-sm text-green-700 dark:text-green-300 mt-1">
-                                    You are eligible for withdrawal. Fill the form below to proceed.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Not Eligible Message -->
-                    <div id="notEligibleMessage" class="hidden bg-red-50 dark:bg-red-900/30 p-4 rounded-xl">
-                        <div class="flex items-center">
-                            <i class="fas fa-times-circle text-red-600 dark:text-red-400 text-xl mr-3"></i>
-                            <div>
-                                <p class="font-medium text-red-800 dark:text-red-200">Not Eligible</p>
-                                <p class="text-sm text-red-700 dark:text-red-300 mt-1" id="notEligibleReason">
-                                    You don't meet the withdrawal requirements.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Withdrawal Form (Initially Hidden) -->
-                <div id="withdrawFormFields" class="space-y-4 hidden">
-                    <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl">
-                        <div class="flex items-center mb-2">
+            <form id="depositForm">
+                <div class="space-y-4">
+                    <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-4">
+                        <div class="flex items-center mb-3">
                             <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-2"></i>
-                            <p class="font-medium text-blue-800 dark:text-blue-200">Withdrawal Information</p>
+                            <p class="font-medium text-blue-800 dark:text-blue-200">Important Information</p>
                         </div>
                         <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-2">
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                <span>Minimum withdrawal: ৳500</span>
+                                <span>Minimum deposit amount: ৳10</span>
                             </li>
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                <span>Processing time: 24-48 hours</span>
+                                <span>Deposit will be added within 24 hours</span>
                             </li>
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                <span>Transaction fee: ৳10</span>
+                                <span>Send money to the number below</span>
                             </li>
                         </ul>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Withdrawal Amount (৳)
-                        </label>
-                        <div class="relative">
-                            <input type="number" id="withdrawAmount" required min="500"
-                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                   placeholder="Enter amount (minimum ৳500)"
-                                   oninput="calculateWithdrawAmount()">
-                            <div class="absolute right-3 top-3 text-gray-500">
-                                <span class="taka-symbol">৳</span>
+                    <div class="text-center mb-4">
+                        <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-2xl">
+                            <p class="text-sm opacity-90 mb-2">Send money to this number:</p>
+                            <div class="flex items-center justify-center space-x-2 mb-3">
+                                <i class="fas fa-mobile-alt text-2xl"></i>
+                                <p class="text-2xl font-bold tracking-wider">01749666991</p>
                             </div>
+                            <p class="text-sm opacity-90">বিকাশ / নগদ</p>
                         </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Available balance: <span id="availableBalance" class="font-bold">৳0</span>
-                        </p>
                     </div>
                     
-                    <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-gray-600 dark:text-gray-300">Withdrawal Amount:</span>
-                            <span class="font-bold" id="displayWithdrawAmount">৳0</span>
-                        </div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-gray-600 dark:text-gray-300">Transaction Fee:</span>
-                            <span class="font-bold text-red-600 dark:text-red-400" id="transactionFee">৳10</span>
-                        </div>
-                        <div class="flex justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-2">
-                            <span class="text-gray-800 dark:text-gray-200 font-medium">You will receive:</span>
-                            <span class="font-bold text-green-600 dark:text-green-400" id="netAmount">৳0</span>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Deposit Amount (৳)
+                        </label>
+                        <input type="number" id="depositAmount" required min="10"
+                               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                               placeholder="Enter amount (minimum ৳10)">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Transaction ID
+                        </label>
+                        <input type="text" id="transactionId" required
+                               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                               placeholder="Enter transaction ID from payment">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Payment Method
                         </label>
-                        <select id="withdrawMethod" required
+                        <select id="paymentMethod" required
                                class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
                             <option value="">Select payment method</option>
                             <option value="bkash">বিকাশ</option>
                             <option value="nagad">নগদ</option>
-                            <option value="bank">Bank Account</option>
                         </select>
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Account Number
+                            Your Payment Number
                         </label>
-                        <input type="text" id="accountNumber" required
+                        <input type="tel" id="senderNumber" required
                                class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                               placeholder="Enter your account number">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Account Holder Name
-                        </label>
-                        <input type="text" id="accountName" required
-                               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                               placeholder="Enter account holder name">
+                               placeholder="Enter your payment number">
                     </div>
                     
                     <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-xl">
                         <div class="flex items-start">
                             <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-1 mr-2"></i>
                             <div>
-                                <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Important Notice:</p>
+                                <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Important:</p>
                                 <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                                    • Ensure account details are correct<br>
-                                    • Withdrawal will be processed within 24-48 hours<br>
-                                    • Contact support for any issues
+                                    Money must be sent to <span class="font-bold">01749666991</span> only. 
+                                    Wrong number transactions will not be processed.
                                 </p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="flex space-x-3">
-                        <button type="submit" id="submitWithdrawBtn" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
-                            <span>Request Withdrawal</span>
-                            <div id="withdrawSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
+                        <button type="submit" id="submitDepositBtn" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
+                            <span>Submit Deposit</span>
+                            <div id="depositSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
                         </button>
-                        <button type="button" id="cancelWithdraw" class="flex-1 border-2 border-red-600 text-red-600 dark:text-red-400 dark:border-red-400 font-bold py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                        <button type="button" id="cancelDeposit" class="flex-1 border-2 border-red-600 text-red-600 dark:text-red-400 dark:border-red-400 font-bold py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition">
                             Cancel
                         </button>
                     </div>
                 </div>
-                
-                <!-- Back Button when not eligible -->
-                <div id="backToHomeBtn" class="hidden">
-                    <button type="button" id="goBackBtn" class="w-full border-2 border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 font-bold py-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to Home
-                    </button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<!-- Deposit Success Modal -->
-<div id="depositSuccessModal" class="modal-overlay hidden">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 class="modal-title">✅ Deposit Submitted</h3>
-            <button id="closeDepositSuccess" class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="text-center py-6">
-            <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-check text-green-600 dark:text-green-300 text-3xl"></i>
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">📤 Withdraw Money</h3>
+                <button id="closeWithdrawModal" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Deposit Request Submitted!</h4>
-            <p class="text-gray-600 dark:text-gray-300 mb-4">
-                Your deposit request has been submitted successfully. It will be added to your balance within 24 hours after verification.
-            </p>
-            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-4">
-                <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Payment Details:</p>
-                <div class="text-left space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">Amount:</span>
-                        <span class="font-bold" id="successDepositAmount">৳0</span>
+            <form id="withdrawForm">
+                <div class="space-y-4">
+                    <!-- Withdrawal Requirements Check -->
+                    <div id="withdrawRequirements" class="space-y-3">
+                        <!-- Minimum Balance Check -->
+                        <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-gray-700" id="balanceCheck">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
+                                    <i class="fas fa-wallet text-blue-600 dark:text-blue-300"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800 dark:text-white">Minimum Balance</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-300">At least ৳500 required</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-800 dark:text-white" id="currentBalanceDisplay">৳0</p>
+                                <p class="text-sm" id="balanceStatus"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Referral Requirement Check -->
+                        <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-gray-700" id="referralCheck">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mr-3">
+                                    <i class="fas fa-users text-purple-600 dark:text-purple-300"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800 dark:text-white">Referral Requirement</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-300">20 successful referrals needed</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-800 dark:text-white" id="referralCountDisplay">0/20</p>
+                                <p class="text-sm" id="referralStatus"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Summary -->
+                        <div id="withdrawStatus" class="hidden p-4 rounded-xl text-center bg-gray-50 dark:bg-gray-800">
+                            <div class="loader mx-auto mb-3" style="width: 40px; height: 40px;"></div>
+                            <p class="font-medium text-gray-800 dark:text-white" id="statusMessage">Checking eligibility...</p>
+                        </div>
+                        
+                        <!-- Eligible Message -->
+                        <div id="eligibleMessage" class="hidden bg-green-50 dark:bg-green-900/30 p-4 rounded-xl">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-green-800 dark:text-green-200">Congratulations!</p>
+                                    <p class="text-sm text-green-700 dark:text-green-300 mt-1">
+                                        You are eligible for withdrawal. Fill the form below to proceed.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Not Eligible Message -->
+                        <div id="notEligibleMessage" class="hidden bg-red-50 dark:bg-red-900/30 p-4 rounded-xl">
+                            <div class="flex items-center">
+                                <i class="fas fa-times-circle text-red-600 dark:text-red-400 text-xl mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-red-800 dark:text-red-200">Not Eligible</p>
+                                    <p class="text-sm text-red-700 dark:text-red-300 mt-1" id="notEligibleReason">
+                                        You don't meet the withdrawal requirements.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">Method:</span>
-                        <span class="font-bold" id="successPaymentMethod">-</span>
+                    
+                    <!-- Withdrawal Form (Initially Hidden) -->
+                    <div id="withdrawFormFields" class="space-y-4 hidden">
+                        <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mr-2"></i>
+                                <p class="font-medium text-blue-800 dark:text-blue-200">Withdrawal Information</p>
+                            </div>
+                            <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-2">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span>Minimum withdrawal: ৳500</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span>Processing time: 24-48 hours</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span>Transaction fee: ৳10</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Withdrawal Amount (৳)
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="withdrawAmount" required min="500"
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                       placeholder="Enter amount (minimum ৳500)"
+                                       oninput="calculateWithdrawAmount()">
+                                <div class="absolute right-3 top-3 text-gray-500">
+                                    <span class="taka-symbol">৳</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Available balance: <span id="availableBalance" class="font-bold">৳0</span>
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-600 dark:text-gray-300">Withdrawal Amount:</span>
+                                <span class="font-bold text-gray-800 dark:text-white" id="displayWithdrawAmount">৳0</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-600 dark:text-gray-300">Transaction Fee:</span>
+                                <span class="font-bold text-red-600 dark:text-red-400" id="transactionFee">৳10</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-2">
+                                <span class="text-gray-800 dark:text-gray-200 font-medium">You will receive:</span>
+                                <span class="font-bold text-green-600 dark:text-green-400" id="netAmount">৳0</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Payment Method
+                            </label>
+                            <select id="withdrawMethod" required
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                                <option value="">Select payment method</option>
+                                <option value="bkash">বিকাশ</option>
+                                <option value="nagad">নগদ</option>
+                                <option value="bank">Bank Account</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Account Number
+                            </label>
+                            <input type="text" id="accountNumber" required
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                   placeholder="Enter your account number">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Account Holder Name
+                            </label>
+                            <input type="text" id="accountName" required
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                   placeholder="Enter account holder name">
+                        </div>
+                        
+                        <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-xl">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-1 mr-2"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Important Notice:</p>
+                                    <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                                        • Ensure account details are correct<br>
+                                        • Withdrawal will be processed within 24-48 hours<br>
+                                        • Contact support for any issues
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button type="submit" id="submitWithdrawBtn" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center">
+                                <span>Request Withdrawal</span>
+                                <div id="withdrawSpinner" class="loader ml-2 hidden" style="width: 20px; height: 20px;"></div>
+                            </button>
+                            <button type="button" id="cancelWithdraw" class="flex-1 border-2 border-red-600 text-red-600 dark:text-red-400 dark:border-red-400 font-bold py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                                Cancel
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">Transaction ID:</span>
-                        <span class="font-bold" id="successTransactionId">-</span>
+                    
+                    <!-- Back Button when not eligible -->
+                    <div id="backToHomeBtn" class="hidden">
+                        <button type="button" id="goBackBtn" class="w-full border-2 border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 font-bold py-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Home
+                        </button>
                     </div>
                 </div>
-            </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                You will receive a confirmation notification once the deposit is processed.
-            </p>
-            <button id="closeDepositSuccessBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
-                Close
-            </button>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- Withdrawal Success Modal -->
-<div id="withdrawSuccessModal" class="modal-overlay hidden">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 class="modal-title">✅ Withdrawal Requested</h3>
-            <button id="closeWithdrawSuccess" class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="text-center py-6">
-            <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-paper-plane text-green-600 dark:text-green-300 text-3xl"></i>
+    <!-- Deposit Success Modal -->
+    <div id="depositSuccessModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Deposit Submitted</h3>
+                <button id="closeDepositSuccess" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Withdrawal Request Submitted!</h4>
-            <p class="text-gray-600 dark:text-gray-300 mb-4">
-                Your withdrawal request has been submitted successfully. It will be processed within 24-48 hours.
-            </p>
-            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-4">
-                <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Withdrawal Details:</p>
-                <div class="text-left space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">Amount:</span>
-                        <span class="font-bold" id="successWithdrawAmount">৳0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">Method:</span>
-                        <span class="font-bold" id="successWithdrawMethod">-</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">Account:</span>
-                        <span class="font-bold" id="successAccountNumber">-</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-300">You will receive:</span>
-                        <span class="font-bold text-green-600 dark:text-green-400" id="successNetAmount">৳0</span>
+            <div class="text-center py-6">
+                <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-green-600 dark:text-green-300 text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Deposit Request Submitted!</h4>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    Your deposit request has been submitted successfully. It will be added to your balance within 24 hours after verification.
+                </p>
+                <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-4">
+                    <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Payment Details:</p>
+                    <div class="text-left space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Amount:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="successDepositAmount">৳0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Method:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="successPaymentMethod">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Transaction ID:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="successTransactionId">-</span>
+                        </div>
                     </div>
                 </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    You will receive a confirmation notification once the deposit is processed.
+                </p>
+                <button id="closeDepositSuccessBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                    Close
+                </button>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                You will receive the money in your account within 24-48 hours.
-            </p>
-            <button id="closeWithdrawSuccessBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
-                Close
-            </button>
         </div>
     </div>
-</div>
+
+    <!-- Withdrawal Success Modal -->
+    <div id="withdrawSuccessModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Withdrawal Requested</h3>
+                <button id="closeWithdrawSuccess" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="text-center py-6">
+                <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-paper-plane text-green-600 dark:text-green-300 text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Withdrawal Request Submitted!</h4>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    Your withdrawal request has been submitted successfully. It will be processed within 24-48 hours.
+                </p>
+                <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl mb-4">
+                    <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Withdrawal Details:</p>
+                    <div class="text-left space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Amount:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="successWithdrawAmount">৳0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Method:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="successWithdrawMethod">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Account:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="successAccountNumber">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">You will receive:</span>
+                            <span class="font-bold text-green-600 dark:text-green-400" id="successNetAmount">৳0</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    You will receive the money in your account within 24-48 hours.
+                </p>
+                <button id="closeWithdrawSuccessBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
     
 </body>
 </html>
