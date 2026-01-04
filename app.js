@@ -1032,7 +1032,7 @@ function handleTaskUnlock(taskId) {
     // সরাসরি UNLOCK প্রসেস শুরু করি
     taskData.unlockCount = (taskData.unlockCount || 0) + 1;
     taskData.timerActive = true;
-    taskData.timeRemaining = 30; // ৩০ সেকেন্ড রাখলাম
+    taskData.timeRemaining = 15; // 15 সেকেন্ড রাখলাম
     taskData.lastUnlockTime = Date.now();
     
     userTaskProgress[taskId] = taskData;
@@ -1094,7 +1094,7 @@ function startTaskTimer(taskId) {
                 showNotification('Timer completed! You can proceed now.', 'info');
             }
         }
-    }, 3000);
+    }, 1500);
 }
 
 function updateTaskTimerUI(taskId, timeRemaining) {
@@ -1126,13 +1126,13 @@ function checkActiveTaskTimers() {
         const taskData = userTaskProgress[taskId];
         if (taskData.timerActive && taskData.lastUnlockTime) {
             const timeElapsed = Math.floor((Date.now() - taskData.lastUnlockTime) / 1000);
-            if (timeElapsed >= 30) {
+            if (timeElapsed >= 15) {
                 taskData.timerActive = false;
                 taskData.timeRemaining = 0;
                 userTaskProgress[taskId] = taskData;
                 localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
             } else {
-                taskData.timeRemaining = 30 - timeElapsed;
+                taskData.timeRemaining = 0 - timeElapsed;
                 userTaskProgress[taskId] = taskData;
                 localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
                 startTaskTimer(parseInt(taskId));
@@ -1187,7 +1187,7 @@ async function handleTaskDownload(taskId) {
     window.open(task.downloadLink, '_blank', 'noopener,noreferrer');
     
     taskData.timerActive = true;
-    taskData.timeRemaining = 30; // ৩০ সেকেন্ড রাখলাম
+    taskData.timeRemaining = 15; // ৩০ সেকেন্ড রাখলাম
     taskData.lastUnlockTime = Date.now();
     // completed স্টেট রিসেট করবেন না - বাটন হাইড হবে না
     // taskData.completed = true; // এই লাইন রিমুভ করুন
@@ -1233,7 +1233,7 @@ async function handleTaskDownload(taskId) {
             console.error('Error adding reward:', error);
             showNotification('Error processing reward. Please try again.', 'error');
         }
-    }, 30000); // ৩০ সেকেন্ড রাখলাম
+    }, 15000); // 15 সেকেন্ড রাখলাম
 }
 
 function handleQuickAction(action) {
