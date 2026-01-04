@@ -1,3 +1,4 @@
+
 * {
     margin: 0;
     padding: 0;
@@ -523,4 +524,106 @@ body.dark {
         font-size: 12px;
         padding: 4px 8px;
     }
+}
+
+/* Task Timer Styles */
+.task-timer {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
+
+@keyframes taskTimerPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.task-timer-active {
+    animation: taskTimerPulse 1s infinite;
+    color: #EF4444;
+}
+
+/* Task Progress Bar */
+.task-progress-container {
+    position: relative;
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.task-progress-fill {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Task Status Badges */
+.task-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.task-status-locked {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.task-status-unlocked {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+.task-status-completed {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+/* Task Icons */
+.task-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 12px;
+    padding: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.task-icon img {
+    filter: brightness(0) invert(1);
+}
+
+/* Download Button Animation */
+.download-btn-animation {
+    position: relative;
+    overflow: hidden;
+}
+
+.download-btn-animation::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    transform: rotate(30deg);
+    animation: downloadShine 3s infinite linear;
+}
+
+@keyframes downloadShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(30deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(30deg); }
 }
