@@ -2722,3 +2722,64 @@ async function handleTaskDownload(taskId) {
     
     // ... rest of the code ...
 }
+
+
+
+// টেস্ট ফাংশন - ডিবাগ করার জন্য
+function testUnlockButton() {
+    console.log('Testing unlock button...');
+    
+    // টাস্ক প্রোগ্রেস রিসেট
+    if (currentUser) {
+        const userTaskProgress = {};
+        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+        console.log('Task progress reset');
+    }
+    
+    // UI রিফ্রেশ
+    loadAllTasks();
+    
+    // প্রথম টাস্কের আনলক বাটন খুঁজুন
+    const unlockBtn = document.querySelector('.task-unlock-btn');
+    if (unlockBtn) {
+        console.log('Unlock button found:', unlockBtn);
+        unlockBtn.style.border = '2px solid red';
+        setTimeout(() => {
+            unlockBtn.style.border = '';
+        }, 2000);
+    } else {
+        console.log('Unlock button NOT found');
+    }
+}
+
+// ব্রাউজার কনসোলে টেস্ট করার জন্য
+window.testTasks = function() {
+    console.log('=== TASK SYSTEM DEBUG ===');
+    console.log('Current User:', currentUser?.uid);
+    
+    if (currentUser) {
+        const progress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+        console.log('Task Progress:', progress);
+        
+        // টেস্ট বাটন যোগ করুন
+        const testBtn = document.createElement('button');
+        testBtn.innerHTML = '🧪 Test Task 1';
+        testBtn.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 9999; background: #f00; color: white; padding: 10px; border-radius: 5px;';
+        testBtn.onclick = () => handleTaskUnlock(1);
+        document.body.appendChild(testBtn);
+        
+        const testBtn2 = document.createElement('button');
+        testBtn2.innerHTML = '🧪 Test Download 1';
+        testBtn2.style.cssText = 'position: fixed; top: 140px; right: 20px; z-index: 9999; background: #0f0; color: white; padding: 10px; border-radius: 5px;';
+        testBtn2.onclick = () => handleTaskDownload(1);
+        document.body.appendChild(testBtn2);
+    }
+};
+
+// পেজ লোড হওয়ার পর ডিবাগ ইনিশিয়ালাইজ করুন
+document.addEventListener('DOMContentLoaded', function() {
+    // 3 সেকেন্ড পর ডিবাগ মোড চালু করুন
+    setTimeout(() => {
+        window.testTasks();
+    }, 3000);
+});
