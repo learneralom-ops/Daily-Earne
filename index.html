@@ -342,34 +342,47 @@
                 </div>
             </div>
 
-            <!-- Tasks Page -->
-            <div id="tasksPage" class="page">
-                <div class="flex items-center mb-6">
-                    <button id="backFromTasks" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                        <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
-                    </button>
-                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">All Tasks</h2>
-                </div>
-                
-                <div class="glass-card rounded-2xl p-6 mb-6 gradient-primary text-white">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-sm opacity-90">Tasks Progress</p>
-                            <p class="text-2xl font-bold" id="tasksProgress">0/0</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm opacity-90">Total Earned</p>
-                            <p class="text-2xl font-bold">
-                                <span class="taka-symbol text-xl">৳</span> <span id="totalEarned">0</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-4" id="allTasksList">
-                    <!-- All tasks will be loaded here -->
-                </div>
+<!-- Tasks Page -->
+<div id="tasksPage" class="page">
+    <div class="flex items-center mb-4">
+        <button id="backFromTasks" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+            <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+        </button>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">All Tasks</h2>
+    </div>
+    
+    <!-- Task Description -->
+    <div class="glass-card rounded-2xl p-4 mb-6">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-1 mr-3 text-lg"></i>
+            <div>
+                <h3 class="font-bold text-gray-800 dark:text-white mb-2">📱 Premium APK Download Center</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    এখান থেকে আপনি প্রতিনিয়ত PREMIUM APK ফ্রিতে ডাউনলোড করতে পারবেন। যা আপনার বিভিন্ন কাজের জন্য প্রয়োজন হবে, আপনাকে টাকা দিয়ে আর PREMIUM APK কিনতে হবেনা। এখানেই শেষ না, এখান থেকে আপনি PREMIUM APK গুলোতো নিতে পারছেন, এরপর এখান থেকে ইনকাম ও করতে পারছেন।
+                </p>
             </div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-6 mb-6 gradient-primary text-white">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-sm opacity-90">Tasks Completed</p>
+                <p class="text-2xl font-bold" id="tasksProgress">0/8</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm opacity-90">Total Earned</p>
+                <p class="text-2xl font-bold">
+                    <span class="taka-symbol text-xl">৳</span> <span id="totalEarned">0</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="space-y-4" id="allTasksList">
+        <!-- All tasks will be loaded here -->
+    </div>
+</div>
 
             <!-- Profile Page -->
             <div id="profilePage" class="page">
