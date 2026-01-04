@@ -1031,7 +1031,7 @@ function handleTaskUnlock(taskId) {
     
     // সরাসরি UNLOCK প্রসেস শুরু করি
     taskData.unlockCount = (taskData.unlockCount || 0) + 1;
-    taskData.timerActive = true;
+    taskData.timerActive = false;
     taskData.timeRemaining = 30; // ৩০ সেকেন্ড রাখলাম
     taskData.lastUnlockTime = Date.now();
     
