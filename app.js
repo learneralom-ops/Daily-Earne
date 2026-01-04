@@ -802,70 +802,495 @@ function loadAllTasks() {
     if (!elements.allTasksList) return;
     
     const tasks = [
-        { id: 1, title: 'Watch Short Ad', description: 'Watch a 30-second ad', reward: 10, icon: 'fa-ad', completed: userData?.tasksCompleted >= 1 },
-        { id: 2, title: 'Watch Video', description: 'Watch a 1-minute video', reward: 15, icon: 'fa-play-circle', completed: userData?.tasksCompleted >= 2 },
-        { id: 3, title: 'Complete Survey', description: 'Answer 5 questions', reward: 25, icon: 'fa-clipboard-check', completed: userData?.tasksCompleted >= 3 },
-        { id: 4, title: 'Install App', description: 'Install & open recommended app', reward: 50, icon: 'fa-mobile-alt', completed: userData?.tasksCompleted >= 4 },
-        { id: 5, title: 'Rate App', description: 'Rate our app on store', reward: 20, icon: 'fa-star', completed: userData?.tasksCompleted >= 5 },
-        { id: 6, title: 'Follow Social', description: 'Follow our social media', reward: 15, icon: 'fa-thumbs-up', completed: userData?.tasksCompleted >= 6 },
-        { id: 7, title: 'Daily Login', description: 'Login daily for bonus', reward: 10, icon: 'fa-calendar-check', completed: userData?.tasksCompleted >= 7 },
-        { id: 8, title: 'Invite Friend', description: 'Invite a friend to join', reward: 50, icon: 'fa-user-plus', completed: userData?.tasksCompleted >= 8 }
+        { 
+            id: 1, 
+            title: 'AI Voice Changer App', 
+            description: 'Change your voice with AI technology', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/3576/3576216.png',
+            unlockLinks: ['https://otieu.com/4/9276685'],
+            downloadLink: 'https://t.me/LearnerAlom/143',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 2, 
+            title: 'Video Editor Pro', 
+            description: 'Professional video editing app', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/3249/3249321.png',
+            unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'],
+            downloadLink: 'https://t.me/LearnerAlom/144',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 3, 
+            title: 'Photo Editor Premium', 
+            description: 'Edit photos like a pro', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/3249/3249347.png',
+            unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'],
+            downloadLink: 'https://t.me/LearnerAlom/145',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 4, 
+            title: 'Music Player Premium', 
+            description: 'Premium music player with effects', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/727/727221.png',
+            unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'],
+            downloadLink: 'https://t.me/LearnerAlom/146',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 5, 
+            title: 'VPN Master Pro', 
+            description: 'Secure VPN with high speed', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/1820/1820240.png',
+            unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'],
+            downloadLink: 'https://t.me/LearnerAlom/147',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 6, 
+            title: 'PDF Reader Pro', 
+            description: 'Read and edit PDF files', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/337/337946.png',
+            unlockLinks: ['https://otieu.com/4/10412908'],
+            downloadLink: 'https://t.me/LearnerAlom/148',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 7, 
+            title: 'Screen Recorder', 
+            description: 'Record your screen in HD', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/3249/3249359.png',
+            unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'],
+            downloadLink: 'https://t.me/LearnerAlom/149',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        },
+        { 
+            id: 8, 
+            title: 'File Manager Pro', 
+            description: 'Manage all your files easily', 
+            icon: 'https://cdn-icons-png.flaticon.com/512/2099/2099091.png',
+            unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'],
+            downloadLink: 'https://t.me/LearnerAlom/150',
+            reward: 0.5,
+            completed: false,
+            unlockCount: 0,
+            status: 'locked'
+        }
     ];
     
     elements.allTasksList.innerHTML = '';
-    elements.tasksProgress.textContent = `${userData?.tasksCompleted || 0}/${tasks.length}`;
+    let completedCount = 0;
+    
+    // Load user's task progress from localStorage
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser?.uid}`)) || {};
     
     tasks.forEach(task => {
+        const userTaskData = userTaskProgress[task.id] || {
+            completed: false,
+            unlockCount: 0,
+            status: 'locked',
+            lastClickTime: null,
+            timerActive: false
+        };
+        
+        if (userTaskData.completed) completedCount++;
+        
         const taskElement = document.createElement('div');
-        taskElement.className = `flex items-center justify-between p-4 rounded-xl border ${task.completed ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'} transition`;
+        taskElement.className = `glass-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700`;
         taskElement.innerHTML = `
-            <div class="flex items-center">
-                <div class="w-10 h-10 rounded-xl ${task.completed ? 'bg-green-100 dark:bg-green-800' : 'bg-blue-100 dark:bg-blue-800'} flex items-center justify-center mr-3">
-                    <i class="fas ${task.icon} ${task.completed ? 'text-green-600 dark:text-green-300' : 'text-blue-600 dark:text-blue-300'}"></i>
-                </div>
+            <div class="flex items-center mb-3">
+                <img src="${task.icon}" alt="${task.title}" class="w-12 h-12 rounded-xl mr-3">
                 <div>
-                    <h4 class="font-medium text-gray-800 dark:text-white">${task.title}</h4>
+                    <h4 class="font-bold text-gray-800 dark:text-white">${task.title}</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-300">${task.description}</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="font-bold text-green-600 dark:text-green-400">+৳${task.reward}</p>
-                <button class="all-task-complete-btn mt-2 px-3 py-1 rounded-full text-xs font-medium ${task.completed ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-default' : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'}" 
-                        data-id="${task.id}" ${task.completed ? 'disabled' : ''}>
-                    ${task.completed ? '✓ Done' : 'Start'}
-                </button>
+            
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-300">Reward</p>
+                    <p class="font-bold text-green-600 dark:text-green-400">ফ্রি DOWNLOAD ⬇️</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500 dark:text-gray-300">Unlock Progress</p>
+                    <p class="font-bold ${userTaskData.unlockCount >= 5 ? 'text-green-600' : 'text-blue-600'}">
+                        ${userTaskData.unlockCount}/5 unlocks
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${Math.min(userTaskData.unlockCount * 20, 100)}%"></div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                    ${userTaskData.unlockCount < 5 ? `Need ${5 - userTaskData.unlockCount} more unlocks for download` : 'Ready to download!'}
+                </p>
+            </div>
+            
+            <div class="space-y-2">
+                ${userTaskData.completed ? `
+                    <button class="w-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold py-3 rounded-xl cursor-default flex items-center justify-center" disabled>
+                        <i class="fas fa-check-circle mr-2"></i> Completed (+৳${task.reward})
+                    </button>
+                ` : userTaskData.unlockCount >= 5 ? `
+                    <button class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center task-download-btn" data-id="${task.id}">
+                        <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
+                    </button>
+                    ${userTaskData.timerActive ? `
+                        <div class="text-center">
+                            <div class="loader mx-auto mb-2" style="width: 20px; height: 20px;"></div>
+                            <p class="text-sm text-blue-600 dark:text-blue-400">Processing... Please wait</p>
+                        </div>
+                    ` : ''}
+                ` : `
+                    <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center task-unlock-btn" data-id="${task.id}">
+                        <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${userTaskData.unlockCount + 1}/6)
+                    </button>
+                    ${userTaskData.timerActive ? `
+                        <div class="text-center">
+                            <div class="loader mx-auto mb-2" style="width: 20px; height: 20px;"></div>
+                            <p class="text-sm text-blue-600 dark:text-blue-400">Please wait ${userTaskData.timeRemaining || 30}s</p>
+                        </div>
+                    ` : ''}
+                `}
             </div>
         `;
         elements.allTasksList.appendChild(taskElement);
     });
     
-    document.querySelectorAll('.all-task-complete-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            if (this.disabled) return;
-            
+    elements.tasksProgress.textContent = `${completedCount}/${tasks.length}`;
+    
+    // Add event listeners for unlock buttons
+    document.querySelectorAll('.task-unlock-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
             const taskId = parseInt(this.dataset.id);
-            const taskReward = [10, 15, 25, 50, 20, 15, 10, 50][taskId - 1];
-            
-            try {
-                const updates = {};
-                updates['balance'] = (userData.balance || 0) + taskReward;
-                updates['tasksCompleted'] = (userData.tasksCompleted || 0) + 1;
-                updates['totalEarnings'] = (userData.totalEarnings || 0) + taskReward;
-                updates['monthlyTasks'] = (userData.monthlyTasks || 0) + 1;
-                
-                await database.ref('users/' + currentUser.uid).update(updates);
-                userData = { ...userData, ...updates };
-                updateUserInterface();
-                loadAllTasks();
-                
-                showNotification(`Task completed! +৳${taskReward} earned.`, 'success');
-                
-            } catch (error) {
-                console.error('Error completing task:', error);
-                showNotification('Error completing task. Please try again.', 'error');
-            }
+            handleTaskUnlock(taskId);
         });
     });
+    
+    // Add event listeners for download buttons
+    document.querySelectorAll('.task-download-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = parseInt(this.dataset.id);
+            handleTaskDownload(taskId);
+        });
+    });
+    
+    // Start timers for active tasks
+    startTaskTimers();
+}
+
+// Task unlock handler
+function handleTaskUnlock(taskId) {
+    if (!currentUser) {
+        showNotification('Please login first!', 'error');
+        return;
+    }
+    
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+    const taskData = userTaskProgress[taskId] || {
+        completed: false,
+        unlockCount: 0,
+        status: 'locked',
+        lastClickTime: null,
+        timerActive: false
+    };
+    
+    // Check if timer is active
+    if (taskData.timerActive) {
+        showNotification('Please wait for the timer to finish!', 'warning');
+        return;
+    }
+    
+    // Get task details
+    const tasks = [
+        { id: 1, unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
+        { id: 2, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
+        { id: 3, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/145', reward: 0.5 },
+        { id: 4, unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'], downloadLink: 'https://t.me/LearnerAlom/146', reward: 0.5 },
+        { id: 5, unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'], downloadLink: 'https://t.me/LearnerAlom/147', reward: 0.5 },
+        { id: 6, unlockLinks: ['https://otieu.com/4/10412908'], downloadLink: 'https://t.me/LearnerAlom/148', reward: 0.5 },
+        { id: 7, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/149', reward: 0.5 },
+        { id: 8, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/150', reward: 0.5 }
+    ];
+    
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    // Get current unlock link (rotate through available links)
+    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
+    const unlockLink = task.unlockLinks[linkIndex];
+    
+    // Open unlock link in new tab
+    window.open(unlockLink, '_blank');
+    
+    // Update unlock count
+    taskData.unlockCount++;
+    taskData.lastClickTime = Date.now();
+    taskData.timerActive = true;
+    taskData.timeRemaining = 30;
+    
+    // Check if reached 5 unlocks
+    if (taskData.unlockCount >= 5) {
+        taskData.status = 'unlocked';
+    }
+    
+    // Save to localStorage
+    userTaskProgress[taskId] = taskData;
+    localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+    
+    // Show notification
+    if (taskData.unlockCount < 5) {
+        showNotification(`Unlock ${taskData.unlockCount}/5 successful! Visit the link and return.`, 'info');
+    } else {
+        showNotification('🎉 All unlocks completed! Now you can download the APK.', 'success');
+    }
+    
+    // Reload tasks
+    loadAllTasks();
+}
+
+// Task download handler
+async function handleTaskDownload(taskId) {
+    if (!currentUser) {
+        showNotification('Please login first!', 'error');
+        return;
+    }
+    
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+    const taskData = userTaskProgress[taskId] || {
+        completed: false,
+        unlockCount: 0,
+        status: 'locked',
+        lastClickTime: null,
+        timerActive: false
+    };
+    
+    // Check if task is unlocked
+    if (taskData.unlockCount < 5) {
+        showNotification('Please complete 5 unlocks first!', 'error');
+        return;
+    }
+    
+    // Check if timer is active
+    if (taskData.timerActive) {
+        showNotification('Please wait for the timer to finish!', 'warning');
+        return;
+    }
+    
+    // Get task details
+    const tasks = [
+        { id: 1, unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
+        { id: 2, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
+        { id: 3, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/145', reward: 0.5 },
+        { id: 4, unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'], downloadLink: 'https://t.me/LearnerAlom/146', reward: 0.5 },
+        { id: 5, unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'], downloadLink: 'https://t.me/LearnerAlom/147', reward: 0.5 },
+        { id: 6, unlockLinks: ['https://otieu.com/4/10412908'], downloadLink: 'https://t.me/LearnerAlom/148', reward: 0.5 },
+        { id: 7, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/149', reward: 0.5 },
+        { id: 8, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/150', reward: 0.5 }
+    ];
+    
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    // Open download link in new tab
+    window.open(task.downloadLink, '_blank');
+    
+    // Start timer
+    taskData.timerActive = true;
+    taskData.timeRemaining = 30;
+    taskData.lastClickTime = Date.now();
+    
+    // Save to localStorage
+    userTaskProgress[taskId] = taskData;
+    localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+    
+    // Show notification
+    showNotification('Download link opened! Please download and return in 30 seconds.', 'info');
+    
+    // Reload tasks
+    loadAllTasks();
+    
+    // Wait for timer to complete
+    setTimeout(async () => {
+        // Mark task as completed
+        taskData.completed = true;
+        taskData.timerActive = false;
+        taskData.timeRemaining = 0;
+        
+        // Save to localStorage
+        userTaskProgress[taskId] = taskData;
+        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+        
+        try {
+            // Add reward to balance
+            const updates = {};
+            updates['balance'] = (userData.balance || 0) + task.reward;
+            updates['totalEarnings'] = (userData.totalEarnings || 0) + task.reward;
+            updates['tasksCompleted'] = (userData.tasksCompleted || 0) + 1;
+            updates['monthlyTasks'] = (userData.monthlyTasks || 0) + 1;
+            
+            await database.ref('users/' + currentUser.uid).update(updates);
+            
+            // Update local userData
+            userData = { ...userData, ...updates };
+            updateUserInterface();
+            
+            // Show success notification
+            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
+            
+            // Reload tasks
+            loadAllTasks();
+            
+        } catch (error) {
+            console.error('Error adding reward:', error);
+            showNotification('Error processing reward. Please try again.', 'error');
+        }
+    }, 30000); // 30 seconds
+}
+
+// Start timers for active tasks
+function startTaskTimers() {
+    if (!currentUser) return;
+    
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+    let needsUpdate = false;
+    
+    Object.keys(userTaskProgress).forEach(taskId => {
+        const taskData = userTaskProgress[taskId];
+        
+        if (taskData.timerActive && taskData.lastClickTime) {
+            const timeElapsed = Math.floor((Date.now() - taskData.lastClickTime) / 1000);
+            const timeRemaining = Math.max(0, 30 - timeElapsed);
+            
+            if (timeRemaining > 0) {
+                taskData.timeRemaining = timeRemaining;
+                
+                // Update timer every second
+                const timerInterval = setInterval(() => {
+                    const currentData = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+                    const currentTaskData = currentData[taskId];
+                    
+                    if (currentTaskData && currentTaskData.timerActive) {
+                        if (currentTaskData.timeRemaining > 1) {
+                            currentTaskData.timeRemaining--;
+                            currentData[taskId] = currentTaskData;
+                            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(currentData));
+                            
+                            // Update UI if on tasks page
+                            const pageElement = document.getElementById('tasksPage');
+                            if (pageElement && pageElement.classList.contains('active')) {
+                                loadAllTasks();
+                            }
+                        } else {
+                            // Timer completed
+                            currentTaskData.timerActive = false;
+                            currentTaskData.timeRemaining = 0;
+                            currentData[taskId] = currentTaskData;
+                            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(currentData));
+                            
+                            clearInterval(timerInterval);
+                            
+                            // Update UI if on tasks page
+                            const pageElement = document.getElementById('tasksPage');
+                            if (pageElement && pageElement.classList.contains('active')) {
+                                loadAllTasks();
+                                showNotification('Timer completed! You can proceed now.', 'info');
+                            }
+                        }
+                    } else {
+                        clearInterval(timerInterval);
+                    }
+                }, 1000);
+            } else {
+                // Timer already completed
+                taskData.timerActive = false;
+                taskData.timeRemaining = 0;
+                needsUpdate = true;
+                
+                // If it was a download timer, mark as completed
+                if (taskData.unlockCount >= 5 && !taskData.completed) {
+                    taskData.completed = true;
+                    
+                    // Add reward
+                    const taskReward = 0.5;
+                    database.ref('users/' + currentUser.uid).update({
+                        balance: (userData.balance || 0) + taskReward,
+                        totalEarnings: (userData.totalEarnings || 0) + taskReward,
+                        tasksCompleted: (userData.tasksCompleted || 0) + 1,
+                        monthlyTasks: (userData.monthlyTasks || 0) + 1
+                    }).then(() => {
+                        userData.balance += taskReward;
+                        userData.totalEarnings += taskReward;
+                        userData.tasksCompleted += 1;
+                        userData.monthlyTasks += 1;
+                        updateUserInterface();
+                        showNotification(`Task completed! +৳${taskReward} added.`, 'success');
+                    });
+                }
+            }
+        }
+    });
+    
+    if (needsUpdate) {
+        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+    }
+}
+
+// Navigate to page function এ আপডেট করুন tasks লোড করার সময়
+function navigateToPage(page) {
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+    });
+    
+    const pageElement = document.getElementById(`${page}Page`);
+    if (pageElement) {
+        pageElement.classList.add('active');
+        
+        const pageTitles = {
+            'home': 'Earn money online',
+            'tasks': 'All Tasks',
+            'profile': 'My Profile'
+        };
+        
+        elements.pageTitle.textContent = pageTitles[page] || 'Daily Earning';
+        
+        if (page === 'tasks') {
+            loadAllTasks();
+        }
+    }
+}
+
+// Reset task progress function (optional - for testing)
+function resetTaskProgress() {
+    if (currentUser && confirm('Are you sure you want to reset all task progress?')) {
+        localStorage.removeItem(`taskProgress_${currentUser.uid}`);
+        loadAllTasks();
+        showNotification('Task progress reset successfully!', 'success');
+    }
 }
 
 function handleQuickAction(action) {
@@ -2118,3 +2543,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+// Save task progress to Firebase
+async function saveTaskProgressToFirebase() {
+    if (!currentUser) return;
+    
+    try {
+        const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+        await database.ref(`taskProgress/${currentUser.uid}`).set(userTaskProgress);
+    } catch (error) {
+        console.error('Error saving task progress:', error);
+    }
+}
+
+// Load task progress from Firebase
+async function loadTaskProgressFromFirebase() {
+    if (!currentUser) return;
+    
+    try {
+        const snapshot = await database.ref(`taskProgress/${currentUser.uid}`).once('value');
+        const firebaseTaskProgress = snapshot.val();
+        
+        if (firebaseTaskProgress) {
+            // Merge with local storage
+            const localTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+            const mergedProgress = { ...firebaseTaskProgress, ...localTaskProgress };
+            
+            // Save merged progress
+            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(mergedProgress));
+            await database.ref(`taskProgress/${currentUser.uid}`).set(mergedProgress);
+        }
+    } catch (error) {
+        console.error('Error loading task progress:', error);
+    }
+}
+
+// Load user data ফাংশনে যোগ করুন
+async function loadUserData() {
+    if (!currentUser) return;
+    
+    try {
+        const snapshot = await database.ref('users/' + currentUser.uid).once('value');
+        userData = snapshot.val();
+        
+        if (!userData) {
+            // ... existing code ...
+        } else {
+            // ... existing code ...
+            
+            // Load task progress from Firebase
+            await loadTaskProgressFromFirebase();
+        }
+        
+        updateUserInterface();
+        showMainApp();
+        
+        // Check for pending referrals
+        await setupReferralTracking();
+        
+    } catch (error) {
+        console.error('Error loading user data:', error);
+        showNotification('Error loading user data', 'error');
+    }
+}
+
+// Task unlock/download ফাংশনে Firebase save যোগ করুন
+async function handleTaskUnlock(taskId) {
+    // ... existing code ...
+    
+    // Save to Firebase
+    await saveTaskProgressToFirebase();
+    
+    // ... rest of the code ...
+}
+
+async function handleTaskDownload(taskId) {
+    // ... existing code ...
+    
+    // Save to Firebase
+    await saveTaskProgressToFirebase();
+    
+    // ... rest of the code ...
+}
