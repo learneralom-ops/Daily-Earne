@@ -1,4 +1,3 @@
-
 // Global Variables
 let currentUser = null;
 let userData = null;
@@ -911,12 +910,12 @@ function loadAllTasks() {
             <div class="flex justify-between items-center mb-3">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-300">Reward</p>
-                    <p class="font-bold text-green-600 dark:text-green-400">ফ্রি DOWNLOAD </p>
+                    <p class="font-bold text-green-600 dark:text-green-400"> ৳ 0.5 </p>
                 </div>
                 <div class="text-right">
                     <p class="text-sm text-gray-500 dark:text-gray-300">Unlock Progress</p>
                     <p class="font-bold ${isUnlocked ? 'text-green-600' : 'text-blue-600'}">
-                        ${taskData.unlockCount}/5 unlocks
+                        ${taskData.unlockCount}/10 unlocks
                     </p>
                 </div>
             </div>
@@ -924,7 +923,7 @@ function loadAllTasks() {
             <div class="mb-3">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                         style="width: ${Math.min(taskData.unlockCount * 20, 100)}%"></div>
+                         style="width: ${Math.min(taskData.unlockCount * 10, 100)}%"></div>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
                     ${!isUnlocked ? 
@@ -1095,7 +1094,7 @@ function startTaskTimer(taskId) {
                 showNotification('Timer completed! You can proceed now.', 'info');
             }
         }
-    }, 1000);
+    }, 3000);
 }
 
 function updateTaskTimerUI(taskId, timeRemaining) {
@@ -1464,9 +1463,9 @@ function closeCelebration() {
     });
     
     if (isVideoAd) {
-        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳0.5 আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
     } else {
-        showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳0.5 আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
     }
 }
 
@@ -1482,7 +1481,7 @@ async function claimDailyBonus() {
     }
     
     try {
-        const reward = 1;
+        const reward = 0.5;
         
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
@@ -1857,7 +1856,7 @@ function checkWithdrawalEligibility() {
 
 function calculateWithdrawAmount() {
     const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
-    const transactionFee = 10;
+    const transactionFee = 5;
     const netAmount = withdrawAmount - transactionFee;
     
     document.getElementById('displayWithdrawAmount').textContent = `৳${withdrawAmount}`;
@@ -1963,7 +1962,7 @@ async function handleWithdraw(e) {
     const withdrawMethod = document.getElementById('withdrawMethod').value;
     const accountNumber = document.getElementById('accountNumber').value.trim();
     const accountName = document.getElementById('accountName').value.trim();
-    const transactionFee = 10;
+    const transactionFee = 5;
     const netAmount = withdrawAmount - transactionFee;
     
     if (!withdrawAmount || withdrawAmount < 500) {
