@@ -1,4 +1,3 @@
-
 // Global Variables
 let currentUser = null;
 let userData = null;
@@ -8,7 +7,6 @@ let countdownSeconds = 15;
 let isVideoAd = false;
 let referralCodeFromUrl = null;
 let activeTaskTimers = {};
-let taskWindows = {}; // Track task windows
 
 // DOM Elements
 const elements = {
@@ -889,9 +887,7 @@ function loadAllTasks() {
             completed: false,
             timerActive: false,
             timeRemaining: 0,
-            lastUnlockTime: null,
-            lastRewardTime: null,
-            totalEarned: 0
+            lastUnlockTime: null
         };
         
         if (taskData.completed) completedCount++;
@@ -942,25 +938,17 @@ function loadAllTasks() {
                         <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
                         Wait ${taskData.timeRemaining}s
                     </button>
+                ` : isUnlocked ? `
+                    <button class="task-download-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
+                            data-task-id="${task.id}">
+                        <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
+                    </button>
                 ` : `
                     <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
-                            data-task-id="${task.id}" ${isUnlocked ? 'data-action="download"' : 'data-action="unlock"'}>
-                        ${isUnlocked ? 
-                            `<i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️` : 
-                            `<i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)`}
+                            data-task-id="${task.id}">
+                        <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)
                     </button>
                 `}
-                ${taskData.completed ? `
-                    <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-3 mt-2">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                                <span class="text-green-700 dark:text-green-300">Completed</span>
-                            </div>
-                            <span class="font-bold text-green-600">Earned: ৳${taskData.totalEarned || task.reward}</span>
-                        </div>
-                    </div>
-                ` : ''}
             </div>
         `;
         elements.allTasksList.appendChild(taskElement);
@@ -978,19 +966,28 @@ function attachTaskEventListeners() {
         btn.parentNode.replaceChild(newBtn, btn);
     });
     
-    // Add new event listeners
+    document.querySelectorAll('.task-download-btn').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // Add new event listeners for UNLOCK buttons
     document.querySelectorAll('.task-unlock-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             const taskId = parseInt(this.getAttribute('data-task-id'));
-            const action = this.getAttribute('data-action');
-            
-            if (action === 'download') {
-                handleTaskDownload(taskId);
-            } else {
-                handleTaskUnlock(taskId);
-            }
+            handleTaskUnlock(taskId);
+        });
+    });
+    
+    // Add new event listeners for DOWNLOAD buttons
+    document.querySelectorAll('.task-download-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const taskId = parseInt(this.getAttribute('data-task-id'));
+            handleTaskDownload(taskId);
         });
     });
 }
@@ -1024,9 +1021,7 @@ function handleTaskUnlock(taskId) {
         completed: false,
         timerActive: false,
         timeRemaining: 0,
-        lastUnlockTime: null,
-        lastRewardTime: null,
-        totalEarned: 0
+        lastUnlockTime: null
     };
     
     if (taskData.timerActive && taskData.timeRemaining > 0) {
@@ -1034,34 +1029,14 @@ function handleTaskUnlock(taskId) {
         return;
     }
     
-    // Start timer for 30 seconds
+    // সরাসরি UNLOCK প্রসেস শুরু করি
+    taskData.unlockCount = (taskData.unlockCount || 0) + 1;
     taskData.timerActive = true;
-    taskData.timeRemaining = 30;
+    taskData.timeRemaining = 30; // ৩০ সেকেন্ড রাখলাম
     taskData.lastUnlockTime = Date.now();
     
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-    
-    // Open link in new tab WITHOUT auto-back
-    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
-    const unlockLink = task.unlockLinks[linkIndex];
-    
-    // Store the window reference
-    taskWindows[taskId] = window.open(unlockLink, '_blank', 'noopener,noreferrer');
-    
-    if (!taskWindows[taskId]) {
-        showNotification('Please allow popups to open the unlock link!', 'error');
-        // Reset timer if popup blocked
-        taskData.timerActive = false;
-        taskData.timeRemaining = 0;
-        userTaskProgress[taskId] = taskData;
-        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-        loadAllTasks();
-        return;
-    }
-    
-    // Increase unlock count
-    taskData.unlockCount = (taskData.unlockCount || 0) + 1;
     
     const remainingUnlocks = 5 - taskData.unlockCount;
     if (remainingUnlocks > 0) {
@@ -1070,8 +1045,12 @@ function handleTaskUnlock(taskId) {
         showNotification('🎉 All unlocks completed! Now you can download.', 'success');
     }
     
-    userTaskProgress[taskId] = taskData;
-    localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+    // UNLOCK link ওপেন করি (নতুন ট্যাবে ওপেন হবে, ব্যাক হবে না)
+    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
+    const unlockLink = task.unlockLinks[linkIndex];
+    
+    // নতুন ট্যাবে লিংক ওপেন করুন
+    window.open(unlockLink, '_blank', 'noopener,noreferrer');
     
     loadAllTasks();
     startTaskTimer(taskId);
@@ -1110,16 +1089,6 @@ function startTaskTimer(taskId) {
             clearInterval(activeTaskTimers[taskId]);
             delete activeTaskTimers[taskId];
             
-            // Close the opened window after timer completes
-            if (taskWindows[taskId] && !taskWindows[taskId].closed) {
-                try {
-                    taskWindows[taskId].close();
-                } catch (e) {
-                    console.log('Could not close window:', e);
-                }
-                delete taskWindows[taskId];
-            }
-            
             if (document.getElementById('tasksPage').classList.contains('active')) {
                 loadAllTasks();
                 showNotification('Timer completed! You can proceed now.', 'info');
@@ -1133,11 +1102,18 @@ function updateTaskTimerUI(taskId, timeRemaining) {
     if (!taskElement) return;
     
     const unlockBtn = taskElement.querySelector('.task-unlock-btn');
+    const downloadBtn = taskElement.querySelector('.task-download-btn');
     
     if (unlockBtn) {
         unlockBtn.innerHTML = `<div class="loader mr-2" style="width: 20px; height: 20px;"></div> Wait ${timeRemaining}s`;
         unlockBtn.disabled = true;
         unlockBtn.className = "w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center";
+    }
+    
+    if (downloadBtn) {
+        downloadBtn.innerHTML = `<div class="loader mr-2" style="width: 20px; height: 20px;"></div> Wait ${timeRemaining}s`;
+        downloadBtn.disabled = true;
+        downloadBtn.className = "w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center";
     }
 }
 
@@ -1155,16 +1131,6 @@ function checkActiveTaskTimers() {
                 taskData.timeRemaining = 0;
                 userTaskProgress[taskId] = taskData;
                 localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-                
-                // Close window if still open
-                if (taskWindows[taskId] && !taskWindows[taskId].closed) {
-                    try {
-                        taskWindows[taskId].close();
-                    } catch (e) {
-                        console.log('Could not close window:', e);
-                    }
-                    delete taskWindows[taskId];
-                }
             } else {
                 taskData.timeRemaining = 30 - timeElapsed;
                 userTaskProgress[taskId] = taskData;
@@ -1204,9 +1170,7 @@ async function handleTaskDownload(taskId) {
         completed: false,
         timerActive: false,
         timeRemaining: 0,
-        lastUnlockTime: null,
-        lastRewardTime: null,
-        totalEarned: 0
+        lastUnlockTime: null
     };
     
     if (taskData.unlockCount < 5) {
@@ -1219,27 +1183,17 @@ async function handleTaskDownload(taskId) {
         return;
     }
     
-    // Start 30 second timer
+    // নতুন ট্যাবে ডাউনলোড লিংক ওপেন করুন
+    window.open(task.downloadLink, '_blank', 'noopener,noreferrer');
+    
     taskData.timerActive = true;
-    taskData.timeRemaining = 30;
+    taskData.timeRemaining = 30; // ৩০ সেকেন্ড রাখলাম
     taskData.lastUnlockTime = Date.now();
+    // completed স্টেট রিসেট করবেন না - বাটন হাইড হবে না
+    // taskData.completed = true; // এই লাইন রিমুভ করুন
     
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-    
-    // Open download link in new tab WITHOUT auto-back
-    taskWindows[taskId] = window.open(task.downloadLink, '_blank', 'noopener,noreferrer');
-    
-    if (!taskWindows[taskId]) {
-        showNotification('Please allow popups to open the download link!', 'error');
-        // Reset timer if popup blocked
-        taskData.timerActive = false;
-        taskData.timeRemaining = 0;
-        userTaskProgress[taskId] = taskData;
-        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-        loadAllTasks();
-        return;
-    }
     
     showNotification('Download link opened! Return in 30 seconds to get reward.', 'info');
     
@@ -1248,13 +1202,11 @@ async function handleTaskDownload(taskId) {
     
     setTimeout(async () => {
         try {
-            // Reset for next time (unlimited)
-            taskData.unlockCount = 0; // Reset unlock count for unlimited repeat
-            taskData.completed = false; // Never mark as completed
+            // টাইমার বন্ধ করুন কিন্তু completed স্টেট সেট করবেন না
             taskData.timerActive = false;
             taskData.timeRemaining = 0;
-            taskData.lastRewardTime = Date.now();
-            taskData.totalEarned = (taskData.totalEarned || 0) + task.reward;
+            // unlockCount রিসেট করুন যাতে আবার শুরু করা যায়
+            taskData.unlockCount = 0;
             
             userTaskProgress[taskId] = taskData;
             localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
@@ -1273,7 +1225,7 @@ async function handleTaskDownload(taskId) {
             
             loadAllTasks();
             
-            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance. Total earned from this task: ৳${taskData.totalEarned}`, 'success');
+            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
             
             saveTaskProgressToFirebase();
             
@@ -1281,7 +1233,7 @@ async function handleTaskDownload(taskId) {
             console.error('Error adding reward:', error);
             showNotification('Error processing reward. Please try again.', 'error');
         }
-    }, 30000);
+    }, 30000); // ৩০ সেকেন্ড রাখলাম
 }
 
 function handleQuickAction(action) {
