@@ -6,6 +6,7 @@ let countdownInterval = null;
 let countdownSeconds = 15;
 let isVideoAd = false;
 let referralCodeFromUrl = null;
+let activeTaskTimers = {};
 
 // DOM Elements
 const elements = {
@@ -109,7 +110,15 @@ const elements = {
     saveProfileBtn: document.getElementById('saveProfileBtn'),
     saveProfileSpinner: document.getElementById('saveProfileSpinner'),
     cancelProfileEdit: document.getElementById('cancelProfileEdit'),
-    closeProfileEditModal: document.getElementById('closeProfileEditModal')
+    closeProfileEditModal: document.getElementById('closeProfileEditModal'),
+    
+    // Deposit/Withdraw Elements
+    depositBtn: document.getElementById('depositBtn'),
+    withdrawBtn: document.getElementById('withdrawBtn'),
+    depositModal: document.getElementById('depositModal'),
+    withdrawModal: document.getElementById('withdrawModal'),
+    depositSuccessModal: document.getElementById('depositSuccessModal'),
+    withdrawSuccessModal: document.getElementById('withdrawSuccessModal')
 };
 
 // Initialize App
@@ -147,10 +156,8 @@ function checkForReferralInURL() {
     
     if (referralCode) {
         referralCodeFromUrl = referralCode;
-        // Store referral code in localStorage for signup
         localStorage.setItem('pendingReferralCode', referralCode);
         
-        // If on login page, show notification
         if (window.location.pathname.includes('login') || window.location.pathname === '/') {
             setTimeout(() => {
                 showNotification('You have been referred by a friend! Sign up to get started.', 'info');
@@ -231,7 +238,6 @@ function navigateToAuthPage(page) {
     if (pageElement) {
         pageElement.classList.add('active');
         
-        // If going to signup page and there's a pending referral code, auto-fill it
         if (page === 'signup') {
             const pendingReferralCode = localStorage.getItem('pendingReferralCode');
             if (pendingReferralCode && elements.referralCodeInput) {
@@ -340,12 +346,10 @@ async function handleSignup(e) {
             }
         }
         
-        // Check for referral code from input field
         let referrerId = null;
         let usedReferralCode = null;
         
         if (referralCode) {
-            // Check if referral code is valid (format: ref_userid)
             if (referralCode.startsWith('ref_')) {
                 const userId = referralCode.substring(4);
                 try {
@@ -360,7 +364,6 @@ async function handleSignup(e) {
             }
         }
         
-        // Check from URL parameter if not from input
         if (!referrerId && referralCodeFromUrl) {
             if (referralCodeFromUrl.startsWith('ref_')) {
                 const userId = referralCodeFromUrl.substring(4);
@@ -376,7 +379,6 @@ async function handleSignup(e) {
             }
         }
         
-        // Check from localStorage if not from input or URL
         if (!referrerId) {
             const pendingReferralCode = localStorage.getItem('pendingReferralCode');
             if (pendingReferralCode && pendingReferralCode.startsWith('ref_')) {
@@ -393,7 +395,6 @@ async function handleSignup(e) {
             }
         }
         
-        // Create user data
         const userData = {
             uid: currentUser.uid,
             fullName: fullName,
@@ -418,23 +419,20 @@ async function handleSignup(e) {
             lastAdsDate: null,
             videosWatched: 0,
             lastVideoDate: null,
-            referrer: referrerId, // Store who referred this user
-            referralCode: `ref_${currentUser.uid}`, // This user's referral code (full UID)
+            referrer: referrerId,
+            referralCode: `ref_${currentUser.uid}`,
             signupTimestamp: new Date().toISOString(),
             isActive: true
         };
         
         await database.ref('users/' + currentUser.uid).set(userData);
         
-        // If user was referred, update referrer's data
         if (referrerId) {
             await processReferralReward(referrerId, currentUser.uid, usedReferralCode);
             
-            // Clear pending referral code from localStorage and URL
             localStorage.removeItem('pendingReferralCode');
             referralCodeFromUrl = null;
             
-            // Also update the referred user's data to show who referred them
             await database.ref('users/' + currentUser.uid).update({
                 referredBy: referrerId,
                 referralSource: usedReferralCode
@@ -470,14 +468,12 @@ async function handleSignup(e) {
 
 async function processReferralReward(referrerId, referredUserId, referralCode) {
     try {
-        const reward = 20; // ৳20 reward for successful referral
+        const reward = 20;
         
-        // Update referrer's data
         const referrerRef = database.ref('users/' + referrerId);
         const referrerSnapshot = await referrerRef.once('value');
         const referrerData = referrerSnapshot.val();
         
-        // First, check if this referral has already been processed
         const existingRefCheck = await database.ref(`referrals/${referrerId}/${referredUserId}`).once('value');
         if (existingRefCheck.exists()) {
             console.log('Referral already processed');
@@ -494,7 +490,6 @@ async function processReferralReward(referrerId, referredUserId, referralCode) {
         
         await referrerRef.update(updates);
         
-        // Create referral record with detailed information
         const referralRecord = {
             referrerId: referrerId,
             referredUserId: referredUserId,
@@ -505,17 +500,14 @@ async function processReferralReward(referrerId, referredUserId, referralCode) {
             isActive: true
         };
         
-        // Save referral under referrer's referrals
         await database.ref(`referrals/${referrerId}/${referredUserId}`).set(referralRecord);
         
-        // Also save under global referrals for tracking
         await database.ref('all_referrals/' + referredUserId).set({
             referrerId: referrerId,
             referralCode: referralCode,
             timestamp: new Date().toISOString()
         });
         
-        // Send notification to referrer
         const notificationData = {
             type: 'referral_reward',
             title: '🎉 Referral Reward Earned!',
@@ -632,7 +624,7 @@ async function loadUserData() {
                 lastAdsDate: null,
                 videosWatched: 0,
                 lastVideoDate: null,
-                referralCode: `ref_${currentUser.uid}` // Full UID
+                referralCode: `ref_${currentUser.uid}`
             };
             
             await database.ref('users/' + currentUser.uid).set(userData);
@@ -663,14 +655,12 @@ async function loadUserData() {
                 userData.lastVideoDate = new Date().toISOString();
             }
             
-            // Get actual referral count from database
             await updateReferralCount();
         }
         
         updateUserInterface();
         showMainApp();
         
-        // Check for pending referrals
         await setupReferralTracking();
         
     } catch (error) {
@@ -686,7 +676,6 @@ function updateUserInterface() {
     elements.dailyStreak.textContent = `${userData.streak || 0} days`;
     elements.streakProgress.style.width = `${Math.min((userData.streak || 0) * 10, 100)}%`;
     
-    // রেফারেল কাউন্ট ডিসপ্লে
     elements.referralCount.textContent = `${userData.successfulReferrals || 0} friends`;
     elements.referralProgress.style.width = `${Math.min((userData.successfulReferrals || 0) * 5, 100)}%`;
     
@@ -782,6 +771,7 @@ function navigateToPage(page) {
         
         if (page === 'tasks') {
             loadAllTasks();
+            checkActiveTaskTimers();
         }
     }
 }
@@ -799,7 +789,7 @@ function updateNavActiveState(page) {
 }
 
 function loadAllTasks() {
-    if (!elements.allTasksList) return;
+    if (!elements.allTasksList || !currentUser) return;
     
     const tasks = [
         { 
@@ -879,8 +869,7 @@ function loadAllTasks() {
     elements.allTasksList.innerHTML = '';
     let completedCount = 0;
     
-    // Load user's task progress
-    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser?.uid}`)) || {};
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
     
     tasks.forEach(task => {
         const taskData = userTaskProgress[task.id] || {
@@ -897,7 +886,7 @@ function loadAllTasks() {
         const showTimer = taskData.timerActive && taskData.timeRemaining > 0;
         
         const taskElement = document.createElement('div');
-        taskElement.className = `glass-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 mb-4 task-card`;
+        taskElement.className = `glass-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 mb-4`;
         taskElement.setAttribute('data-task-id', task.id);
         taskElement.innerHTML = `
             <div class="flex items-center mb-3">
@@ -959,7 +948,7 @@ function loadAllTasks() {
                     ` : `
                         <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
                                 data-task-id="${task.id}">
-                            <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/6)
+                            <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)
                         </button>
                     `}
                 `}
@@ -970,42 +959,48 @@ function loadAllTasks() {
     
     elements.tasksProgress.textContent = `${completedCount}/${tasks.length}`;
     
-    // Add event listeners
     attachTaskEventListeners();
 }
-// টাস্ক ইভেন্ট লিসেনার সংযুক্ত করুন
+
 function attachTaskEventListeners() {
-    // UNLOCK বাটনের জন্য
+    // Remove existing event listeners first
+    document.querySelectorAll('.task-unlock-btn').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    document.querySelectorAll('.task-download-btn').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // Add new event listeners for UNLOCK buttons
     document.querySelectorAll('.task-unlock-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const taskId = parseInt(this.getAttribute('data-task-id'));
-            console.log('UNLOCK clicked for task:', taskId);
             handleTaskUnlock(taskId);
         });
     });
     
-    // DOWNLOAD বাটনের জন্য
+    // Add new event listeners for DOWNLOAD buttons
     document.querySelectorAll('.task-download-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const taskId = parseInt(this.getAttribute('data-task-id'));
-            console.log('DOWNLOAD clicked for task:', taskId);
             handleTaskDownload(taskId);
         });
     });
 }
 
-// টাস্ক আনলক হ্যান্ডলার
 function handleTaskUnlock(taskId) {
-    console.log('handleTaskUnlock called for task:', taskId);
-    
     if (!currentUser) {
         showNotification('Please login first!', 'error');
         return;
     }
     
-    // টাস্ক ডেটা
     const tasks = {
         1: { unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
         2: { unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
@@ -1023,7 +1018,6 @@ function handleTaskUnlock(taskId) {
         return;
     }
     
-    // ইউজারের টাস্ক প্রোগ্রেস লোড করুন
     const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
     const taskData = userTaskProgress[taskId] || {
         unlockCount: 0,
@@ -1033,38 +1027,28 @@ function handleTaskUnlock(taskId) {
         lastUnlockTime: null
     };
     
-    console.log('Current task data:', taskData);
-    
-    // টাইমার চেক করুন
-    if (taskData.timerActive) {
+    if (taskData.timerActive && taskData.timeRemaining > 0) {
         showNotification(`Please wait ${taskData.timeRemaining} seconds!`, 'warning');
         return;
     }
     
-    // আনলক লিংক সিলেক্ট করুন
     const linkIndex = taskData.unlockCount % task.unlockLinks.length;
     const unlockLink = task.unlockLinks[linkIndex];
     
-    console.log('Opening unlock link:', unlockLink);
-    
-    // লিংক ওপেন করুন নতুন ট্যাবে
     const newWindow = window.open(unlockLink, '_blank');
     if (!newWindow) {
         showNotification('Please allow popups to open the unlock link!', 'error');
         return;
     }
     
-    // টাস্ক ডেটা আপডেট করুন
-    taskData.unlockCount++;
+    taskData.unlockCount = (taskData.unlockCount || 0) + 1;
     taskData.timerActive = true;
     taskData.timeRemaining = 30;
     taskData.lastUnlockTime = Date.now();
     
-    // সেভ করুন
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
-    // নোটিফিকেশন
     const remainingUnlocks = 5 - taskData.unlockCount;
     if (remainingUnlocks > 0) {
         showNotification(`Unlock ${taskData.unlockCount}/5 completed! ${remainingUnlocks} more to go.`, 'info');
@@ -1072,29 +1056,22 @@ function handleTaskUnlock(taskId) {
         showNotification('🎉 All unlocks completed! Now you can download.', 'success');
     }
     
-    // UI রিফ্রেশ করুন
     loadAllTasks();
-    
-    // টাইমার শুরু করুন
     startTaskTimer(taskId);
 }
 
-// টাস্ক টাইমার ফাংশন
 function startTaskTimer(taskId) {
-    const timerKey = `taskTimer_${taskId}`;
-    
-    // ক্লিয়ার অ্যানি এক্সিস্টিং টাইমার
-    if (window[timerKey]) {
-        clearInterval(window[timerKey]);
+    if (activeTaskTimers[taskId]) {
+        clearInterval(activeTaskTimers[taskId]);
     }
     
-    // নতুন টাইমার শুরু করুন
-    window[timerKey] = setInterval(() => {
+    activeTaskTimers[taskId] = setInterval(() => {
         const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
         const taskData = userTaskProgress[taskId];
         
         if (!taskData || !taskData.timerActive) {
-            clearInterval(window[timerKey]);
+            clearInterval(activeTaskTimers[taskId]);
+            delete activeTaskTimers[taskId];
             return;
         }
         
@@ -1103,32 +1080,18 @@ function startTaskTimer(taskId) {
             userTaskProgress[taskId] = taskData;
             localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
             
-            // UI আপডেট করুন যদি টাস্কস পেজ একটিভ থাকে
             if (document.getElementById('tasksPage').classList.contains('active')) {
-                const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-                if (taskElement) {
-                    const timerDisplay = taskElement.querySelector('.task-unlock-btn, .task-download-btn');
-                    if (timerDisplay) {
-                        const parentDiv = timerDisplay.parentElement;
-                        parentElement.innerHTML = `
-                            <button class="w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
-                                <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
-                                Wait ${taskData.timeRemaining}s
-                            </button>
-                        `;
-                    }
-                }
+                updateTaskTimerUI(taskId, taskData.timeRemaining);
             }
         } else {
-            // টাইমার শেষ
             taskData.timerActive = false;
             taskData.timeRemaining = 0;
             userTaskProgress[taskId] = taskData;
             localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
             
-            clearInterval(window[timerKey]);
+            clearInterval(activeTaskTimers[taskId]);
+            delete activeTaskTimers[taskId];
             
-            // UI রিফ্রেশ
             if (document.getElementById('tasksPage').classList.contains('active')) {
                 loadAllTasks();
                 showNotification('Timer completed! You can proceed now.', 'info');
@@ -1137,16 +1100,56 @@ function startTaskTimer(taskId) {
     }, 1000);
 }
 
-// টাস্ক ডাউনলোড হ্যান্ডলার
-async function handleTaskDownload(taskId) {
-    console.log('handleTaskDownload called for task:', taskId);
+function updateTaskTimerUI(taskId, timeRemaining) {
+    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (!taskElement) return;
     
+    const unlockBtn = taskElement.querySelector('.task-unlock-btn');
+    const downloadBtn = taskElement.querySelector('.task-download-btn');
+    
+    if (unlockBtn) {
+        unlockBtn.innerHTML = `<div class="loader mr-2" style="width: 20px; height: 20px;"></div> Wait ${timeRemaining}s`;
+        unlockBtn.disabled = true;
+        unlockBtn.className = "w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center";
+    }
+    
+    if (downloadBtn) {
+        downloadBtn.innerHTML = `<div class="loader mr-2" style="width: 20px; height: 20px;"></div> Wait ${timeRemaining}s`;
+        downloadBtn.disabled = true;
+        downloadBtn.className = "w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center";
+    }
+}
+
+function checkActiveTaskTimers() {
+    if (!currentUser) return;
+    
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+    
+    Object.keys(userTaskProgress).forEach(taskId => {
+        const taskData = userTaskProgress[taskId];
+        if (taskData.timerActive && taskData.lastUnlockTime) {
+            const timeElapsed = Math.floor((Date.now() - taskData.lastUnlockTime) / 1000);
+            if (timeElapsed >= 30) {
+                taskData.timerActive = false;
+                taskData.timeRemaining = 0;
+                userTaskProgress[taskId] = taskData;
+                localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+            } else {
+                taskData.timeRemaining = 30 - timeElapsed;
+                userTaskProgress[taskId] = taskData;
+                localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+                startTaskTimer(parseInt(taskId));
+            }
+        }
+    });
+}
+
+async function handleTaskDownload(taskId) {
     if (!currentUser) {
         showNotification('Please login first!', 'error');
         return;
     }
     
-    // টাস্ক ডেটা
     const tasks = {
         1: { unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
         2: { unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
@@ -1164,7 +1167,6 @@ async function handleTaskDownload(taskId) {
         return;
     }
     
-    // ইউজারের টাস্ক প্রোগ্রেস চেক করুন
     const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
     const taskData = userTaskProgress[taskId] || {
         unlockCount: 0,
@@ -1174,27 +1176,27 @@ async function handleTaskDownload(taskId) {
         lastUnlockTime: null
     };
     
-    // আনলক কাউন্ট চেক করুন
     if (taskData.unlockCount < 5) {
         showNotification(`Please complete ${5 - taskData.unlockCount} more unlocks first!`, 'error');
         return;
     }
     
-    // টাইমার চেক করুন
-    if (taskData.timerActive) {
+    if (taskData.timerActive && taskData.timeRemaining > 0) {
         showNotification(`Please wait ${taskData.timeRemaining} seconds!`, 'warning');
         return;
     }
     
-    // ডাউনলোড লিংক ওপেন করুন
-    console.log('Opening download link:', task.downloadLink);
+    if (taskData.completed) {
+        showNotification('This task is already completed!', 'info');
+        return;
+    }
+    
     const newWindow = window.open(task.downloadLink, '_blank');
     if (!newWindow) {
         showNotification('Please allow popups to open the download link!', 'error');
         return;
     }
     
-    // টাইমার সেট করুন
     taskData.timerActive = true;
     taskData.timeRemaining = 30;
     taskData.lastUnlockTime = Date.now();
@@ -1204,16 +1206,11 @@ async function handleTaskDownload(taskId) {
     
     showNotification('Download link opened! Return in 30 seconds to get reward.', 'info');
     
-    // UI রিফ্রেশ
     loadAllTasks();
-    
-    // টাইমার শুরু করুন
     startTaskTimer(taskId);
     
-    // 30 সেকেন্ড পর রিওয়ার্ড দিন
     setTimeout(async () => {
         try {
-            // টাস্ক কমপ্লিট মার্ক করুন
             taskData.completed = true;
             taskData.timerActive = false;
             taskData.timeRemaining = 0;
@@ -1221,7 +1218,6 @@ async function handleTaskDownload(taskId) {
             userTaskProgress[taskId] = taskData;
             localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
             
-            // ব্যালেন্সে টাকা যোগ করুন
             const updates = {
                 balance: (userData.balance || 0) + task.reward,
                 totalEarnings: (userData.totalEarnings || 0) + task.reward,
@@ -1231,11 +1227,9 @@ async function handleTaskDownload(taskId) {
             
             await database.ref('users/' + currentUser.uid).update(updates);
             
-            // লোকাল ডাটা আপডেট করুন
             userData = { ...userData, ...updates };
             updateUserInterface();
             
-            // UI রিফ্রেশ
             loadAllTasks();
             
             showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
@@ -1245,150 +1239,6 @@ async function handleTaskDownload(taskId) {
             showNotification('Error processing reward. Please try again.', 'error');
         }
     }, 30000);
-}
-
-function navigateToPage(page) {
-    document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active');
-    });
-    
-    const pageElement = document.getElementById(`${page}Page`);
-    if (pageElement) {
-        pageElement.classList.add('active');
-        
-        const pageTitles = {
-            'home': 'Earn money online',
-            'tasks': 'All Tasks',
-            'profile': 'My Profile'
-        };
-        
-        elements.pageTitle.textContent = pageTitles[page] || 'Daily Earning';
-        
-        if (page === 'tasks') {
-            loadAllTasks();
-        }
-    }
-}
-
-// Start timers for active tasks
-function startTaskTimers() {
-    if (!currentUser) return;
-    
-    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
-    let needsUpdate = false;
-    
-    Object.keys(userTaskProgress).forEach(taskId => {
-        const taskData = userTaskProgress[taskId];
-        
-        if (taskData.timerActive && taskData.lastClickTime) {
-            const timeElapsed = Math.floor((Date.now() - taskData.lastClickTime) / 1000);
-            const timeRemaining = Math.max(0, 30 - timeElapsed);
-            
-            if (timeRemaining > 0) {
-                taskData.timeRemaining = timeRemaining;
-                
-                // Update timer every second
-                const timerInterval = setInterval(() => {
-                    const currentData = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
-                    const currentTaskData = currentData[taskId];
-                    
-                    if (currentTaskData && currentTaskData.timerActive) {
-                        if (currentTaskData.timeRemaining > 1) {
-                            currentTaskData.timeRemaining--;
-                            currentData[taskId] = currentTaskData;
-                            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(currentData));
-                            
-                            // Update UI if on tasks page
-                            const pageElement = document.getElementById('tasksPage');
-                            if (pageElement && pageElement.classList.contains('active')) {
-                                loadAllTasks();
-                            }
-                        } else {
-                            // Timer completed
-                            currentTaskData.timerActive = false;
-                            currentTaskData.timeRemaining = 0;
-                            currentData[taskId] = currentTaskData;
-                            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(currentData));
-                            
-                            clearInterval(timerInterval);
-                            
-                            // Update UI if on tasks page
-                            const pageElement = document.getElementById('tasksPage');
-                            if (pageElement && pageElement.classList.contains('active')) {
-                                loadAllTasks();
-                                showNotification('Timer completed! You can proceed now.', 'info');
-                            }
-                        }
-                    } else {
-                        clearInterval(timerInterval);
-                    }
-                }, 1000);
-            } else {
-                // Timer already completed
-                taskData.timerActive = false;
-                taskData.timeRemaining = 0;
-                needsUpdate = true;
-                
-                // If it was a download timer, mark as completed
-                if (taskData.unlockCount >= 5 && !taskData.completed) {
-                    taskData.completed = true;
-                    
-                    // Add reward
-                    const taskReward = 0.5;
-                    database.ref('users/' + currentUser.uid).update({
-                        balance: (userData.balance || 0) + taskReward,
-                        totalEarnings: (userData.totalEarnings || 0) + taskReward,
-                        tasksCompleted: (userData.tasksCompleted || 0) + 1,
-                        monthlyTasks: (userData.monthlyTasks || 0) + 1
-                    }).then(() => {
-                        userData.balance += taskReward;
-                        userData.totalEarnings += taskReward;
-                        userData.tasksCompleted += 1;
-                        userData.monthlyTasks += 1;
-                        updateUserInterface();
-                        showNotification(`Task completed! +৳${taskReward} added.`, 'success');
-                    });
-                }
-            }
-        }
-    });
-    
-    if (needsUpdate) {
-        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-    }
-}
-
-// Navigate to page function এ আপডেট করুন tasks লোড করার সময়
-function navigateToPage(page) {
-    document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active');
-    });
-    
-    const pageElement = document.getElementById(`${page}Page`);
-    if (pageElement) {
-        pageElement.classList.add('active');
-        
-        const pageTitles = {
-            'home': 'Earn money online',
-            'tasks': 'All Tasks',
-            'profile': 'My Profile'
-        };
-        
-        elements.pageTitle.textContent = pageTitles[page] || 'Daily Earning';
-        
-        if (page === 'tasks') {
-            loadAllTasks();
-        }
-    }
-}
-
-// Reset task progress function (optional - for testing)
-function resetTaskProgress() {
-    if (currentUser && confirm('Are you sure you want to reset all task progress?')) {
-        localStorage.removeItem(`taskProgress_${currentUser.uid}`);
-        loadAllTasks();
-        showNotification('Task progress reset successfully!', 'success');
-    }
 }
 
 function handleQuickAction(action) {
@@ -1416,22 +1266,18 @@ function handleQuickAction(action) {
 async function triggerAdsSequence() {
     isVideoAd = false;
     
-    // ১. ডেইলি লিমিট চেক
     if (userData.dailyAdsWatched >= 15) {
         showNotification('আজকের লিমিট শেষ! আগামীকাল আবার ট্রাই করুন।', 'error');
         return;
     }
 
-    // ২. লোডিং স্ক্রিন শো করা
     elements.adsLoadingOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
     try {
-        // Ads progress steps
         updateAdsProgress(1, 10);
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // ৩. ধাপ ১: Rewarded interstitial Ads
         await show_8954258().then(() => {
             console.log('Rewarded interstitial ad completed successfully');
             updateAdsProgress(1, 100);
@@ -1441,7 +1287,6 @@ async function triggerAdsSequence() {
             throw new Error('Failed to show rewarded interstitial ad');
         });
 
-        // ৪. ধাপ ২: Rewarded Popup Ads
         updateAdsProgress(2, 10);
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1454,7 +1299,6 @@ async function triggerAdsSequence() {
             throw new Error('Failed to show rewarded popup ad');
         });
 
-        // ৫. ধাপ ৩: In-App Interstitial Ads
         updateAdsProgress(3, 10);
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1476,17 +1320,13 @@ async function triggerAdsSequence() {
             throw new Error('Failed to show in-app interstitial ad');
         });
 
-        // ৬. লোডিং স্ক্রিন হাইড করা
         elements.adsLoadingOverlay.classList.add('hidden');
-        
-        // ৭. ১৫ সেকেন্ড কাউন্টডাউন শুরু করা
         startCountdown();
 
     } catch (error) {
         console.error("Ad Sequence Error:", error);
         showNotification('অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
         
-        // লোডিং স্ক্রিন হাইড করা
         elements.adsLoadingOverlay.classList.add('hidden');
         document.body.style.overflow = 'auto';
         return;
@@ -1496,7 +1336,6 @@ async function triggerAdsSequence() {
 async function triggerVideoAd() {
     isVideoAd = true;
     
-    // ১. ভিডিও ডেইলি লিমিট চেক
     const today = new Date().toDateString();
     const lastVideoDate = userData.lastVideoDate ? new Date(userData.lastVideoDate).toDateString() : null;
     
@@ -1505,16 +1344,13 @@ async function triggerVideoAd() {
         return;
     }
 
-    // ২. ভিডিও লোডিং স্ক্রিন শো করা
     elements.videoAdLoadingOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
     try {
-        // Progress বার আপডেট
         updateVideoProgress(10);
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // ৩. Rewarded Popup Ads শো করা
         await show_8954258('pop').then(() => {
             console.log('Video ad completed successfully');
             updateVideoProgress(100);
@@ -1524,17 +1360,13 @@ async function triggerVideoAd() {
             throw new Error('Failed to show video ad');
         });
 
-        // ৪. লোডিং স্ক্রিন হাইড করা
         elements.videoAdLoadingOverlay.classList.add('hidden');
-        
-        // ৫. ১৫ সেকেন্ড কাউন্টডাউন শুরু করা
         startCountdown();
 
     } catch (error) {
         console.error("Video Ad Error:", error);
         showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
         
-        // লোডিং স্ক্রিন হাইড করা
         elements.videoAdLoadingOverlay.classList.add('hidden');
         document.body.style.overflow = 'auto';
         return;
@@ -1542,7 +1374,6 @@ async function triggerVideoAd() {
 }
 
 function updateAdsProgress(step, progress) {
-    // Update step indicators
     elements.adsStep1.classList.remove('active', 'completed');
     elements.adsStep2.classList.remove('active', 'completed');
     elements.adsStep3.classList.remove('active', 'completed');
@@ -1555,7 +1386,6 @@ function updateAdsProgress(step, progress) {
     if (step === 2) elements.adsStep2.classList.add('active');
     if (step === 3) elements.adsStep3.classList.add('active');
     
-    // Update progress bar
     const totalProgress = (step - 1) * 33 + progress;
     elements.adsProgressFill.style.width = `${totalProgress}%`;
 }
@@ -1565,22 +1395,18 @@ function updateVideoProgress(progress) {
 }
 
 function startCountdown() {
-    // রিসেট কাউন্টডাউন
     countdownSeconds = 15;
     elements.countdownNumber.textContent = countdownSeconds;
     elements.remainingSeconds.textContent = countdownSeconds;
     
-    // কাউন্টডাউন ওভারলে শো করা
     elements.countdownOverlay.classList.remove('hidden');
     
-    // কাউন্টডাউন ইন্টারভেল শুরু
     countdownInterval = setInterval(() => {
         countdownSeconds--;
         elements.countdownNumber.textContent = countdownSeconds;
         elements.remainingSeconds.textContent = countdownSeconds;
         
         if (countdownSeconds <= 0) {
-            // কাউন্টডাউন শেষ হলে
             clearInterval(countdownInterval);
             endCountdown();
         }
@@ -1588,24 +1414,21 @@ function startCountdown() {
 }
 
 function endCountdown() {
-    // কাউন্টডাউন ওভারলে হাইড করা
     elements.countdownOverlay.classList.add('hidden');
     
-    // রিওয়ার্ড প্রদান
     if (isVideoAd) {
         rewardUserAfterVideoAd();
     } else {
         rewardUserAfterAds();
     }
     
-    // উদযাপন স্ক্রিন শো করা
     setTimeout(() => {
         showCelebration();
     }, 500);
 }
 
 async function rewardUserAfterAds() {
-    const reward = 1; // রিওয়ার্ড ১ টাকা
+    const reward = 1;
     try {
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
@@ -1615,7 +1438,6 @@ async function rewardUserAfterAds() {
         
         await database.ref('users/' + currentUser.uid).update(updates);
         
-        // লোকাল ডাটা আপডেট এবং UI রিফ্রেশ
         userData = { ...userData, ...updates };
         updateUserInterface();
         
@@ -1626,7 +1448,7 @@ async function rewardUserAfterAds() {
 }
 
 async function rewardUserAfterVideoAd() {
-    const reward = 1; // রিওয়ার্ড ১ টাকা
+    const reward = 1;
     try {
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
@@ -1636,7 +1458,6 @@ async function rewardUserAfterVideoAd() {
         
         await database.ref('users/' + currentUser.uid).update(updates);
         
-        // লোকাল ডাটা আপডেট এবং UI রিফ্রেশ
         userData = { ...userData, ...updates };
         updateUserInterface();
         
@@ -1647,10 +1468,8 @@ async function rewardUserAfterVideoAd() {
 }
 
 function showCelebration() {
-    // কনফেটি এফেক্ট তৈরি করা
     createConfetti();
     
-    // উদযাপন ওভারলে শো করা
     elements.celebrationOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -1669,7 +1488,6 @@ function createConfetti() {
         
         elements.celebrationOverlay.appendChild(confetti);
         
-        // ৩ সেকেন্ড পর কনফেটি রিমুভ করা
         setTimeout(() => {
             if (confetti.parentNode) {
                 confetti.parentNode.removeChild(confetti);
@@ -1679,11 +1497,9 @@ function createConfetti() {
 }
 
 function closeCelebration() {
-    // উদযাপন ওভারলে হাইড করা
     elements.celebrationOverlay.classList.add('hidden');
     document.body.style.overflow = 'auto';
     
-    // সব কনফেটি রিমুভ করা
     const confettiElements = elements.celebrationOverlay.querySelectorAll('.confetti');
     confettiElements.forEach(confetti => {
         if (confetti.parentNode) {
@@ -1691,7 +1507,6 @@ function closeCelebration() {
         }
     });
     
-    // সফল হওয়ার নোটিফিকেশন
     if (isVideoAd) {
         showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
     } else {
@@ -1745,7 +1560,6 @@ async function claimDailyBonus() {
 async function copyReferralLink() {
     navigator.clipboard.writeText(elements.referralLink.value)
         .then(() => {
-            // শুধু লিংক কপি করা হয়েছে, ব্যালেন্স যোগ করা হবে না
             showNotification('Referral link copied to clipboard! Share with friends to earn ৳20.', 'success');
         })
         .catch(err => {
@@ -1774,18 +1588,15 @@ function shareReferralLink() {
 function openProfileEditModal() {
     if (!currentUser || !userData) return;
     
-    // Populate form with current user data
     elements.editProfilePreview.src = userData.profilePicture;
     elements.editFullName.value = userData.fullName || '';
     elements.editEmail.value = userData.email || '';
     elements.editPhoneNumber.value = userData.phone || '';
     
-    // Reset password fields
     elements.currentPassword.value = '';
     elements.newPassword.value = '';
     elements.confirmNewPassword.value = '';
     
-    // Show modal
     elements.profileEditModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -1811,14 +1622,12 @@ async function handleProfileEdit(e) {
         return;
     }
     
-    // Verify current password
     if (!currentPasswordValue) {
         showNotification('Please enter your current password for verification', 'error');
         return;
     }
     
     try {
-        // Verify current password
         const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPasswordValue);
         await currentUser.reauthenticateWithCredential(credential);
         
@@ -1827,7 +1636,6 @@ async function handleProfileEdit(e) {
         
         let profilePicUrl = userData.profilePicture;
         
-        // Upload new profile picture if selected
         if (selectedProfilePicture) {
             try {
                 profilePicUrl = await uploadProfilePicture(selectedProfilePicture, currentUser.uid);
@@ -1843,15 +1651,12 @@ async function handleProfileEdit(e) {
             profilePicture: profilePicUrl
         };
         
-        // Update Firebase user data
         await database.ref('users/' + currentUser.uid).update(updates);
         
-        // Update email if changed
         if (email !== currentUser.email) {
             await currentUser.updateEmail(email);
         }
         
-        // Update password if provided
         if (newPasswordValue) {
             if (newPasswordValue.length < 6) {
                 showNotification('New password must be at least 6 characters', 'error');
@@ -1870,7 +1675,6 @@ async function handleProfileEdit(e) {
             await currentUser.updatePassword(newPasswordValue);
         }
         
-        // Reload user data
         await loadUserData();
         
         showNotification('Profile updated successfully!', 'success');
@@ -1958,28 +1762,25 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-
 // Deposit and Withdraw Functions
 function setupDepositWithdrawEvents() {
-    // Deposit Button Event
+    if (!document.getElementById('depositBtn')) return;
+    
     document.getElementById('depositBtn').addEventListener('click', openDepositModal);
     document.getElementById('closeDepositModal').addEventListener('click', closeDepositModal);
     document.getElementById('cancelDeposit').addEventListener('click', closeDepositModal);
     document.getElementById('depositForm').addEventListener('submit', handleDeposit);
     
-    // Withdraw Button Event
     document.getElementById('withdrawBtn').addEventListener('click', openWithdrawModal);
     document.getElementById('closeWithdrawModal').addEventListener('click', closeWithdrawModal);
     document.getElementById('cancelWithdraw').addEventListener('click', closeWithdrawModal);
     document.getElementById('withdrawForm').addEventListener('submit', handleWithdraw);
     
-    // Success Modals Events
     document.getElementById('closeDepositSuccessBtn').addEventListener('click', closeDepositSuccessModal);
     document.getElementById('closeDepositSuccess').addEventListener('click', closeDepositSuccessModal);
     document.getElementById('closeWithdrawSuccessBtn').addEventListener('click', closeWithdrawSuccessModal);
     document.getElementById('closeWithdrawSuccess').addEventListener('click', closeWithdrawSuccessModal);
     
-    // Back to Home button
     document.getElementById('goBackBtn').addEventListener('click', closeWithdrawModal);
 }
 
@@ -1989,10 +1790,7 @@ function openDepositModal() {
         return;
     }
     
-    // Reset form
     document.getElementById('depositForm').reset();
-    
-    // Show modal
     document.getElementById('depositModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -2008,14 +1806,10 @@ function openWithdrawModal() {
         return;
     }
     
-    // Reset form
     document.getElementById('withdrawForm').reset();
-    
-    // Show modal
     document.getElementById('withdrawModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    // Check withdrawal eligibility
     checkWithdrawalEligibility();
 }
 
@@ -2025,7 +1819,6 @@ function closeWithdrawModal() {
 }
 
 function checkWithdrawalEligibility() {
-    // Show loading status
     document.getElementById('withdrawStatus').classList.remove('hidden');
     document.getElementById('withdrawStatus').classList.add('flex', 'flex-col');
     document.getElementById('statusMessage').textContent = 'Checking eligibility...';
@@ -2034,18 +1827,15 @@ function checkWithdrawalEligibility() {
     document.getElementById('withdrawFormFields').classList.add('hidden');
     document.getElementById('backToHomeBtn').classList.add('hidden');
     
-    // Get current balance and referral count
     const currentBalance = userData.balance || 0;
     const successfulReferrals = userData.successfulReferrals || 0;
     const requiredReferrals = 20;
     const minBalance = 500;
     
-    // Update display
     document.getElementById('currentBalanceDisplay').textContent = `৳${currentBalance}`;
     document.getElementById('referralCountDisplay').textContent = `${successfulReferrals}/${requiredReferrals}`;
     document.getElementById('availableBalance').textContent = `৳${currentBalance}`;
     
-    // Check balance requirement
     const balanceCheckElement = document.getElementById('balanceCheck');
     const balanceStatusElement = document.getElementById('balanceStatus');
     
@@ -2061,7 +1851,6 @@ function checkWithdrawalEligibility() {
         balanceStatusElement.className = 'text-sm text-red-600 dark:text-red-400';
     }
     
-    // Check referral requirement
     const referralCheckElement = document.getElementById('referralCheck');
     const referralStatusElement = document.getElementById('referralStatus');
     
@@ -2077,31 +1866,25 @@ function checkWithdrawalEligibility() {
         referralStatusElement.className = 'text-sm text-red-600 dark:text-red-400';
     }
     
-    // Simulate API call delay
     setTimeout(() => {
         document.getElementById('withdrawStatus').classList.add('hidden');
         
-        // Check if both requirements are met
         if (currentBalance >= minBalance && successfulReferrals >= requiredReferrals) {
             document.getElementById('eligibleMessage').classList.remove('hidden');
             document.getElementById('withdrawFormFields').classList.remove('hidden');
             
-            // Update available balance
             document.getElementById('availableBalance').textContent = `৳${currentBalance}`;
             
-            // Set max withdrawal amount
             const withdrawAmountInput = document.getElementById('withdrawAmount');
             withdrawAmountInput.max = currentBalance;
-            withdrawAmountInput.value = Math.min(currentBalance, 500); // Default to min or available
+            withdrawAmountInput.value = Math.min(currentBalance, 500);
             
-            // Calculate initial amounts
             calculateWithdrawAmount();
             
         } else {
             document.getElementById('notEligibleMessage').classList.remove('hidden');
             document.getElementById('backToHomeBtn').classList.remove('hidden');
             
-            // Show reason
             const reasons = [];
             if (currentBalance < minBalance) {
                 reasons.push(`Minimum balance ৳${minBalance} required`);
@@ -2134,7 +1917,6 @@ async function handleDeposit(e) {
     const paymentMethod = document.getElementById('paymentMethod').value;
     const senderNumber = document.getElementById('senderNumber').value.trim();
     
-    // Validation
     if (!depositAmount || depositAmount < 10) {
         showNotification('Minimum deposit amount is ৳10', 'error');
         return;
@@ -2156,11 +1938,9 @@ async function handleDeposit(e) {
     }
     
     try {
-        // Show loading spinner
         document.getElementById('depositSpinner').classList.remove('hidden');
         document.getElementById('submitDepositBtn').disabled = true;
         
-        // Create deposit record
         const depositData = {
             userId: currentUser.uid,
             amount: depositAmount,
@@ -2174,11 +1954,9 @@ async function handleDeposit(e) {
             userEmail: userData.email
         };
         
-        // Save to database
         const depositRef = database.ref('deposits').push();
         await depositRef.set(depositData);
         
-        // Update user's pending deposits
         const userRef = database.ref('users/' + currentUser.uid);
         const userSnapshot = await userRef.once('value');
         const currentUserData = userSnapshot.val();
@@ -2195,7 +1973,6 @@ async function handleDeposit(e) {
             totalDeposits: (currentUserData.totalDeposits || 0) + 1
         });
         
-        // Send notification to admin (simulated)
         const notificationData = {
             type: 'new_deposit',
             title: 'New Deposit Request',
@@ -2208,13 +1985,10 @@ async function handleDeposit(e) {
         
         await database.ref('admin_notifications').push(notificationData);
         
-        // Close deposit modal
         closeDepositModal();
         
-        // Show success modal
         showDepositSuccess(depositAmount, paymentMethod, transactionId);
         
-        // Send confirmation notification
         showNotification(`Deposit request submitted! Amount: ৳${depositAmount}`, 'success');
         
     } catch (error) {
@@ -2236,7 +2010,6 @@ async function handleWithdraw(e) {
     const transactionFee = 10;
     const netAmount = withdrawAmount - transactionFee;
     
-    // Validation
     if (!withdrawAmount || withdrawAmount < 500) {
         showNotification('Minimum withdrawal amount is ৳500', 'error');
         return;
@@ -2262,18 +2035,15 @@ async function handleWithdraw(e) {
         return;
     }
     
-    // Check eligibility again
     if (userData.balance < 500 || (userData.successfulReferrals || 0) < 20) {
         showNotification('You are not eligible for withdrawal', 'error');
         return;
     }
     
     try {
-        // Show loading spinner
         document.getElementById('withdrawSpinner').classList.remove('hidden');
         document.getElementById('submitWithdrawBtn').disabled = true;
         
-        // Create withdrawal record
         const withdrawData = {
             userId: currentUser.uid,
             amount: withdrawAmount,
@@ -2290,11 +2060,9 @@ async function handleWithdraw(e) {
             successfulReferrals: userData.successfulReferrals || 0
         };
         
-        // Save to database
         const withdrawRef = database.ref('withdrawals').push();
         await withdrawRef.set(withdrawData);
         
-        // Update user balance and withdrawals
         const userRef = database.ref('users/' + currentUser.uid);
         const userSnapshot = await userRef.once('value');
         const currentUserData = userSnapshot.val();
@@ -2314,11 +2082,9 @@ async function handleWithdraw(e) {
             totalWithdrawalAmount: (currentUserData.totalWithdrawalAmount || 0) + withdrawAmount
         });
         
-        // Update local user data
         userData.balance -= withdrawAmount;
         updateUserInterface();
         
-        // Send notification to admin
         const notificationData = {
             type: 'new_withdrawal',
             title: 'New Withdrawal Request',
@@ -2331,13 +2097,10 @@ async function handleWithdraw(e) {
         
         await database.ref('admin_notifications').push(notificationData);
         
-        // Close withdraw modal
         closeWithdrawModal();
         
-        // Show success modal
         showWithdrawSuccess(withdrawAmount, withdrawMethod, accountNumber, netAmount);
         
-        // Send confirmation notification
         showNotification(`Withdrawal request submitted! You will receive ৳${netAmount}`, 'success');
         
     } catch (error) {
@@ -2350,12 +2113,10 @@ async function handleWithdraw(e) {
 }
 
 function showDepositSuccess(amount, method, transactionId) {
-    // Update success modal content
     document.getElementById('successDepositAmount').textContent = `৳${amount}`;
     document.getElementById('successPaymentMethod').textContent = getPaymentMethodName(method);
     document.getElementById('successTransactionId').textContent = transactionId;
     
-    // Show success modal
     document.getElementById('depositSuccessModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -2366,13 +2127,11 @@ function closeDepositSuccessModal() {
 }
 
 function showWithdrawSuccess(amount, method, accountNumber, netAmount) {
-    // Update success modal content
     document.getElementById('successWithdrawAmount').textContent = `৳${amount}`;
     document.getElementById('successWithdrawMethod').textContent = getPaymentMethodName(method);
     document.getElementById('successAccountNumber').textContent = accountNumber;
     document.getElementById('successNetAmount').textContent = `৳${netAmount}`;
     
-    // Show success modal
     document.getElementById('withdrawSuccessModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -2391,33 +2150,10 @@ function getPaymentMethodName(method) {
     return methods[method] || method;
 }
 
-// Initialize deposit/withdraw events when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    setupDepositWithdrawEvents();
-});
-
-
-
-// Update the initializeApp function or add this in DOMContentLoaded
-function initializeApp() {
-    const savedTheme = localStorage.getItem('dailyEarningTheme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-        document.body.classList.add('dark');
-        updateThemeIcon(true);
-    }
-    
-    // Initialize deposit/withdraw events
-    setupDepositWithdrawEvents();
-}
-
-// রেফারেল কাউন্ট আপডেট ফাংশন
 async function updateReferralCount() {
     if (!currentUser) return;
     
     try {
-        // Count successful referrals from referrals collection
         const referralsSnapshot = await database.ref(`referrals/${currentUser.uid}`).once('value');
         const referrals = referralsSnapshot.val();
         
@@ -2430,7 +2166,6 @@ async function updateReferralCount() {
                 if (referral.status === 'completed' || referral.isActive) {
                     successfulReferrals++;
                     
-                    // Check if referred user is still active
                     if (referral.isActive) {
                         activeReferrals++;
                     }
@@ -2438,14 +2173,12 @@ async function updateReferralCount() {
             });
         }
         
-        // Update user data with actual counts
         await database.ref('users/' + currentUser.uid).update({
             successfulReferrals: successfulReferrals,
             activeReferrals: activeReferrals,
-            referrals: successfulReferrals // Update referrals count too
+            referrals: successfulReferrals
         });
         
-        // Update local userData
         userData.successfulReferrals = successfulReferrals;
         userData.activeReferrals = activeReferrals;
         userData.referrals = successfulReferrals;
@@ -2454,26 +2187,21 @@ async function updateReferralCount() {
         console.error('Error updating referral count:', error);
     }
 }
-// রেফারেল ট্র্যাকিং সিস্টেম সেটআপ
+
 async function setupReferralTracking() {
     if (!currentUser) return;
     
-    // Check if user has pending referral from localStorage
     const pendingReferral = localStorage.getItem('pendingReferralCode');
     if (pendingReferral) {
-        // If user logged in with a referral code pending
         if (pendingReferral.startsWith('ref_')) {
             const referrerId = pendingReferral.substring(4);
             try {
                 const referrerSnapshot = await database.ref('users/' + referrerId).once('value');
                 if (referrerSnapshot.exists()) {
-                    // Check if this referral already processed
                     const referralCheck = await database.ref(`referrals/${referrerId}/${currentUser.uid}`).once('value');
                     if (!referralCheck.exists()) {
-                        // Process referral reward
                         await processReferralReward(referrerId, currentUser.uid, pendingReferral);
                         
-                        // Update current user's data to show who referred them
                         await database.ref('users/' + currentUser.uid).update({
                             referredBy: referrerId,
                             referralSource: pendingReferral
@@ -2487,7 +2215,7 @@ async function setupReferralTracking() {
         localStorage.removeItem('pendingReferralCode');
     }
 }
-// রেফারেল স্ট্যাটস দেখানোর ফাংশন
+
 async function showReferralStats() {
     if (!currentUser) {
         showNotification('Please login first!', 'error');
@@ -2495,7 +2223,6 @@ async function showReferralStats() {
     }
     
     try {
-        // Fetch referral details
         const referralsSnapshot = await database.ref(`referrals/${currentUser.uid}`).once('value');
         const referrals = referralsSnapshot.val();
         
@@ -2515,7 +2242,6 @@ async function showReferralStats() {
             });
         }
         
-        // Create stats modal
         const statsHTML = `
             <div class="modal-overlay" id="referralStatsModal">
                 <div class="modal-container">
@@ -2526,7 +2252,6 @@ async function showReferralStats() {
                         </button>
                     </div>
                     <div class="space-y-4">
-                        <!-- Summary Stats -->
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl">
                                 <p class="text-sm text-blue-600 dark:text-blue-400">Total Referrals</p>
@@ -2538,7 +2263,6 @@ async function showReferralStats() {
                             </div>
                         </div>
                         
-                        <!-- Requirements -->
                         <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-xl">
                             <div class="flex items-center mb-2">
                                 <i class="fas fa-info-circle text-yellow-600 dark:text-yellow-400 mr-2"></i>
@@ -2559,7 +2283,6 @@ async function showReferralStats() {
                             </div>
                         </div>
                         
-                        <!-- Referral List -->
                         <div>
                             <h4 class="font-bold mb-3">Your Referrals</h4>
                             ${referralList.length > 0 ? `
@@ -2588,7 +2311,6 @@ async function showReferralStats() {
                             `}
                         </div>
                         
-                        <!-- Close Button -->
                         <button id="closeStatsBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
                             Close
                         </button>
@@ -2597,12 +2319,10 @@ async function showReferralStats() {
             </div>
         `;
         
-        // Add modal to body
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = statsHTML;
         document.body.appendChild(modalContainer.firstElementChild);
         
-        // Add event listeners
         document.getElementById('closeReferralStats').addEventListener('click', () => {
             const modal = document.getElementById('referralStatsModal');
             if (modal) modal.remove();
@@ -2613,7 +2333,6 @@ async function showReferralStats() {
             if (modal) modal.remove();
         });
         
-        // Close when clicking outside
         modalContainer.firstElementChild.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay')) {
                 const modal = document.getElementById('referralStatsModal');
@@ -2626,22 +2345,7 @@ async function showReferralStats() {
         showNotification('Error loading referral statistics', 'error');
     }
 }
-// Initialize App
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    setupEventListeners();
-    checkForReferralInURL();
-    
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
-            loadUserData();
-        } else {
-            showAuthPages();
-        }
-    });
-});
-// Save task progress to Firebase
+
 async function saveTaskProgressToFirebase() {
     if (!currentUser) return;
     
@@ -2653,7 +2357,6 @@ async function saveTaskProgressToFirebase() {
     }
 }
 
-// Load task progress from Firebase
 async function loadTaskProgressFromFirebase() {
     if (!currentUser) return;
     
@@ -2662,11 +2365,9 @@ async function loadTaskProgressFromFirebase() {
         const firebaseTaskProgress = snapshot.val();
         
         if (firebaseTaskProgress) {
-            // Merge with local storage
             const localTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
             const mergedProgress = { ...firebaseTaskProgress, ...localTaskProgress };
             
-            // Save merged progress
             localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(mergedProgress));
             await database.ref(`taskProgress/${currentUser.uid}`).set(mergedProgress);
         }
@@ -2675,7 +2376,7 @@ async function loadTaskProgressFromFirebase() {
     }
 }
 
-// Load user data ফাংশনে যোগ করুন
+// Update the loadUserData function to include task progress loading
 async function loadUserData() {
     if (!currentUser) return;
     
@@ -2684,18 +2385,68 @@ async function loadUserData() {
         userData = snapshot.val();
         
         if (!userData) {
-            // ... existing code ...
-        } else {
-            // ... existing code ...
+            userData = {
+                uid: currentUser.uid,
+                fullName: currentUser.displayName || 'User',
+                email: currentUser.email,
+                phone: '',
+                profilePicture: currentUser.photoURL || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                balance: 0,
+                streak: 0,
+                referrals: 0,
+                successfulReferrals: 0,
+                totalReferralEarnings: 0,
+                tasksCompleted: 0,
+                totalEarnings: 0,
+                monthlyTasks: 0,
+                activeReferrals: 0,
+                memberSince: new Date().toISOString(),
+                level: 'Beginner',
+                status: 'Active',
+                lastLogin: new Date().toISOString(),
+                lastDailyBonus: null,
+                dailyAdsWatched: 0,
+                lastAdsDate: null,
+                videosWatched: 0,
+                lastVideoDate: null,
+                referralCode: `ref_${currentUser.uid}`
+            };
             
-            // Load task progress from Firebase
+            await database.ref('users/' + currentUser.uid).set(userData);
+        } else {
+            await database.ref('users/' + currentUser.uid).update({
+                lastLogin: new Date().toISOString()
+            });
+            
+            const today = new Date().toDateString();
+            const lastAdsDate = userData.lastAdsDate ? new Date(userData.lastAdsDate).toDateString() : null;
+            const lastVideoDate = userData.lastVideoDate ? new Date(userData.lastVideoDate).toDateString() : null;
+            
+            if (lastAdsDate !== today) {
+                await database.ref('users/' + currentUser.uid).update({
+                    dailyAdsWatched: 0,
+                    lastAdsDate: new Date().toISOString()
+                });
+                userData.dailyAdsWatched = 0;
+                userData.lastAdsDate = new Date().toISOString();
+            }
+            
+            if (lastVideoDate !== today) {
+                await database.ref('users/' + currentUser.uid).update({
+                    videosWatched: 0,
+                    lastVideoDate: new Date().toISOString()
+                });
+                userData.videosWatched = 0;
+                userData.lastVideoDate = new Date().toISOString();
+            }
+            
+            await updateReferralCount();
             await loadTaskProgressFromFirebase();
         }
         
         updateUserInterface();
         showMainApp();
         
-        // Check for pending referrals
         await setupReferralTracking();
         
     } catch (error) {
@@ -2704,82 +2455,17 @@ async function loadUserData() {
     }
 }
 
-// Task unlock/download ফাংশনে Firebase save যোগ করুন
+// Add save to Firebase in task handlers
 async function handleTaskUnlock(taskId) {
     // ... existing code ...
     
-    // Save to Firebase
+    // Save to Firebase at the end
     await saveTaskProgressToFirebase();
-    
-    // ... rest of the code ...
 }
 
 async function handleTaskDownload(taskId) {
     // ... existing code ...
     
-    // Save to Firebase
+    // Save to Firebase at the end
     await saveTaskProgressToFirebase();
-    
-    // ... rest of the code ...
 }
-
-
-
-// টেস্ট ফাংশন - ডিবাগ করার জন্য
-function testUnlockButton() {
-    console.log('Testing unlock button...');
-    
-    // টাস্ক প্রোগ্রেস রিসেট
-    if (currentUser) {
-        const userTaskProgress = {};
-        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-        console.log('Task progress reset');
-    }
-    
-    // UI রিফ্রেশ
-    loadAllTasks();
-    
-    // প্রথম টাস্কের আনলক বাটন খুঁজুন
-    const unlockBtn = document.querySelector('.task-unlock-btn');
-    if (unlockBtn) {
-        console.log('Unlock button found:', unlockBtn);
-        unlockBtn.style.border = '2px solid red';
-        setTimeout(() => {
-            unlockBtn.style.border = '';
-        }, 2000);
-    } else {
-        console.log('Unlock button NOT found');
-    }
-}
-
-// ব্রাউজার কনসোলে টেস্ট করার জন্য
-window.testTasks = function() {
-    console.log('=== TASK SYSTEM DEBUG ===');
-    console.log('Current User:', currentUser?.uid);
-    
-    if (currentUser) {
-        const progress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
-        console.log('Task Progress:', progress);
-        
-        // টেস্ট বাটন যোগ করুন
-        const testBtn = document.createElement('button');
-        testBtn.innerHTML = '🧪 Test Task 1';
-        testBtn.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 9999; background: #f00; color: white; padding: 10px; border-radius: 5px;';
-        testBtn.onclick = () => handleTaskUnlock(1);
-        document.body.appendChild(testBtn);
-        
-        const testBtn2 = document.createElement('button');
-        testBtn2.innerHTML = '🧪 Test Download 1';
-        testBtn2.style.cssText = 'position: fixed; top: 140px; right: 20px; z-index: 9999; background: #0f0; color: white; padding: 10px; border-radius: 5px;';
-        testBtn2.onclick = () => handleTaskDownload(1);
-        document.body.appendChild(testBtn2);
-    }
-};
-
-// পেজ লোড হওয়ার পর ডিবাগ ইনিশিয়ালাইজ করুন
-document.addEventListener('DOMContentLoaded', function() {
-    // 3 সেকেন্ড পর ডিবাগ মোড চালু করুন
-    setTimeout(() => {
-        window.testTasks();
-    }, 3000);
-});
