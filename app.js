@@ -1,3 +1,4 @@
+
 // Global Variables
 let currentUser = null;
 let userData = null;
@@ -892,7 +893,7 @@ function loadAllTasks() {
         
         if (taskData.completed) completedCount++;
         
-        const isUnlocked = taskData.unlockCount >= 5;
+        const isUnlocked = taskData.unlockCount >= 10;
         const showTimer = taskData.timerActive && taskData.timeRemaining > 0;
         
         const taskElement = document.createElement('div');
@@ -910,7 +911,7 @@ function loadAllTasks() {
             <div class="flex justify-between items-center mb-3">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-300">Reward</p>
-                    <p class="font-bold text-green-600 dark:text-green-400">ফ্রি DOWNLOAD ⬇️</p>
+                    <p class="font-bold text-green-600 dark:text-green-400">ফ্রি DOWNLOAD </p>
                 </div>
                 <div class="text-right">
                     <p class="text-sm text-gray-500 dark:text-gray-300">Unlock Progress</p>
@@ -927,7 +928,7 @@ function loadAllTasks() {
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
                     ${!isUnlocked ? 
-                        `${5 - taskData.unlockCount} more unlocks needed for download` : 
+                        `${10 - taskData.unlockCount} more unlocks needed for download` : 
                         '✅ Ready to download!'}
                 </p>
             </div>
@@ -941,12 +942,12 @@ function loadAllTasks() {
                 ` : isUnlocked ? `
                     <button class="task-download-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
                             data-task-id="${task.id}">
-                        <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
+                        <i class="fas fa-download mr-2"></i> DOWNLOAD
                     </button>
                 ` : `
                     <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
                             data-task-id="${task.id}">
-                        <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)
+                        <i class="fas fa-lock mr-2"></i> UNLOCK (${taskData.unlockCount + 0}/10)
                     </button>
                 `}
             </div>
@@ -1038,7 +1039,7 @@ function handleTaskUnlock(taskId) {
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
-    const remainingUnlocks = 5 - taskData.unlockCount;
+    const remainingUnlocks = 10 - taskData.unlockCount;
     if (remainingUnlocks > 0) {
         showNotification(`Unlock ${taskData.unlockCount}/5 completed! ${remainingUnlocks} more to go.`, 'info');
     } else {
@@ -1173,8 +1174,8 @@ async function handleTaskDownload(taskId) {
         lastUnlockTime: null
     };
     
-    if (taskData.unlockCount < 5) {
-        showNotification(`Please complete ${5 - taskData.unlockCount} more unlocks first!`, 'error');
+    if (taskData.unlockCount < 10) {
+        showNotification(`Please complete ${10 - taskData.unlockCount} more unlocks first!`, 'error');
         return;
     }
     
@@ -1383,12 +1384,12 @@ function endCountdown() {
 }
 
 async function rewardUserAfterAds() {
-    const reward = 1;
+    const reward = 0.5;
     try {
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
         updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-        updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
+        updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 0.5;
         updates['lastAdsDate'] = new Date().toISOString();
         
         await database.ref('users/' + currentUser.uid).update(updates);
@@ -1398,17 +1399,17 @@ async function rewardUserAfterAds() {
         
     } catch (err) {
         console.error('Reward error:', err);
-        showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
+        showNotification('টাকা যোগ করতে সমস্যা হয়েছে', 'error');
     }
 }
 
 async function rewardUserAfterVideoAd() {
-    const reward = 1;
+    const reward = 0.5;
     try {
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
         updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-        updates['videosWatched'] = (userData.videosWatched || 0) + 1;
+        updates['videosWatched'] = (userData.videosWatched || 0) + 0.5;
         updates['lastVideoDate'] = new Date().toISOString();
         
         await database.ref('users/' + currentUser.uid).update(updates);
@@ -1418,7 +1419,7 @@ async function rewardUserAfterVideoAd() {
         
     } catch (err) {
         console.error('Video reward error:', err);
-        showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
+        showNotification('টাকা যোগ করতে সমস্যা হয়েছে', 'error');
     }
 }
 
@@ -1872,8 +1873,8 @@ async function handleDeposit(e) {
     const paymentMethod = document.getElementById('paymentMethod').value;
     const senderNumber = document.getElementById('senderNumber').value.trim();
     
-    if (!depositAmount || depositAmount < 10) {
-        showNotification('Minimum deposit amount is ৳10', 'error');
+    if (!depositAmount || depositAmount < 100) {
+        showNotification('Minimum deposit amount is ৳100', 'error');
         return;
     }
     
