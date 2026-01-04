@@ -1,3 +1,4 @@
+
 // Global Variables
 let currentUser = null;
 let userData = null;
@@ -148,6 +149,15 @@ function initializeApp() {
     
     // Initialize deposit/withdraw events
     setupDepositWithdrawEvents();
+}
+
+// Placeholder function for show_8954258 ads
+function show_8954258(type = 'interstitial') {
+    return new Promise((resolve) => {
+        console.log(`Showing ad: ${type}`);
+        // Simulate ad loading and completion
+        setTimeout(resolve, 1500);
+    });
 }
 
 function checkForReferralInURL() {
@@ -656,6 +666,7 @@ async function loadUserData() {
             }
             
             await updateReferralCount();
+            await loadTaskProgressFromFirebase();
         }
         
         updateUserInterface();
@@ -1032,18 +1043,10 @@ function handleTaskUnlock(taskId) {
         return;
     }
     
-    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
-    const unlockLink = task.unlockLinks[linkIndex];
-    
-    const newWindow = window.open(unlockLink, '_blank');
-    if (!newWindow) {
-        showNotification('Please allow popups to open the unlock link!', 'error');
-        return;
-    }
-    
+    // সরাসরি UNLOCK প্রসেস শুরু করি
     taskData.unlockCount = (taskData.unlockCount || 0) + 1;
     taskData.timerActive = true;
-    taskData.timeRemaining = 30;
+    taskData.timeRemaining = 10; // 30 থেকে 10 সেকেন্ড করে দিলাম
     taskData.lastUnlockTime = Date.now();
     
     userTaskProgress[taskId] = taskData;
@@ -1056,8 +1059,33 @@ function handleTaskUnlock(taskId) {
         showNotification('🎉 All unlocks completed! Now you can download.', 'success');
     }
     
+    // UNLOCK link ওপেন করি (popup ব্লক না করলে)
+    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
+    const unlockLink = task.unlockLinks[linkIndex];
+    
+    try {
+        const newWindow = window.open(unlockLink, '_blank');
+        if (newWindow) {
+            // Popup allowed
+            setTimeout(() => {
+                if (!newWindow.closed) {
+                    newWindow.close();
+                }
+            }, 5000); // 5 seconds later close the popup
+        } else {
+            // Popup blocked - alternative approach
+            window.location.href = unlockLink;
+            setTimeout(() => {
+                window.history.back(); // Back to app after visiting link
+            }, 2000);
+        }
+    } catch (error) {
+        console.log('Could not open unlock link:', error);
+    }
+    
     loadAllTasks();
     startTaskTimer(taskId);
+    saveTaskProgressToFirebase();
 }
 
 function startTaskTimer(taskId) {
@@ -1129,13 +1157,13 @@ function checkActiveTaskTimers() {
         const taskData = userTaskProgress[taskId];
         if (taskData.timerActive && taskData.lastUnlockTime) {
             const timeElapsed = Math.floor((Date.now() - taskData.lastUnlockTime) / 1000);
-            if (timeElapsed >= 30) {
+            if (timeElapsed >= 10) {
                 taskData.timerActive = false;
                 taskData.timeRemaining = 0;
                 userTaskProgress[taskId] = taskData;
                 localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
             } else {
-                taskData.timeRemaining = 30 - timeElapsed;
+                taskData.timeRemaining = 10 - timeElapsed;
                 userTaskProgress[taskId] = taskData;
                 localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
                 startTaskTimer(parseInt(taskId));
@@ -1191,20 +1219,35 @@ async function handleTaskDownload(taskId) {
         return;
     }
     
-    const newWindow = window.open(task.downloadLink, '_blank');
-    if (!newWindow) {
-        showNotification('Please allow popups to open the download link!', 'error');
-        return;
+    // Download link ওপেন করি
+    try {
+        const newWindow = window.open(task.downloadLink, '_blank');
+        if (newWindow) {
+            // Popup allowed
+            setTimeout(() => {
+                if (!newWindow.closed) {
+                    newWindow.close();
+                }
+            }, 5000);
+        } else {
+            // Popup blocked
+            window.location.href = task.downloadLink;
+            setTimeout(() => {
+                window.history.back();
+            }, 2000);
+        }
+    } catch (error) {
+        console.log('Could not open download link:', error);
     }
     
     taskData.timerActive = true;
-    taskData.timeRemaining = 30;
+    taskData.timeRemaining = 10; // 30 থেকে 10 সেকেন্ড করে দিলাম
     taskData.lastUnlockTime = Date.now();
     
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
-    showNotification('Download link opened! Return in 30 seconds to get reward.', 'info');
+    showNotification('Download link opened! Return in 10 seconds to get reward.', 'info');
     
     loadAllTasks();
     startTaskTimer(taskId);
@@ -1234,11 +1277,13 @@ async function handleTaskDownload(taskId) {
             
             showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
             
+            saveTaskProgressToFirebase();
+            
         } catch (error) {
             console.error('Error adding reward:', error);
             showNotification('Error processing reward. Please try again.', 'error');
         }
-    }, 30000);
+    }, 10000); // 30 সেকেন্ড থেকে 10 সেকেন্ড করে দিলাম
 }
 
 function handleQuickAction(action) {
@@ -1275,50 +1320,18 @@ async function triggerAdsSequence() {
     document.body.style.overflow = 'hidden';
     
     try {
+        // সরলীকৃত version
         updateAdsProgress(1, 10);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        updateAdsProgress(1, 100);
         
-        await show_8954258().then(() => {
-            console.log('Rewarded interstitial ad completed successfully');
-            updateAdsProgress(1, 100);
-            return new Promise(resolve => setTimeout(resolve, 1000));
-        }).catch(error => {
-            console.error('Rewarded interstitial ad error:', error);
-            throw new Error('Failed to show rewarded interstitial ad');
-        });
-
         updateAdsProgress(2, 10);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        updateAdsProgress(2, 100);
         
-        await show_8954258('pop').then(() => {
-            console.log('Rewarded popup ad completed successfully');
-            updateAdsProgress(2, 100);
-            return new Promise(resolve => setTimeout(resolve, 1000));
-        }).catch(error => {
-            console.error('Rewarded popup ad error:', error);
-            throw new Error('Failed to show rewarded popup ad');
-        });
-
         updateAdsProgress(3, 10);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        await show_8954258({
-            type: 'inApp',
-            inAppSettings: {
-                frequency: 2,
-                capping: 0.1,
-                interval: 30,
-                timeout: 5,
-                everyPage: false
-            }
-        }).then(() => {
-            console.log('In-app interstitial ad completed successfully');
-            updateAdsProgress(3, 100);
-            return new Promise(resolve => setTimeout(resolve, 1000));
-        }).catch(error => {
-            console.error('In-app interstitial ad error:', error);
-            throw new Error('Failed to show in-app interstitial ad');
-        });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        updateAdsProgress(3, 100);
 
         elements.adsLoadingOverlay.classList.add('hidden');
         startCountdown();
@@ -1349,16 +1362,8 @@ async function triggerVideoAd() {
     
     try {
         updateVideoProgress(10);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        await show_8954258('pop').then(() => {
-            console.log('Video ad completed successfully');
-            updateVideoProgress(100);
-            return new Promise(resolve => setTimeout(resolve, 1000));
-        }).catch(error => {
-            console.error('Video ad error:', error);
-            throw new Error('Failed to show video ad');
-        });
+        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 সেকেন্ডে ভিডিও দেখানো হচ্ছে বলে দেখানো
+        updateVideoProgress(100);
 
         elements.videoAdLoadingOverlay.classList.add('hidden');
         startCountdown();
@@ -2453,19 +2458,4 @@ async function loadUserData() {
         console.error('Error loading user data:', error);
         showNotification('Error loading user data', 'error');
     }
-}
-
-// Add save to Firebase in task handlers
-async function handleTaskUnlock(taskId) {
-    // ... existing code ...
-    
-    // Save to Firebase at the end
-    await saveTaskProgressToFirebase();
-}
-
-async function handleTaskDownload(taskId) {
-    // ... existing code ...
-    
-    // Save to Firebase at the end
-    await saveTaskProgressToFirebase();
 }
