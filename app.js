@@ -1,3 +1,4 @@
+
 // Global Variables
 let currentUser = null;
 let userData = null;
@@ -7,6 +8,7 @@ let countdownSeconds = 15;
 let isVideoAd = false;
 let referralCodeFromUrl = null;
 let activeTaskTimers = {};
+let taskWindows = {}; // Track task windows
 
 // DOM Elements
 const elements = {
@@ -888,11 +890,11 @@ function loadAllTasks() {
             timerActive: false,
             timeRemaining: 0,
             lastUnlockTime: null,
-            totalEarned: 0,
-            completedCount: 0
+            lastRewardTime: null,
+            totalEarned: 0
         };
         
-        if (taskData.completedCount > 0) completedCount += taskData.completedCount;
+        if (taskData.completed) completedCount++;
         
         const isUnlocked = taskData.unlockCount >= 5;
         const showTimer = taskData.timerActive && taskData.timeRemaining > 0;
@@ -900,33 +902,6 @@ function loadAllTasks() {
         const taskElement = document.createElement('div');
         taskElement.className = `glass-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 mb-4`;
         taskElement.setAttribute('data-task-id', task.id);
-        
-        // Unlimited earning - always show active buttons
-        let buttonHTML = '';
-        
-        if (showTimer) {
-            buttonHTML = `
-                <button class="w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
-                    <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
-                    Wait ${taskData.timeRemaining}s
-                </button>
-            `;
-        } else if (isUnlocked) {
-            buttonHTML = `
-                <button class="task-download-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
-                        data-task-id="${task.id}">
-                    <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
-                </button>
-            `;
-        } else {
-            buttonHTML = `
-                <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
-                        data-task-id="${task.id}">
-                    <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)
-                </button>
-            `;
-        }
-        
         taskElement.innerHTML = `
             <div class="flex items-center mb-3">
                 <img src="${task.icon}" alt="${task.title}" class="w-12 h-12 rounded-xl mr-3" onerror="this.src='https://cdn-icons-png.flaticon.com/512/888/888879.png'">
@@ -939,11 +914,13 @@ function loadAllTasks() {
             <div class="flex justify-between items-center mb-3">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-300">Reward</p>
-                    <p class="font-bold text-green-600 dark:text-green-400">+৳${task.reward}</p>
+                    <p class="font-bold text-green-600 dark:text-green-400">ফ্রি DOWNLOAD ⬇️</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm text-gray-500 dark:text-gray-300">Earned</p>
-                    <p class="font-bold text-green-600 dark:text-green-400">৳${taskData.totalEarned || 0}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-300">Unlock Progress</p>
+                    <p class="font-bold ${isUnlocked ? 'text-green-600' : 'text-blue-600'}">
+                        ${taskData.unlockCount}/5 unlocks
+                    </p>
                 </div>
             </div>
             
@@ -960,11 +937,28 @@ function loadAllTasks() {
             </div>
             
             <div class="space-y-2">
-                ${buttonHTML}
-                ${taskData.completedCount > 0 ? `
-                    <div class="text-center text-sm text-green-600 dark:text-green-400 mt-2">
-                        <i class="fas fa-check-circle mr-1"></i>
-                        Completed ${taskData.completedCount} times (+৳${(taskData.completedCount * task.reward).toFixed(1)})
+                ${showTimer ? `
+                    <button class="w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                        <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
+                        Wait ${taskData.timeRemaining}s
+                    </button>
+                ` : `
+                    <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
+                            data-task-id="${task.id}" ${isUnlocked ? 'data-action="download"' : 'data-action="unlock"'}>
+                        ${isUnlocked ? 
+                            `<i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️` : 
+                            `<i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)`}
+                    </button>
+                `}
+                ${taskData.completed ? `
+                    <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-3 mt-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
+                                <span class="text-green-700 dark:text-green-300">Completed</span>
+                            </div>
+                            <span class="font-bold text-green-600">Earned: ৳${taskData.totalEarned || task.reward}</span>
+                        </div>
                     </div>
                 ` : ''}
             </div>
@@ -972,7 +966,7 @@ function loadAllTasks() {
         elements.allTasksList.appendChild(taskElement);
     });
     
-    elements.tasksProgress.textContent = `${completedCount}/${tasks.length * 100}`; // Unlimited
+    elements.tasksProgress.textContent = `${completedCount}/${tasks.length}`;
     
     attachTaskEventListeners();
 }
@@ -984,28 +978,19 @@ function attachTaskEventListeners() {
         btn.parentNode.replaceChild(newBtn, btn);
     });
     
-    document.querySelectorAll('.task-download-btn').forEach(btn => {
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-    });
-    
-    // Add new event listeners for UNLOCK buttons
+    // Add new event listeners
     document.querySelectorAll('.task-unlock-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             const taskId = parseInt(this.getAttribute('data-task-id'));
-            handleTaskUnlock(taskId);
-        });
-    });
-    
-    // Add new event listeners for DOWNLOAD buttons
-    document.querySelectorAll('.task-download-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const taskId = parseInt(this.getAttribute('data-task-id'));
-            handleTaskDownload(taskId);
+            const action = this.getAttribute('data-action');
+            
+            if (action === 'download') {
+                handleTaskDownload(taskId);
+            } else {
+                handleTaskUnlock(taskId);
+            }
         });
     });
 }
@@ -1040,8 +1025,8 @@ function handleTaskUnlock(taskId) {
         timerActive: false,
         timeRemaining: 0,
         lastUnlockTime: null,
-        totalEarned: 0,
-        completedCount: 0
+        lastRewardTime: null,
+        totalEarned: 0
     };
     
     if (taskData.timerActive && taskData.timeRemaining > 0) {
@@ -1049,14 +1034,34 @@ function handleTaskUnlock(taskId) {
         return;
     }
     
-    // সরাসরি UNLOCK প্রসেস শুরু করি
-    taskData.unlockCount = (taskData.unlockCount || 0) + 1;
+    // Start timer for 30 seconds
     taskData.timerActive = true;
-    taskData.timeRemaining = 30; // 30 সেকেন্ড রাখলাম
+    taskData.timeRemaining = 30;
     taskData.lastUnlockTime = Date.now();
     
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+    
+    // Open link in new tab WITHOUT auto-back
+    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
+    const unlockLink = task.unlockLinks[linkIndex];
+    
+    // Store the window reference
+    taskWindows[taskId] = window.open(unlockLink, '_blank', 'noopener,noreferrer');
+    
+    if (!taskWindows[taskId]) {
+        showNotification('Please allow popups to open the unlock link!', 'error');
+        // Reset timer if popup blocked
+        taskData.timerActive = false;
+        taskData.timeRemaining = 0;
+        userTaskProgress[taskId] = taskData;
+        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+        loadAllTasks();
+        return;
+    }
+    
+    // Increase unlock count
+    taskData.unlockCount = (taskData.unlockCount || 0) + 1;
     
     const remainingUnlocks = 5 - taskData.unlockCount;
     if (remainingUnlocks > 0) {
@@ -1065,12 +1070,8 @@ function handleTaskUnlock(taskId) {
         showNotification('🎉 All unlocks completed! Now you can download.', 'success');
     }
     
-    // UNLOCK link ওপেন করি (NEW TAB-এ)
-    const linkIndex = taskData.unlockCount % task.unlockLinks.length;
-    const unlockLink = task.unlockLinks[linkIndex];
-    
-    // New tab এ ওপেন করি, ব্যাক করবে না
-    window.open(unlockLink, '_blank');
+    userTaskProgress[taskId] = taskData;
+    localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
     loadAllTasks();
     startTaskTimer(taskId);
@@ -1109,6 +1110,16 @@ function startTaskTimer(taskId) {
             clearInterval(activeTaskTimers[taskId]);
             delete activeTaskTimers[taskId];
             
+            // Close the opened window after timer completes
+            if (taskWindows[taskId] && !taskWindows[taskId].closed) {
+                try {
+                    taskWindows[taskId].close();
+                } catch (e) {
+                    console.log('Could not close window:', e);
+                }
+                delete taskWindows[taskId];
+            }
+            
             if (document.getElementById('tasksPage').classList.contains('active')) {
                 loadAllTasks();
                 showNotification('Timer completed! You can proceed now.', 'info');
@@ -1121,11 +1132,12 @@ function updateTaskTimerUI(taskId, timeRemaining) {
     const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
     if (!taskElement) return;
     
-    const timerBtn = taskElement.querySelector('button');
-    if (timerBtn) {
-        timerBtn.innerHTML = `<div class="loader mr-2" style="width: 20px; height: 20px;"></div> Wait ${timeRemaining}s`;
-        timerBtn.disabled = true;
-        timerBtn.className = "w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center";
+    const unlockBtn = taskElement.querySelector('.task-unlock-btn');
+    
+    if (unlockBtn) {
+        unlockBtn.innerHTML = `<div class="loader mr-2" style="width: 20px; height: 20px;"></div> Wait ${timeRemaining}s`;
+        unlockBtn.disabled = true;
+        unlockBtn.className = "w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center";
     }
 }
 
@@ -1143,6 +1155,16 @@ function checkActiveTaskTimers() {
                 taskData.timeRemaining = 0;
                 userTaskProgress[taskId] = taskData;
                 localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+                
+                // Close window if still open
+                if (taskWindows[taskId] && !taskWindows[taskId].closed) {
+                    try {
+                        taskWindows[taskId].close();
+                    } catch (e) {
+                        console.log('Could not close window:', e);
+                    }
+                    delete taskWindows[taskId];
+                }
             } else {
                 taskData.timeRemaining = 30 - timeElapsed;
                 userTaskProgress[taskId] = taskData;
@@ -1183,8 +1205,8 @@ async function handleTaskDownload(taskId) {
         timerActive: false,
         timeRemaining: 0,
         lastUnlockTime: null,
-        totalEarned: 0,
-        completedCount: 0
+        lastRewardTime: null,
+        totalEarned: 0
     };
     
     if (taskData.unlockCount < 5) {
@@ -1197,15 +1219,27 @@ async function handleTaskDownload(taskId) {
         return;
     }
     
-    // Download link ওপেন করি (NEW TAB-এ)
-    window.open(task.downloadLink, '_blank');
-    
+    // Start 30 second timer
     taskData.timerActive = true;
-    taskData.timeRemaining = 30; // 30 সেকেন্ড রাখলাম
+    taskData.timeRemaining = 30;
     taskData.lastUnlockTime = Date.now();
     
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+    
+    // Open download link in new tab WITHOUT auto-back
+    taskWindows[taskId] = window.open(task.downloadLink, '_blank', 'noopener,noreferrer');
+    
+    if (!taskWindows[taskId]) {
+        showNotification('Please allow popups to open the download link!', 'error');
+        // Reset timer if popup blocked
+        taskData.timerActive = false;
+        taskData.timeRemaining = 0;
+        userTaskProgress[taskId] = taskData;
+        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+        loadAllTasks();
+        return;
+    }
     
     showNotification('Download link opened! Return in 30 seconds to get reward.', 'info');
     
@@ -1214,11 +1248,12 @@ async function handleTaskDownload(taskId) {
     
     setTimeout(async () => {
         try {
-            // Unlimited earning - reset for next time
+            // Reset for next time (unlimited)
+            taskData.unlockCount = 0; // Reset unlock count for unlimited repeat
+            taskData.completed = false; // Never mark as completed
             taskData.timerActive = false;
             taskData.timeRemaining = 0;
-            taskData.unlockCount = 0; // Reset unlock count for next cycle
-            taskData.completedCount = (taskData.completedCount || 0) + 1;
+            taskData.lastRewardTime = Date.now();
             taskData.totalEarned = (taskData.totalEarned || 0) + task.reward;
             
             userTaskProgress[taskId] = taskData;
@@ -1238,7 +1273,7 @@ async function handleTaskDownload(taskId) {
             
             loadAllTasks();
             
-            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
+            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance. Total earned from this task: ৳${taskData.totalEarned}`, 'success');
             
             saveTaskProgressToFirebase();
             
@@ -1246,7 +1281,7 @@ async function handleTaskDownload(taskId) {
             console.error('Error adding reward:', error);
             showNotification('Error processing reward. Please try again.', 'error');
         }
-    }, 30000); // 30 সেকেন্ড
+    }, 30000);
 }
 
 function handleQuickAction(action) {
@@ -1566,7 +1601,7 @@ function openProfileEditModal() {
     elements.confirmNewPassword.value = '';
     
     elements.profileEditModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeProfileEditModal() {
