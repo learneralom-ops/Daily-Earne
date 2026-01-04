@@ -809,10 +809,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/3576/3576216.png',
             unlockLinks: ['https://otieu.com/4/9276685'],
             downloadLink: 'https://t.me/LearnerAlom/143',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 2, 
@@ -821,10 +818,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/3249/3249321.png',
             unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'],
             downloadLink: 'https://t.me/LearnerAlom/144',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 3, 
@@ -833,10 +827,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/3249/3249347.png',
             unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'],
             downloadLink: 'https://t.me/LearnerAlom/145',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 4, 
@@ -845,10 +836,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/727/727221.png',
             unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'],
             downloadLink: 'https://t.me/LearnerAlom/146',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 5, 
@@ -857,10 +845,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/1820/1820240.png',
             unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'],
             downloadLink: 'https://t.me/LearnerAlom/147',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 6, 
@@ -869,10 +854,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/337/337946.png',
             unlockLinks: ['https://otieu.com/4/10412908'],
             downloadLink: 'https://t.me/LearnerAlom/148',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 7, 
@@ -881,10 +863,7 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/3249/3249359.png',
             unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'],
             downloadLink: 'https://t.me/LearnerAlom/149',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         },
         { 
             id: 8, 
@@ -893,36 +872,37 @@ function loadAllTasks() {
             icon: 'https://cdn-icons-png.flaticon.com/512/2099/2099091.png',
             unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'],
             downloadLink: 'https://t.me/LearnerAlom/150',
-            reward: 0.5,
-            completed: false,
-            unlockCount: 0,
-            status: 'locked'
+            reward: 0.5
         }
     ];
     
     elements.allTasksList.innerHTML = '';
     let completedCount = 0;
     
-    // Load user's task progress from localStorage
+    // Load user's task progress
     const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser?.uid}`)) || {};
     
     tasks.forEach(task => {
-        const userTaskData = userTaskProgress[task.id] || {
-            completed: false,
+        const taskData = userTaskProgress[task.id] || {
             unlockCount: 0,
-            status: 'locked',
-            lastClickTime: null,
-            timerActive: false
+            completed: false,
+            timerActive: false,
+            timeRemaining: 0,
+            lastUnlockTime: null
         };
         
-        if (userTaskData.completed) completedCount++;
+        if (taskData.completed) completedCount++;
+        
+        const isUnlocked = taskData.unlockCount >= 5;
+        const showTimer = taskData.timerActive && taskData.timeRemaining > 0;
         
         const taskElement = document.createElement('div');
-        taskElement.className = `glass-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700`;
+        taskElement.className = `glass-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 mb-4 task-card`;
+        taskElement.setAttribute('data-task-id', task.id);
         taskElement.innerHTML = `
             <div class="flex items-center mb-3">
-                <img src="${task.icon}" alt="${task.title}" class="w-12 h-12 rounded-xl mr-3">
-                <div>
+                <img src="${task.icon}" alt="${task.title}" class="w-12 h-12 rounded-xl mr-3" onerror="this.src='https://cdn-icons-png.flaticon.com/512/888/888879.png'">
+                <div class="flex-1">
                     <h4 class="font-bold text-gray-800 dark:text-white">${task.title}</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-300">${task.description}</p>
                 </div>
@@ -935,46 +915,53 @@ function loadAllTasks() {
                 </div>
                 <div class="text-right">
                     <p class="text-sm text-gray-500 dark:text-gray-300">Unlock Progress</p>
-                    <p class="font-bold ${userTaskData.unlockCount >= 5 ? 'text-green-600' : 'text-blue-600'}">
-                        ${userTaskData.unlockCount}/5 unlocks
+                    <p class="font-bold ${isUnlocked ? 'text-green-600' : 'text-blue-600'}">
+                        ${taskData.unlockCount}/5 unlocks
                     </p>
                 </div>
             </div>
             
             <div class="mb-3">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${Math.min(userTaskData.unlockCount * 20, 100)}%"></div>
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                         style="width: ${Math.min(taskData.unlockCount * 20, 100)}%"></div>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
-                    ${userTaskData.unlockCount < 5 ? `Need ${5 - userTaskData.unlockCount} more unlocks for download` : 'Ready to download!'}
+                    ${!isUnlocked ? 
+                        `${5 - taskData.unlockCount} more unlocks needed for download` : 
+                        '✅ Ready to download!'}
                 </p>
             </div>
             
             <div class="space-y-2">
-                ${userTaskData.completed ? `
-                    <button class="w-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold py-3 rounded-xl cursor-default flex items-center justify-center" disabled>
+                ${taskData.completed ? `
+                    <button class="w-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
                         <i class="fas fa-check-circle mr-2"></i> Completed (+৳${task.reward})
                     </button>
-                ` : userTaskData.unlockCount >= 5 ? `
-                    <button class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center task-download-btn" data-id="${task.id}">
-                        <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
-                    </button>
-                    ${userTaskData.timerActive ? `
-                        <div class="text-center">
-                            <div class="loader mx-auto mb-2" style="width: 20px; height: 20px;"></div>
-                            <p class="text-sm text-blue-600 dark:text-blue-400">Processing... Please wait</p>
-                        </div>
-                    ` : ''}
+                ` : isUnlocked ? `
+                    ${showTimer ? `
+                        <button class="w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                            <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
+                            Wait ${taskData.timeRemaining}s
+                        </button>
+                    ` : `
+                        <button class="task-download-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
+                                data-task-id="${task.id}">
+                            <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
+                        </button>
+                    `}
                 ` : `
-                    <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center task-unlock-btn" data-id="${task.id}">
-                        <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${userTaskData.unlockCount + 1}/6)
-                    </button>
-                    ${userTaskData.timerActive ? `
-                        <div class="text-center">
-                            <div class="loader mx-auto mb-2" style="width: 20px; height: 20px;"></div>
-                            <p class="text-sm text-blue-600 dark:text-blue-400">Please wait ${userTaskData.timeRemaining || 30}s</p>
-                        </div>
-                    ` : ''}
+                    ${showTimer ? `
+                        <button class="w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                            <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
+                            Wait ${taskData.timeRemaining}s
+                        </button>
+                    ` : `
+                        <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
+                                data-task-id="${task.id}">
+                            <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/6)
+                        </button>
+                    `}
                 `}
             </div>
         `;
@@ -983,193 +970,304 @@ function loadAllTasks() {
     
     elements.tasksProgress.textContent = `${completedCount}/${tasks.length}`;
     
-    // Add event listeners for unlock buttons
+    // Add event listeners
+    attachTaskEventListeners();
+}
+// টাস্ক ইভেন্ট লিসেনার সংযুক্ত করুন
+function attachTaskEventListeners() {
+    // UNLOCK বাটনের জন্য
     document.querySelectorAll('.task-unlock-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const taskId = parseInt(this.dataset.id);
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const taskId = parseInt(this.getAttribute('data-task-id'));
+            console.log('UNLOCK clicked for task:', taskId);
             handleTaskUnlock(taskId);
         });
     });
     
-    // Add event listeners for download buttons
+    // DOWNLOAD বাটনের জন্য
     document.querySelectorAll('.task-download-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const taskId = parseInt(this.dataset.id);
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const taskId = parseInt(this.getAttribute('data-task-id'));
+            console.log('DOWNLOAD clicked for task:', taskId);
             handleTaskDownload(taskId);
         });
     });
-    
-    // Start timers for active tasks
-    startTaskTimers();
 }
 
-// Task unlock handler
+// টাস্ক আনলক হ্যান্ডলার
 function handleTaskUnlock(taskId) {
+    console.log('handleTaskUnlock called for task:', taskId);
+    
     if (!currentUser) {
         showNotification('Please login first!', 'error');
         return;
     }
     
-    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
-    const taskData = userTaskProgress[taskId] || {
-        completed: false,
-        unlockCount: 0,
-        status: 'locked',
-        lastClickTime: null,
-        timerActive: false
+    // টাস্ক ডেটা
+    const tasks = {
+        1: { unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
+        2: { unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
+        3: { unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/145', reward: 0.5 },
+        4: { unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'], downloadLink: 'https://t.me/LearnerAlom/146', reward: 0.5 },
+        5: { unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'], downloadLink: 'https://t.me/LearnerAlom/147', reward: 0.5 },
+        6: { unlockLinks: ['https://otieu.com/4/10412908'], downloadLink: 'https://t.me/LearnerAlom/148', reward: 0.5 },
+        7: { unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/149', reward: 0.5 },
+        8: { unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/150', reward: 0.5 }
     };
     
-    // Check if timer is active
-    if (taskData.timerActive) {
-        showNotification('Please wait for the timer to finish!', 'warning');
+    const task = tasks[taskId];
+    if (!task) {
+        console.error('Task not found:', taskId);
         return;
     }
     
-    // Get task details
-    const tasks = [
-        { id: 1, unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
-        { id: 2, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
-        { id: 3, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/145', reward: 0.5 },
-        { id: 4, unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'], downloadLink: 'https://t.me/LearnerAlom/146', reward: 0.5 },
-        { id: 5, unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'], downloadLink: 'https://t.me/LearnerAlom/147', reward: 0.5 },
-        { id: 6, unlockLinks: ['https://otieu.com/4/10412908'], downloadLink: 'https://t.me/LearnerAlom/148', reward: 0.5 },
-        { id: 7, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/149', reward: 0.5 },
-        { id: 8, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/150', reward: 0.5 }
-    ];
+    // ইউজারের টাস্ক প্রোগ্রেস লোড করুন
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+    const taskData = userTaskProgress[taskId] || {
+        unlockCount: 0,
+        completed: false,
+        timerActive: false,
+        timeRemaining: 0,
+        lastUnlockTime: null
+    };
     
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
+    console.log('Current task data:', taskData);
     
-    // Get current unlock link (rotate through available links)
+    // টাইমার চেক করুন
+    if (taskData.timerActive) {
+        showNotification(`Please wait ${taskData.timeRemaining} seconds!`, 'warning');
+        return;
+    }
+    
+    // আনলক লিংক সিলেক্ট করুন
     const linkIndex = taskData.unlockCount % task.unlockLinks.length;
     const unlockLink = task.unlockLinks[linkIndex];
     
-    // Open unlock link in new tab
-    window.open(unlockLink, '_blank');
+    console.log('Opening unlock link:', unlockLink);
     
-    // Update unlock count
-    taskData.unlockCount++;
-    taskData.lastClickTime = Date.now();
-    taskData.timerActive = true;
-    taskData.timeRemaining = 30;
-    
-    // Check if reached 5 unlocks
-    if (taskData.unlockCount >= 5) {
-        taskData.status = 'unlocked';
+    // লিংক ওপেন করুন নতুন ট্যাবে
+    const newWindow = window.open(unlockLink, '_blank');
+    if (!newWindow) {
+        showNotification('Please allow popups to open the unlock link!', 'error');
+        return;
     }
     
-    // Save to localStorage
+    // টাস্ক ডেটা আপডেট করুন
+    taskData.unlockCount++;
+    taskData.timerActive = true;
+    taskData.timeRemaining = 30;
+    taskData.lastUnlockTime = Date.now();
+    
+    // সেভ করুন
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
-    // Show notification
-    if (taskData.unlockCount < 5) {
-        showNotification(`Unlock ${taskData.unlockCount}/5 successful! Visit the link and return.`, 'info');
+    // নোটিফিকেশন
+    const remainingUnlocks = 5 - taskData.unlockCount;
+    if (remainingUnlocks > 0) {
+        showNotification(`Unlock ${taskData.unlockCount}/5 completed! ${remainingUnlocks} more to go.`, 'info');
     } else {
-        showNotification('🎉 All unlocks completed! Now you can download the APK.', 'success');
+        showNotification('🎉 All unlocks completed! Now you can download.', 'success');
     }
     
-    // Reload tasks
+    // UI রিফ্রেশ করুন
     loadAllTasks();
+    
+    // টাইমার শুরু করুন
+    startTaskTimer(taskId);
 }
 
-// Task download handler
+// টাস্ক টাইমার ফাংশন
+function startTaskTimer(taskId) {
+    const timerKey = `taskTimer_${taskId}`;
+    
+    // ক্লিয়ার অ্যানি এক্সিস্টিং টাইমার
+    if (window[timerKey]) {
+        clearInterval(window[timerKey]);
+    }
+    
+    // নতুন টাইমার শুরু করুন
+    window[timerKey] = setInterval(() => {
+        const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+        const taskData = userTaskProgress[taskId];
+        
+        if (!taskData || !taskData.timerActive) {
+            clearInterval(window[timerKey]);
+            return;
+        }
+        
+        if (taskData.timeRemaining > 1) {
+            taskData.timeRemaining--;
+            userTaskProgress[taskId] = taskData;
+            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+            
+            // UI আপডেট করুন যদি টাস্কস পেজ একটিভ থাকে
+            if (document.getElementById('tasksPage').classList.contains('active')) {
+                const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (taskElement) {
+                    const timerDisplay = taskElement.querySelector('.task-unlock-btn, .task-download-btn');
+                    if (timerDisplay) {
+                        const parentDiv = timerDisplay.parentElement;
+                        parentElement.innerHTML = `
+                            <button class="w-full bg-gray-400 dark:bg-gray-600 text-white font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                                <div class="loader mr-2" style="width: 20px; height: 20px;"></div>
+                                Wait ${taskData.timeRemaining}s
+                            </button>
+                        `;
+                    }
+                }
+            }
+        } else {
+            // টাইমার শেষ
+            taskData.timerActive = false;
+            taskData.timeRemaining = 0;
+            userTaskProgress[taskId] = taskData;
+            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+            
+            clearInterval(window[timerKey]);
+            
+            // UI রিফ্রেশ
+            if (document.getElementById('tasksPage').classList.contains('active')) {
+                loadAllTasks();
+                showNotification('Timer completed! You can proceed now.', 'info');
+            }
+        }
+    }, 1000);
+}
+
+// টাস্ক ডাউনলোড হ্যান্ডলার
 async function handleTaskDownload(taskId) {
+    console.log('handleTaskDownload called for task:', taskId);
+    
     if (!currentUser) {
         showNotification('Please login first!', 'error');
         return;
     }
     
-    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
-    const taskData = userTaskProgress[taskId] || {
-        completed: false,
-        unlockCount: 0,
-        status: 'locked',
-        lastClickTime: null,
-        timerActive: false
+    // টাস্ক ডেটা
+    const tasks = {
+        1: { unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
+        2: { unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
+        3: { unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/145', reward: 0.5 },
+        4: { unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'], downloadLink: 'https://t.me/LearnerAlom/146', reward: 0.5 },
+        5: { unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'], downloadLink: 'https://t.me/LearnerAlom/147', reward: 0.5 },
+        6: { unlockLinks: ['https://otieu.com/4/10412908'], downloadLink: 'https://t.me/LearnerAlom/148', reward: 0.5 },
+        7: { unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/149', reward: 0.5 },
+        8: { unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/150', reward: 0.5 }
     };
     
-    // Check if task is unlocked
+    const task = tasks[taskId];
+    if (!task) {
+        console.error('Task not found:', taskId);
+        return;
+    }
+    
+    // ইউজারের টাস্ক প্রোগ্রেস চেক করুন
+    const userTaskProgress = JSON.parse(localStorage.getItem(`taskProgress_${currentUser.uid}`)) || {};
+    const taskData = userTaskProgress[taskId] || {
+        unlockCount: 0,
+        completed: false,
+        timerActive: false,
+        timeRemaining: 0,
+        lastUnlockTime: null
+    };
+    
+    // আনলক কাউন্ট চেক করুন
     if (taskData.unlockCount < 5) {
-        showNotification('Please complete 5 unlocks first!', 'error');
+        showNotification(`Please complete ${5 - taskData.unlockCount} more unlocks first!`, 'error');
         return;
     }
     
-    // Check if timer is active
+    // টাইমার চেক করুন
     if (taskData.timerActive) {
-        showNotification('Please wait for the timer to finish!', 'warning');
+        showNotification(`Please wait ${taskData.timeRemaining} seconds!`, 'warning');
         return;
     }
     
-    // Get task details
-    const tasks = [
-        { id: 1, unlockLinks: ['https://otieu.com/4/9276685'], downloadLink: 'https://t.me/LearnerAlom/143', reward: 0.5 },
-        { id: 2, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/144', reward: 0.5 },
-        { id: 3, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/145', reward: 0.5 },
-        { id: 4, unlockLinks: ['https://www.effectivegatecpm.com/c5nz8u6w1h?key=efe12f1a8f2ce2a314d5e8590294675d'], downloadLink: 'https://t.me/LearnerAlom/146', reward: 0.5 },
-        { id: 5, unlockLinks: ['https://www.effectivegatecpm.com/sjvt89iz1p?key=d0f976a182a2f8c9819f6100d7b06cfe'], downloadLink: 'https://t.me/LearnerAlom/147', reward: 0.5 },
-        { id: 6, unlockLinks: ['https://otieu.com/4/10412908'], downloadLink: 'https://t.me/LearnerAlom/148', reward: 0.5 },
-        { id: 7, unlockLinks: ['https://link.gigapub.tech/l/afk7dvr3t'], downloadLink: 'https://t.me/LearnerAlom/149', reward: 0.5 },
-        { id: 8, unlockLinks: ['https://link.gigapub.tech/l/93ilu7p8k'], downloadLink: 'https://t.me/LearnerAlom/150', reward: 0.5 }
-    ];
+    // ডাউনলোড লিংক ওপেন করুন
+    console.log('Opening download link:', task.downloadLink);
+    const newWindow = window.open(task.downloadLink, '_blank');
+    if (!newWindow) {
+        showNotification('Please allow popups to open the download link!', 'error');
+        return;
+    }
     
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    
-    // Open download link in new tab
-    window.open(task.downloadLink, '_blank');
-    
-    // Start timer
+    // টাইমার সেট করুন
     taskData.timerActive = true;
     taskData.timeRemaining = 30;
-    taskData.lastClickTime = Date.now();
+    taskData.lastUnlockTime = Date.now();
     
-    // Save to localStorage
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
-    // Show notification
-    showNotification('Download link opened! Please download and return in 30 seconds.', 'info');
+    showNotification('Download link opened! Return in 30 seconds to get reward.', 'info');
     
-    // Reload tasks
+    // UI রিফ্রেশ
     loadAllTasks();
     
-    // Wait for timer to complete
+    // টাইমার শুরু করুন
+    startTaskTimer(taskId);
+    
+    // 30 সেকেন্ড পর রিওয়ার্ড দিন
     setTimeout(async () => {
-        // Mark task as completed
-        taskData.completed = true;
-        taskData.timerActive = false;
-        taskData.timeRemaining = 0;
-        
-        // Save to localStorage
-        userTaskProgress[taskId] = taskData;
-        localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
-        
         try {
-            // Add reward to balance
-            const updates = {};
-            updates['balance'] = (userData.balance || 0) + task.reward;
-            updates['totalEarnings'] = (userData.totalEarnings || 0) + task.reward;
-            updates['tasksCompleted'] = (userData.tasksCompleted || 0) + 1;
-            updates['monthlyTasks'] = (userData.monthlyTasks || 0) + 1;
+            // টাস্ক কমপ্লিট মার্ক করুন
+            taskData.completed = true;
+            taskData.timerActive = false;
+            taskData.timeRemaining = 0;
+            
+            userTaskProgress[taskId] = taskData;
+            localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
+            
+            // ব্যালেন্সে টাকা যোগ করুন
+            const updates = {
+                balance: (userData.balance || 0) + task.reward,
+                totalEarnings: (userData.totalEarnings || 0) + task.reward,
+                tasksCompleted: (userData.tasksCompleted || 0) + 1,
+                monthlyTasks: (userData.monthlyTasks || 0) + 1
+            };
             
             await database.ref('users/' + currentUser.uid).update(updates);
             
-            // Update local userData
+            // লোকাল ডাটা আপডেট করুন
             userData = { ...userData, ...updates };
             updateUserInterface();
             
-            // Show success notification
-            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
-            
-            // Reload tasks
+            // UI রিফ্রেশ
             loadAllTasks();
+            
+            showNotification(`🎉 Task completed! +৳${task.reward} added to your balance.`, 'success');
             
         } catch (error) {
             console.error('Error adding reward:', error);
             showNotification('Error processing reward. Please try again.', 'error');
         }
-    }, 30000); // 30 seconds
+    }, 30000);
+}
+
+function navigateToPage(page) {
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+    });
+    
+    const pageElement = document.getElementById(`${page}Page`);
+    if (pageElement) {
+        pageElement.classList.add('active');
+        
+        const pageTitles = {
+            'home': 'Earn money online',
+            'tasks': 'All Tasks',
+            'profile': 'My Profile'
+        };
+        
+        elements.pageTitle.textContent = pageTitles[page] || 'Daily Earning';
+        
+        if (page === 'tasks') {
+            loadAllTasks();
+        }
+    }
 }
 
 // Start timers for active tasks
