@@ -892,7 +892,7 @@ function loadAllTasks() {
         
         if (taskData.completed) completedCount++;
         
-        const isUnlocked = taskData.unlockCount >= 10;
+        const isUnlocked = taskData.unlockCount >= 5;
         const showTimer = taskData.timerActive && taskData.timeRemaining > 0;
         
         const taskElement = document.createElement('div');
@@ -910,12 +910,12 @@ function loadAllTasks() {
             <div class="flex justify-between items-center mb-3">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-300">Reward</p>
-                    <p class="font-bold text-green-600 dark:text-green-400"> ৳ 0.5 </p>
+                    <p class="font-bold text-green-600 dark:text-green-400">ফ্রি DOWNLOAD ⬇️</p>
                 </div>
                 <div class="text-right">
                     <p class="text-sm text-gray-500 dark:text-gray-300">Unlock Progress</p>
                     <p class="font-bold ${isUnlocked ? 'text-green-600' : 'text-blue-600'}">
-                        ${taskData.unlockCount}/10 unlocks
+                        ${taskData.unlockCount}/5 unlocks
                     </p>
                 </div>
             </div>
@@ -923,11 +923,11 @@ function loadAllTasks() {
             <div class="mb-3">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                         style="width: ${Math.min(taskData.unlockCount * 10, 100)}%"></div>
+                         style="width: ${Math.min(taskData.unlockCount * 20, 100)}%"></div>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
                     ${!isUnlocked ? 
-                        `${10 - taskData.unlockCount} more unlocks needed for download` : 
+                        `${5 - taskData.unlockCount} more unlocks needed for download` : 
                         '✅ Ready to download!'}
                 </p>
             </div>
@@ -941,12 +941,12 @@ function loadAllTasks() {
                 ` : isUnlocked ? `
                     <button class="task-download-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
                             data-task-id="${task.id}">
-                        <i class="fas fa-download mr-2"></i> DOWNLOAD
+                        <i class="fas fa-download mr-2"></i> DOWNLOAD ⬇️
                     </button>
                 ` : `
                     <button class="task-unlock-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center" 
                             data-task-id="${task.id}">
-                        <i class="fas fa-lock mr-2"></i> UNLOCK (${taskData.unlockCount + 0}/10)
+                        <i class="fas fa-lock mr-2"></i> 🔒UNLOCK (${taskData.unlockCount + 1}/5)
                     </button>
                 `}
             </div>
@@ -1038,7 +1038,7 @@ function handleTaskUnlock(taskId) {
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
     
-    const remainingUnlocks = 10 - taskData.unlockCount;
+    const remainingUnlocks = 5 - taskData.unlockCount;
     if (remainingUnlocks > 0) {
         showNotification(`Unlock ${taskData.unlockCount}/5 completed! ${remainingUnlocks} more to go.`, 'info');
     } else {
@@ -1094,7 +1094,7 @@ function startTaskTimer(taskId) {
                 showNotification('Timer completed! You can proceed now.', 'info');
             }
         }
-    }, 3000);
+    }, 1000);
 }
 
 function updateTaskTimerUI(taskId, timeRemaining) {
@@ -1173,8 +1173,8 @@ async function handleTaskDownload(taskId) {
         lastUnlockTime: null
     };
     
-    if (taskData.unlockCount < 10) {
-        showNotification(`Please complete ${10 - taskData.unlockCount} more unlocks first!`, 'error');
+    if (taskData.unlockCount < 5) {
+        showNotification(`Please complete ${5 - taskData.unlockCount} more unlocks first!`, 'error');
         return;
     }
     
@@ -1383,12 +1383,12 @@ function endCountdown() {
 }
 
 async function rewardUserAfterAds() {
-    const reward = 0.5;
+    const reward = 1;
     try {
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
         updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-        updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 0.5;
+        updates['dailyAdsWatched'] = (userData.dailyAdsWatched || 0) + 1;
         updates['lastAdsDate'] = new Date().toISOString();
         
         await database.ref('users/' + currentUser.uid).update(updates);
@@ -1398,17 +1398,17 @@ async function rewardUserAfterAds() {
         
     } catch (err) {
         console.error('Reward error:', err);
-        showNotification('টাকা যোগ করতে সমস্যা হয়েছে', 'error');
+        showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
     }
 }
 
 async function rewardUserAfterVideoAd() {
-    const reward = 0.5;
+    const reward = 1;
     try {
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
         updates['totalEarnings'] = (userData.totalEarnings || 0) + reward;
-        updates['videosWatched'] = (userData.videosWatched || 0) + 0.5;
+        updates['videosWatched'] = (userData.videosWatched || 0) + 1;
         updates['lastVideoDate'] = new Date().toISOString();
         
         await database.ref('users/' + currentUser.uid).update(updates);
@@ -1418,7 +1418,7 @@ async function rewardUserAfterVideoAd() {
         
     } catch (err) {
         console.error('Video reward error:', err);
-        showNotification('টাকা যোগ করতে সমস্যা হয়েছে', 'error');
+        showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
     }
 }
 
@@ -1463,9 +1463,9 @@ function closeCelebration() {
     });
     
     if (isVideoAd) {
-        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳0.5 আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
     } else {
-        showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳0.5 আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
     }
 }
 
@@ -1481,7 +1481,7 @@ async function claimDailyBonus() {
     }
     
     try {
-        const reward = 0.5;
+        const reward = 1;
         
         const updates = {};
         updates['balance'] = (userData.balance || 0) + reward;
@@ -1856,7 +1856,7 @@ function checkWithdrawalEligibility() {
 
 function calculateWithdrawAmount() {
     const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
-    const transactionFee = 5;
+    const transactionFee = 10;
     const netAmount = withdrawAmount - transactionFee;
     
     document.getElementById('displayWithdrawAmount').textContent = `৳${withdrawAmount}`;
@@ -1872,8 +1872,8 @@ async function handleDeposit(e) {
     const paymentMethod = document.getElementById('paymentMethod').value;
     const senderNumber = document.getElementById('senderNumber').value.trim();
     
-    if (!depositAmount || depositAmount < 100) {
-        showNotification('Minimum deposit amount is ৳100', 'error');
+    if (!depositAmount || depositAmount < 10) {
+        showNotification('Minimum deposit amount is ৳10', 'error');
         return;
     }
     
@@ -1962,7 +1962,7 @@ async function handleWithdraw(e) {
     const withdrawMethod = document.getElementById('withdrawMethod').value;
     const accountNumber = document.getElementById('accountNumber').value.trim();
     const accountName = document.getElementById('accountName').value.trim();
-    const transactionFee = 5;
+    const transactionFee = 10;
     const netAmount = withdrawAmount - transactionFee;
     
     if (!withdrawAmount || withdrawAmount < 500) {
