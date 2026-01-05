@@ -2409,3 +2409,6 @@ async function loadUserData() {
         showNotification('Error loading user data', 'error');
     }
 }
+function show_8954258(type = 'interstitial') {
+    return showOfflineAd(type);
+}
