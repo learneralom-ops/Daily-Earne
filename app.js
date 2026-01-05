@@ -150,7 +150,7 @@ function initializeApp() {
     setupDepositWithdrawEvents();
 }
 
-// Placeholder function for show_8954258 ads
+// Mone Tag SDK - show_8954258 ads function
 function show_8954258(type = 'interstitial') {
     return new Promise((resolve) => {
         console.log(`Showing ad: ${type}`);
@@ -158,6 +158,26 @@ function show_8954258(type = 'interstitial') {
         setTimeout(resolve, 1500);
     });
 }
+
+// Giga Pub Ads function
+function showGigaPubAds() {
+    return new Promise((resolve, reject) => {
+        window.showGiga()
+            .then(() => {
+                resolve();
+            })
+            .catch(e => {
+                reject(e);
+            });
+    });
+}
+
+// Mone Tag SDK Script (Adding dynamically)
+const moneTagScript = document.createElement('script');
+moneTagScript.src = '//libtl.com/sdk.js';
+moneTagScript.setAttribute('data-zone', '8954258');
+moneTagScript.setAttribute('data-sdk', 'show_8954258');
+document.head.appendChild(moneTagScript);
 
 function checkForReferralInURL() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1270,15 +1290,20 @@ async function triggerAdsSequence() {
     document.body.style.overflow = 'hidden';
     
     try {
-        // সরলীকৃত version
+        // Mone Tag Ad Show
+        await show_8954258('interstitial');
         updateAdsProgress(1, 10);
         await new Promise(resolve => setTimeout(resolve, 1000));
         updateAdsProgress(1, 100);
         
+        // Giga Pub Ad Show
+        await showGigaPubAds();
         updateAdsProgress(2, 10);
         await new Promise(resolve => setTimeout(resolve, 1000));
         updateAdsProgress(2, 100);
         
+        // Second Mone Tag Ad
+        await show_8954258('interstitial');
         updateAdsProgress(3, 10);
         await new Promise(resolve => setTimeout(resolve, 1000));
         updateAdsProgress(3, 100);
@@ -1311,6 +1336,8 @@ async function triggerVideoAd() {
     document.body.style.overflow = 'hidden';
     
     try {
+        // Mone Tag Video Ad
+        await show_8954258('rewarded');
         updateVideoProgress(10);
         await new Promise(resolve => setTimeout(resolve, 3000)); // 3 সেকেন্ডে ভিডিও দেখানো হচ্ছে বলে দেখানো
         updateVideoProgress(100);
@@ -2088,7 +2115,7 @@ function showWithdrawSuccess(amount, method, accountNumber, netAmount) {
     document.getElementById('successNetAmount').textContent = `৳${netAmount}`;
     
     document.getElementById('withdrawSuccessModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden');
 }
 
 function closeWithdrawSuccessModal() {
@@ -2408,7 +2435,4 @@ async function loadUserData() {
         console.error('Error loading user data:', error);
         showNotification('Error loading user data', 'error');
     }
-}
-function show_8954258(type = 'interstitial') {
-    return showOfflineAd(type);
 }
