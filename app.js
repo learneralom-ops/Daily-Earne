@@ -152,32 +152,96 @@ function initializeApp() {
 
 // Mone Tag SDK - show_8954258 ads function
 function show_8954258(type = 'interstitial') {
-    return new Promise((resolve) => {
-        console.log(`Showing ad: ${type}`);
-        // Simulate ad loading and completion
-        setTimeout(resolve, 1500);
+    return new Promise((resolve, reject) => {
+        console.log(`Showing Mone Tag ad: ${type}`);
+        
+        // Check if Mone Tag SDK is loaded
+        if (typeof window.show_8954258 === 'function') {
+            // Call the actual Mone Tag SDK function
+            window.show_8954258(type)
+                .then(() => {
+                    console.log('Mone Tag ad completed successfully');
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('Mone Tag ad failed:', error);
+                    reject(error);
+                });
+        } else {
+            console.log('Mone Tag SDK not loaded, simulating ad...');
+            // Simulate ad loading and completion
+            setTimeout(() => {
+                console.log('Simulated Mone Tag ad completed');
+                resolve();
+            }, 1500);
+        }
     });
 }
 
 // Giga Pub Ads function
 function showGigaPubAds() {
     return new Promise((resolve, reject) => {
-        window.showGiga()
-            .then(() => {
+        console.log('Showing Giga Pub ad...');
+        
+        // Check if Giga Pub SDK is loaded
+        if (typeof window.showGiga === 'function') {
+            window.showGiga()
+                .then(() => {
+                    console.log('Giga Pub ad completed successfully');
+                    resolve();
+                })
+                .catch(e => {
+                    console.error('Giga Pub ad failed:', e);
+                    reject(e);
+                });
+        } else {
+            console.log('Giga Pub SDK not loaded, simulating ad...');
+            // Simulate ad loading and completion
+            setTimeout(() => {
+                console.log('Simulated Giga Pub ad completed');
                 resolve();
-            })
-            .catch(e => {
-                reject(e);
-            });
+            }, 1500);
+        }
     });
 }
 
-// Mone Tag SDK Script (Adding dynamically)
-const moneTagScript = document.createElement('script');
-moneTagScript.src = '//libtl.com/sdk.js';
-moneTagScript.setAttribute('data-zone', '8954258');
-moneTagScript.setAttribute('data-sdk', 'show_8954258');
-document.head.appendChild(moneTagScript);
+// Load Mone Tag SDK Script
+function loadMoneTagSDK() {
+    // Check if script is already loaded
+    if (!document.querySelector('script[src*="libtl.com"]')) {
+        const moneTagScript = document.createElement('script');
+        moneTagScript.src = '//libtl.com/sdk.js';
+        moneTagScript.setAttribute('data-zone', '8954258');
+        moneTagScript.setAttribute('data-sdk', 'show_8954258');
+        moneTagScript.async = true;
+        
+        moneTagScript.onload = function() {
+            console.log('Mone Tag SDK loaded successfully');
+        };
+        
+        moneTagScript.onerror = function() {
+            console.error('Failed to load Mone Tag SDK');
+        };
+        
+        document.head.appendChild(moneTagScript);
+    }
+}
+
+// Load Giga Pub SDK Script
+function loadGigaPubSDK() {
+    // Check if Giga Pub is already loaded
+    if (typeof window.showGiga !== 'function') {
+        console.log('Giga Pub SDK would be loaded here');
+        // Add Giga Pub SDK loading logic here
+        // Example: const gigaScript = document.createElement('script');
+        // gigaScript.src = '//gigapub-sdk-url.js';
+        // document.head.appendChild(gigaScript);
+    }
+}
+
+// Load both ad SDKs on app initialization
+loadMoneTagSDK();
+loadGigaPubSDK();
 
 function checkForReferralInURL() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1209,8 +1273,6 @@ async function handleTaskDownload(taskId) {
     taskData.timerActive = true;
     taskData.timeRemaining = 30; // ৩০ সেকেন্ড রাখলাম
     taskData.lastUnlockTime = Date.now();
-    // completed স্টেট রিসেট করবেন না - বাটন হাইড হবে না
-    // taskData.completed = true; // এই লাইন রিমুভ করুন
     
     userTaskProgress[taskId] = taskData;
     localStorage.setItem(`taskProgress_${currentUser.uid}`, JSON.stringify(userTaskProgress));
@@ -1291,18 +1353,21 @@ async function triggerAdsSequence() {
     
     try {
         // Mone Tag Ad Show
+        console.log('Starting Mone Tag ad...');
         await show_8954258('interstitial');
         updateAdsProgress(1, 10);
         await new Promise(resolve => setTimeout(resolve, 1000));
         updateAdsProgress(1, 100);
         
         // Giga Pub Ad Show
+        console.log('Starting Giga Pub ad...');
         await showGigaPubAds();
         updateAdsProgress(2, 10);
         await new Promise(resolve => setTimeout(resolve, 1000));
         updateAdsProgress(2, 100);
         
         // Second Mone Tag Ad
+        console.log('Starting second Mone Tag ad...');
         await show_8954258('interstitial');
         updateAdsProgress(3, 10);
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1337,9 +1402,10 @@ async function triggerVideoAd() {
     
     try {
         // Mone Tag Video Ad
+        console.log('Starting Mone Tag video ad...');
         await show_8954258('rewarded');
         updateVideoProgress(10);
-        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 সেকেন্ডে ভিডিও দেখানো হচ্ছে বলে দেখানো
+        await new Promise(resolve => setTimeout(resolve, 3000));
         updateVideoProgress(100);
 
         elements.videoAdLoadingOverlay.classList.add('hidden');
@@ -1423,6 +1489,8 @@ async function rewardUserAfterAds() {
         userData = { ...userData, ...updates };
         updateUserInterface();
         
+        showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        
     } catch (err) {
         console.error('Reward error:', err);
         showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
@@ -1443,6 +1511,8 @@ async function rewardUserAfterVideoAd() {
         userData = { ...userData, ...updates };
         updateUserInterface();
         
+        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
+        
     } catch (err) {
         console.error('Video reward error:', err);
         showNotification('টাকা যোগ করতে সমস্যা হয়েছে। ডেভেলপারকে জানান।', 'error');
@@ -1454,6 +1524,11 @@ function showCelebration() {
     
     elements.celebrationOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    
+    // Auto close celebration after 3 seconds
+    setTimeout(() => {
+        closeCelebration();
+    }, 3000);
 }
 
 function createConfetti() {
@@ -1488,12 +1563,6 @@ function closeCelebration() {
             confetti.parentNode.removeChild(confetti);
         }
     });
-    
-    if (isVideoAd) {
-        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
-    } else {
-        showNotification('সব অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
-    }
 }
 
 async function claimDailyBonus() {
@@ -2115,7 +2184,7 @@ function showWithdrawSuccess(amount, method, accountNumber, netAmount) {
     document.getElementById('successNetAmount').textContent = `৳${netAmount}`;
     
     document.getElementById('withdrawSuccessModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeWithdrawSuccessModal() {
