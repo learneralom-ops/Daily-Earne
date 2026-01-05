@@ -165,7 +165,8 @@ function show_8954258(type = 'interstitial') {
                 })
                 .catch(error => {
                     console.error('Mone Tag ad failed:', error);
-                    reject(error);
+                    // Even if ad fails, we still resolve to continue the process
+                    resolve();
                 });
         } else {
             console.log('Mone Tag SDK not loaded, simulating ad...');
@@ -192,7 +193,8 @@ function showGigaPubAds() {
                 })
                 .catch(e => {
                     console.error('Giga Pub ad failed:', e);
-                    reject(e);
+                    // Even if ad fails, we still resolve to continue the process
+                    resolve();
                 });
         } else {
             console.log('Giga Pub SDK not loaded, simulating ad...');
@@ -1354,23 +1356,20 @@ async function triggerAdsSequence() {
     try {
         // Mone Tag Ad Show
         console.log('Starting Mone Tag ad...');
-        await show_8954258('interstitial');
         updateAdsProgress(1, 10);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await show_8954258('interstitial');
         updateAdsProgress(1, 100);
         
         // Giga Pub Ad Show
         console.log('Starting Giga Pub ad...');
-        await showGigaPubAds();
         updateAdsProgress(2, 10);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showGigaPubAds();
         updateAdsProgress(2, 100);
         
         // Second Mone Tag Ad
         console.log('Starting second Mone Tag ad...');
-        await show_8954258('interstitial');
         updateAdsProgress(3, 10);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await show_8954258('interstitial');
         updateAdsProgress(3, 100);
 
         elements.adsLoadingOverlay.classList.add('hidden');
@@ -1378,11 +1377,13 @@ async function triggerAdsSequence() {
 
     } catch (error) {
         console.error("Ad Sequence Error:", error);
-        showNotification('অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
+        showNotification('অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
         
         elements.adsLoadingOverlay.classList.add('hidden');
         document.body.style.overflow = 'auto';
-        return;
+        
+        // Even if there's an error, still reward the user
+        rewardUserAfterAds();
     }
 }
 
@@ -1403,9 +1404,8 @@ async function triggerVideoAd() {
     try {
         // Mone Tag Video Ad
         console.log('Starting Mone Tag video ad...');
-        await show_8954258('rewarded');
         updateVideoProgress(10);
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await show_8954258('rewarded');
         updateVideoProgress(100);
 
         elements.videoAdLoadingOverlay.classList.add('hidden');
@@ -1413,11 +1413,13 @@ async function triggerVideoAd() {
 
     } catch (error) {
         console.error("Video Ad Error:", error);
-        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।', 'warning');
+        showNotification('ভিডিও অ্যাড দেখা সম্পন্ন হয়েছে! ৳১ আপনার ব্যালেন্সে যোগ হয়েছে।', 'success');
         
         elements.videoAdLoadingOverlay.classList.add('hidden');
         document.body.style.overflow = 'auto';
-        return;
+        
+        // Even if there's an error, still reward the user
+        rewardUserAfterVideoAd();
     }
 }
 
